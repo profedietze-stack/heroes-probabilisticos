@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0D0D14">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<meta name="description" content="Juego RPG educativo para aprender probabilidad y estadística con dados de 12 caras. Diseñado para el aula por ProfeD.">
+<meta name="author" content="ProfeD.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<title>Heroes Probabilisticos - RPG Educativo por ProfeD.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Lora:ital,wght@0,400;0,600;1,400&family=Poppins:wght@400;600;800&family=Courier+Prime&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/ui.css">
+<link rel="stylesheet" href="css/npc-animations.css">
+<style>
+/* ══════════════════════════════════════
+   SPLASH SCREEN — Royal Obsidian
+══════════════════════════════════════ */
+#splashScreen {
+  position:fixed;inset:0;z-index:99999;
+  background:#0D0D14;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-family:'Cinzel',Georgia,serif;
+  transition:opacity .7s ease, visibility .7s ease;
+  overflow:hidden;
+}
+#splashScreen.hidden {
+  opacity:0;visibility:hidden;pointer-events:none;
+}
+
+/* scan-lines texture */
+#splashScreen::before {
+  content:'';
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent 0px,transparent 3px,
+    rgba(0,0,0,0.20) 3px,rgba(0,0,0,0.20) 4px
+  );
+  opacity:.55;
+}
+/* frame border */
+#splashScreen::after {
+  content:'';
+  position:absolute;inset:16px;pointer-events:none;z-index:0;
+  border:1px solid rgba(212,175,55,0.07);
+}
+
+/* radial ambient glow */
+.splash-glow {
+  position:absolute;
+  width:600px;height:600px;
+  background:radial-gradient(ellipse at center,
+    rgba(212,175,55,0.04) 0%,
+    transparent 65%);
+  pointer-events:none;z-index:0;
+}
+
+.splash-inner {
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  align-items:center;
+  max-width:480px;width:90%;
+  text-align:center;
+  padding:0 20px;
+}
+
+/* Top ornament line */
+.splash-rule {
+  width:220px;height:1px;margin-bottom:32px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(212,175,55,0.12) 20%,
+    rgba(212,175,55,0.45) 50%,
+    rgba(212,175,55,0.12) 80%,
+    transparent 100%);
+}
+
+/* ── Animated die ── */
+.splash-die-wrap {
+  margin-bottom:26px;
+  perspective:300px;
+}
+.splash-die {
+  width:52px;height:52px;
+  border:1.5px solid rgba(212,175,55,0.45);
+  border-radius:7px;
+  position:relative;
+  background:linear-gradient(135deg,#1e1808 0%,#0D0D14 100%);
+  box-shadow:
+    0 0 20px rgba(212,175,55,0.08),
+    inset 0 1px 0 rgba(212,175,55,0.18);
+  animation:diePulse 2.8s ease-in-out infinite;
+}
+.splash-die-pip {
+  width:7px;height:7px;border-radius:50%;
+  background:#D4AF37;opacity:.72;
+  position:absolute;
+  box-shadow:0 0 4px rgba(212,175,55,0.4);
+}
+.splash-die-pip:nth-child(1){top:9px;left:9px;}
+.splash-die-pip:nth-child(2){top:9px;right:9px;}
+.splash-die-pip:nth-child(3){top:50%;left:50%;transform:translate(-50%,-50%);}
+.splash-die-pip:nth-child(4){bottom:9px;left:9px;}
+.splash-die-pip:nth-child(5){bottom:9px;right:9px;}
+@keyframes diePulse {
+  0%,100%{transform:rotateY(0deg) rotateZ(0deg);box-shadow:0 0 20px rgba(212,175,55,0.08),inset 0 1px 0 rgba(212,175,55,0.18);}
+  30%{transform:rotateY(18deg) rotateZ(4deg);box-shadow:0 0 32px rgba(212,175,55,0.18),inset 0 1px 0 rgba(212,175,55,0.22);}
+  70%{transform:rotateY(-18deg) rotateZ(-4deg);}
+}
+
+/* ── Title ── */
+.splash-title {
+  font-size:clamp(20px,5.5vw,34px);
+  font-weight:800;
+  color:#D4AF37;
+  letter-spacing:clamp(2px,1vw,5px);
+  text-transform:uppercase;
+  text-shadow:0 0 28px rgba(212,175,55,0.28);
+  margin:0 0 8px;
+  line-height:1.25;
+}
+.splash-subtitle {
+  font-size:clamp(10px,2.5vw,13px);
+  color:#5a7090;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin:0 0 40px;
+}
+
+/* ── Progress ── */
+.splash-progress-wrap { width:100%;margin-bottom:10px; }
+
+.splash-progress-track {
+  width:100%;height:2px;
+  background:rgba(255,255,255,0.05);
+  margin-bottom:14px;
+  position:relative;
+  overflow:hidden;
+}
+.splash-progress-fill {
+  height:100%;width:0%;
+  background:linear-gradient(90deg,rgba(212,175,55,0.3),#D4AF37,rgba(212,175,55,0.3));
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 10px rgba(212,175,55,0.5);
+}
+/* shimmer on fill */
+.splash-progress-fill::after {
+  content:'';
+  position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);
+  animation:shimmer 1.6s linear infinite;
+}
+@keyframes shimmer{to{left:160%;}}
+
+.splash-status {
+  font-size:10px;
+  color:#2a3848;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  min-height:14px;
+  transition:opacity .3s;
+}
+
+/* ── Continuar button ── */
+#splashContinue {
+  display:none;
+  margin-top:32px;
+  padding:14px 52px;
+  background:linear-gradient(180deg,#2A2010 0%,#1A1408 100%);
+  color:#D4AF37;
+  border:1px solid rgba(212,175,55,0.5);
+  border-radius:2px;
+  font-family:'Cinzel',serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:
+    0 4px 0 #0A0806,
+    0 8px 24px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(212,175,55,0.15);
+  text-shadow:0 0 14px rgba(212,175,55,0.35);
+  transition:all .2s ease;
+  animation:fadeUp .5s ease forwards;
+  -webkit-tap-highlight-color:transparent;
+}
+#splashContinue:hover,#splashContinue:focus {
+  background:linear-gradient(180deg,#362A14 0%,#241C0A 100%);
+  border-color:#D4AF37;
+  transform:translateY(-1px);
+  box-shadow:0 5px 0 #0A0806,0 14px 36px rgba(212,175,55,0.15),inset 0 1px 0 rgba(212,175,55,0.22);
+  outline:none;
+}
+#splashContinue:active {
+  transform:translateY(2px);
+  box-shadow:0 1px 0 #0A0806,0 3px 8px rgba(0,0,0,.5);
+}
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* fullscreen prompt (mobile) */
+.splash-fs-hint {
+  display:none;
+  margin-top:10px;
+  font-size:10px;
+  color:#1e2a38;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+
+/* ── Bottom author ── */
+.splash-bottom {
+  margin-top:40px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.splash-rule-bottom {
+  width:100px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,0.18),transparent);
+}
+.splash-author {
+  font-size:10px;
+  color:#1e2838;
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SPLASH SCREEN
+══════════════════════════════════════ -->
+<div id="splashScreen">
+  <div class="splash-glow"></div>
+  <div class="splash-inner">
+    <div class="splash-rule"></div>
+
+    <div class="splash-die-wrap">
+      <div class="splash-die">
+        <div class="splash-die-pip"></div>
+        <div class="splash-die-pip"></div>
+        <div class="splash-die-pip"></div>
+        <div class="splash-die-pip"></div>
+        <div class="splash-die-pip"></div>
+      </div>
+    </div>
+
+    <h1 class="splash-title">Heroes<br>Probabilisticos</h1>
+    <p class="splash-subtitle">RPG Educativo de Probabilidad</p>
+
+    <div class="splash-progress-wrap">
+      <div class="splash-progress-track">
+        <div class="splash-progress-fill" id="splashFill"></div>
+      </div>
+      <div class="splash-status" id="splashStatus">Iniciando...</div>
+    </div>
+
+    <button id="splashContinue" onclick="splashLaunch()">
+      &#9654; &nbsp; Continuar
+    </button>
+    <div class="splash-fs-hint" id="splashFsHint">Toca para pantalla completa</div>
+
+    <div class="splash-bottom">
+      <div class="splash-rule-bottom"></div>
+      <div class="splash-author">Creado por ProfeD.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     GAME (hidden until splash done)
+══════════════════════════════════════ -->
+<div id="gameContainer" style="display:none;"><div id="phaserGame"></div></div>
+
+<button id="globalMute" onclick="(function(){
+  const b=document.getElementById('globalMute');
+  const muted=b.dataset.muted==='1';
+  if(muted){Music.unmute();b.textContent='&#128266;';b.dataset.muted='0';}
+  else{Music.mute();b.textContent='&#128263;';b.dataset.muted='1';}
+})()" data-muted="0" title="Activar/silenciar musica" style="
+  display:none;
+  position:fixed;
+  top:max(12px, env(safe-area-inset-top, 12px));
+  left:max(12px, env(safe-area-inset-left, 12px));
+  z-index:9998;
+  background:rgba(13,13,20,0.92);color:#D4AF37;
+  border:1px solid rgba(212,175,55,0.35);border-radius:2px;
+  min-width:44px;min-height:44px;
+  padding:6px 14px;font-size:15px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:600;letter-spacing:1px;
+  transition:all .2s;
+  box-shadow:0 2px 12px rgba(0,0,0,.6);
+  -webkit-tap-highlight-color:transparent;
+">&#128266;</button>
+
+<!-- Engranaje de opciones (solo visible en batalla; controlado por BattleScene) -->
+<button id="battleGear" title="Opciones" style="
+  display:none;
+  position:fixed;
+  top:max(12px, env(safe-area-inset-top, 12px));
+  left:calc(max(12px, env(safe-area-inset-left, 12px)) + 52px);
+  z-index:9998;
+  background:rgba(13,13,20,0.92);color:#C0C8D0;
+  border:1px solid rgba(192,200,208,0.30);border-radius:2px;
+  min-width:44px;min-height:44px;
+  padding:6px 12px;font-size:17px;cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 2px 12px rgba(0,0,0,.6);
+  -webkit-tap-highlight-color:transparent;
+">&#9881;</button>
+
+<!-- MODAL EDUCATIVO -->
+<!-- MODAL INFO DIDÁCTICA -->
+<div class="modal-overlay" id="infoDidModal">
+  <div class="modal" style="max-width:960px">
+    <div class="modal-header">
+      <h2>📚 Información Didáctica</h2>
+      <button class="modal-close" onclick="closeInfoDidactica()">✕</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active"  data-tab="did-juego"       onclick="showTab(event,'did-juego')">El Juego</button>
+      <button class="tab"         data-tab="did-como"        onclick="showTab(event,'did-como')">Cómo Jugar</button>
+      <button class="tab"         data-tab="did-math"        onclick="showTab(event,'did-math')">Matemáticas</button>
+      <button class="tab"         data-tab="did-docente"     onclick="showTab(event,'did-docente')">Para el Docente</button>
+      <button class="tab"         data-tab="did-actividades" onclick="showTab(event,'did-actividades')">Actividades</button>
+    </div>
+    <div class="tab-content">
+
+      <!-- ═══ TAB 1: EL JUEGO ═══ -->
+      <div class="tab-panel active" id="tab-did-juego">
+        <h3>¿Qué es Héroes Probabilísticos?</h3>
+        <p><span class="highlight">Héroes Probabilísticos</span> es un videojuego educativo de rol (RPG) diseñado para trabajar conceptos de <span class="highlight">probabilidad clásica</span> de forma activa, lúdica y significativa. Combina narrativa de fantasía, mecánicas de combate con dados y puzzles de probabilidad.</p>
+        <p>Creado por <span class="highlight">ProfeD.</span> como herramienta pedagógica para el aula de matemáticas de nivel secundario.</p>
+
+        <h4>Historia</h4>
+        <p>En el <span class="highlight">Reino de Arithmos</span>, la Probabilidad de Laplace ha sido perturbada por los Monstruos Matemáticos. Solo un héroe capaz de dominar el azar puede restaurar el equilibrio. El jugador asume el rol del Héroe y debe derrotar a 10 monstruos mediante batallas de dados y resolver 7 puzzles de probabilidad.</p>
+
+        <h4>Modos de Juego</h4>
+        <div class="card">
+          <p><strong>⚔️ Modo Historia:</strong> Campaña narrativa completa. Batallas contra 10 monstruos usando dados (2d12), sistema de inventario con 15 artefactos y progresión de personaje.</p>
+          <p><strong>🎲 Modo Minijuegos:</strong> Acceso directo a los 7 puzzles de probabilidad. Incluye <em>Modo Arcade</em> (los 7 en secuencia con ranking) y <em>Modo Libre</em> (elegir cualquier puzzle, estadísticas por puzzle).</p>
+        </div>
+
+        <h4>Niveles de Dificultad</h4>
+        <div class="card">
+          <p><strong>Fácil:</strong> Para primer contacto con probabilidad. Opciones guiadas, tiempo ampliado.</p>
+          <p><strong>Normal:</strong> Nivel estándar recomendado para secundaria (12-15 años).</p>
+          <p><strong>Héroe:</strong> Mayor exigencia conceptual, opciones más cercanas entre sí.</p>
+          <p><strong>Legendario:</strong> Para estudiantes avanzados o trabajo de refuerzo con alumnos con alto desempeño.</p>
+        </div>
+
+        <h4>Objetivos Educativos Generales</h4>
+        <ul>
+          <li>Comprender intuitivamente la <strong>Regla de Laplace</strong> aplicada a situaciones concretas.</li>
+          <li>Identificar <strong>espacios muestrales</strong>, sucesos y probabilidades en experimentos aleatorios variados.</li>
+          <li>Distinguir <strong>probabilidad teórica</strong> de frecuencia observada.</li>
+          <li>Desarrollar pensamiento estratégico basado en el <strong>cálculo de probabilidades</strong>.</li>
+          <li>Motivar una relación positiva con las matemáticas a través del juego.</li>
+        </ul>
+      </div>
+
+      <!-- ═══ TAB 2: CÓMO JUGAR ═══ -->
+      <div class="tab-panel" id="tab-did-como">
+        <h3>Modo Historia — Mecánicas de Combate</h3>
+        <h4>Sistema de Dados</h4>
+        <p>El jugador lanza <span class="highlight">2 dados de 12 caras (2d12)</span> por turno. La suma resultante (2 a 24) determina el impacto. Para causar daño al guardián se debe superar su <span class="highlight">umbral de defensa</span>.</p>
+        <div class="formula">Daño = ataque del héroe
+Si suma ≤ umbral del guardián → el guardián contraataca
+Si suma ≥ umbral → el héroe inflige daño al guardián</div>
+        <h4>Eventos Especiales</h4>
+        <ul>
+          <li><strong>Maldición Doble 1:</strong> Sacar (1,1) reduce el poder del héroe a la mitad ese turno. Probabilidad: 1/144 ≈ 0.69%.</li>
+          <li><strong>Resiliencia:</strong> Cada derrota otorga +1 a tiradas futuras (máximo +3), modelando el aprendizaje del error.</li>
+          <li><strong>Artefactos del inventario:</strong> Objetos que modifican ataques, defensa o probabilidades de forma temporal o permanente.</li>
+        </ul>
+
+        <h4>Modo Minijuegos — Los 7 Puzzles</h4>
+        <p>Cada puzzle presenta un escenario narrativo con una pregunta probabilística. Según el puzzle, el jugador interactúa de distinta forma: elige entre opciones, explora el escenario (revelar cofres, lanzar y leer histogramas, abrir puertas) o construye él mismo la respuesta (armar la fracción con +/−).</p>
+        <div class="card">
+          <p><strong>🏺 La Urna Mágica</strong> — Probabilidad clásica con extracción sin reposición (Mercader).</p>
+          <p><strong>🪙 La Moneda del Destino</strong> — Probabilidad con monedas, sucesos independientes (Mercader).</p>
+          <p><strong>🎯 La Gran Apuesta</strong> — Valor esperado y comparación de juegos aleatorios (Mercader).</p>
+          <p><strong>🎡 La Ruleta del Azar</strong> — Probabilidad geométrica y sectores circulares (Mercader).</p>
+          <p><strong>🎲 El Falsificador de Dados</strong> — Dados trucados y probabilidad no uniforme. Se lanzan los dados, se leen sus histogramas (frecuencia observada vs. dado justo 1/6) para detectar el trucado y se calcula P(cara) = peso / peso total (Oráculo).</p>
+          <p><strong>🚪 Las Puertas del Oráculo</strong> — Probabilidad condicional (problema de Monty Hall): por qué conviene cambiar de puerta (Oráculo).</p>
+          <p><strong>🗺️ Mapa del Tesoro</strong> — Combinatoria y conteo de casos favorables (Oráculo).</p>
+        </div>
+
+        <h4>Modo Arcade</h4>
+        <p>Los 7 puzzles se juegan en secuencia fija con la dificultad elegida. Al finalizar se obtiene un <span class="highlight">rango</span> según aciertos:</p>
+        <div class="formula">ORO      ≥ 6/7 correctas
+PLATA    ≥ 4/7 correctas
+BRONCE   ≥ 2/7 correctas
+APRENDIZ &lt; 2/7 correctas</div>
+        <p>Se guarda el <span class="highlight">mejor puntaje por dificultad</span>. Ideal para usarlo como evaluación rápida o desafío individual.</p>
+
+        <h4>Modo Libre</h4>
+        <p>El estudiante elige cualquier puzzle y dificultad libremente. El juego registra <span class="highlight">partidas jugadas y % de aciertos</span> por puzzle y dificultad. Un puzzle se considera <em>dominado</em> (corona 👑) con ≥ 3 intentos y ≥ 70% de aciertos.</p>
+
+        <h4>Sistema de Guardado</h4>
+        <p>El Modo Historia se guarda automáticamente en <span class="highlight">localStorage</span> tras cada batalla. Las estadísticas de minijuegos persisten en sesión (no requieren cuenta).</p>
+      </div>
+
+      <!-- ═══ TAB 3: MATEMÁTICAS ═══ -->
+      <div class="tab-panel" id="tab-did-math">
+        <h3>Conceptos Matemáticos Trabajados</h3>
+
+        <h4>Regla de Laplace</h4>
+        <p>Fundamento de la <span class="highlight">probabilidad clásica</span> para experimentos con resultados <em>equiprobables</em>:</p>
+        <div class="formula">P(A) = Casos Favorables / Casos Totales = |A| / |Ω|</div>
+        <p>Condición de aplicabilidad: todos los resultados del espacio muestral deben ser <strong>igualmente probables</strong>.</p>
+
+        <h4>Espacio Muestral con 2d12</h4>
+        <p>Al lanzar dos dados de 12 caras el espacio muestral tiene <span class="highlight">144 resultados equiprobables</span>:</p>
+        <div class="formula">Ω = {(1,1), (1,2), ..., (12,12)}   →   |Ω| = 12 × 12 = 144</div>
+        <p>Las sumas posibles van de <strong>2 a 24</strong>. La distribución sigue una forma triangular discreta: el valor central <strong>13</strong> es el más probable (12/144 ≈ 8.33%).</p>
+
+        <h4>Distribución de la Suma de 2d12</h4>
+        <div class="formula">P(suma = k)  =  (k − 1) / 144      para k = 2 .. 13
+              (25 − k) / 144     para k = 14 .. 24
+
+E[suma] = 13      (valor esperado / media)
+Moda    = 13      (resultado más frecuente)
+σ       ≈ 4.90    (desviación estándar)</div>
+
+        <h4>Probabilidad Condicional</h4>
+        <p>Trabajada en <em>Las Puertas del Oráculo</em> (problema de Monty Hall). La probabilidad de un suceso <strong>A</strong> dado que ha ocurrido <strong>B</strong>:</p>
+        <div class="formula">P(A | B) = P(A ∩ B) / P(B)</div>
+        <p>Al abrir el Oráculo las puertas vacías, la información nueva recalcula las probabilidades: cambiar gana (N−1)/N de las veces.</p>
+
+        <h4>Sucesos Independientes</h4>
+        <p>Trabajados en <em>La Moneda del Destino</em>. Dos sucesos son independientes si:</p>
+        <div class="formula">P(A ∩ B) = P(A) × P(B)</div>
+        <p>Cada tirada de dado / lanzamiento de moneda es un experimento independiente del anterior.</p>
+
+        <h4>Valor Esperado</h4>
+        <p>Trabajado en <em>La Gran Apuesta</em>. Para una variable aleatoria discreta:</p>
+        <div class="formula">E[X] = Σ xᵢ · P(xᵢ)</div>
+        <p>Permite comparar la "ganancia esperada" de distintas opciones de juego y fundamentar decisiones racionales bajo incertidumbre.</p>
+
+        <h4>Combinatoria y Conteo — Regla del Producto</h4>
+        <p>Trabajada en <em>Mapa del Tesoro</em>. Para contar las rutas de un árbol de decisiones se multiplica el número de ramas de cada nivel (principio multiplicativo):</p>
+        <div class="formula">Rutas totales = r₁ × r₂ × ... × rₙ
+Ej.: 3 ramas y luego 3 ramas → 3 × 3 = 9 rutas
+
+P(ruta con tesoro) = rutas con tesoro / rutas totales</div>
+        <p>Idea clave: el total <strong>no se suma</strong>, se multiplica por cada bifurcación del camino.</p>
+
+        <h4>Ley de los Grandes Números</h4>
+        <p>Con muchas repeticiones del juego, la <span class="highlight">frecuencia relativa observada</span> de cada resultado converge a su probabilidad teórica. Visible claramente en el informe de estadísticas del Modo Historia.</p>
+      </div>
+
+      <!-- ═══ TAB 4: PARA EL DOCENTE ═══ -->
+      <div class="tab-panel" id="tab-did-docente">
+        <h3>Guía Pedagógica para el Docente</h3>
+
+        <h4>Perfil del Estudiante Objetivo</h4>
+        <ul>
+          <li><strong>Nivel:</strong> Educación Secundaria (12-18 años).</li>
+          <li><strong>Asignatura:</strong> Matemáticas, Estadística y Probabilidad.</li>
+          <li><strong>Conocimientos previos sugeridos:</strong> fracciones, razones, noción intuitiva de azar.</li>
+          <li><strong>Tiempo estimado por sesión:</strong> 30-50 minutos (Modo Minijuegos) / 60-90 min (Modo Historia).</li>
+        </ul>
+
+        <h4>Objetivos de Aprendizaje Específicos</h4>
+        <ul>
+          <li>Aplicar la Regla de Laplace en experimentos con resultados equiprobables.</li>
+          <li>Identificar y calcular el espacio muestral de experimentos compuestos.</li>
+          <li>Calcular probabilidades de sumas con dos dados de distintas caras.</li>
+          <li>Interpretar la probabilidad condicional en contextos cotidianos.</li>
+          <li>Distinguir sucesos independientes de sucesos dependientes.</li>
+          <li>Calcular y comparar valores esperados para tomar decisiones informadas.</li>
+          <li>Comprender la ley de los grandes números mediante evidencia experimental.</li>
+        </ul>
+
+        <h4>Alineación Curricular</h4>
+        <p>El juego cubre contenidos de los bloques de <span class="highlight">Estadística y Probabilidad</span> habituales en currículos de secundaria:</p>
+        <ul>
+          <li>Probabilidad clásica y frecuentista</li>
+          <li>Regla de Laplace y espacio muestral</li>
+          <li>Probabilidad de sucesos compuestos (unión, intersección)</li>
+          <li>Probabilidad condicional e independencia</li>
+          <li>Variable aleatoria discreta y valor esperado</li>
+          <li>Combinatoria básica (aplicada a conteo de casos)</li>
+          <li>Distribuciones discretas simples</li>
+        </ul>
+
+        <h4>Cómo Integrar el Juego al Aula</h4>
+        <div class="card">
+          <p><strong>Modalidad individual:</strong> Cada estudiante juega en su dispositivo. Ideal para trabajo autónomo o tarea.</p>
+          <p><strong>Modalidad en pares:</strong> Dos estudiantes comparten pantalla, discuten las opciones antes de responder. Fomenta el razonamiento en voz alta.</p>
+          <p><strong>Modalidad grupal:</strong> Un estudiante juega proyectado y el grupo debate la respuesta correcta. El docente modera el razonamiento.</p>
+          <p><strong>Estación de aprendizaje:</strong> Parte de la clase trabaja con el juego mientras el docente atiende a otro grupo.</p>
+        </div>
+
+        <h4>Secuencia Didáctica Sugerida (3 sesiones)</h4>
+        <ul>
+          <li><strong>Sesión 1 — Exploración:</strong> Modo Libre con puzzles de La Urna y La Moneda. Sin presión de resultado. Registrar percepciones iniciales.</li>
+          <li><strong>Sesión 2 — Formalización:</strong> Clase expositiva sobre Laplace + Espacio muestral. Luego Modo Libre con puzzles de Dados y Ruleta.</li>
+          <li><strong>Sesión 3 — Aplicación/Evaluación:</strong> Modo Arcade completo como desafío final. Analizar resultados grupales.</li>
+        </ul>
+
+        <h4>Preguntas Reflexivas para el Aula</h4>
+        <div class="card">
+          <p>1. ¿Por qué el 13 es el resultado más probable al tirar 2d12?</p>
+          <p>2. Si la probabilidad del doble 1 es 1/144, ¿cuántos intentos necesitarías en promedio para obtenerlo?</p>
+          <p>3. ¿En qué puzzle crees que tomaste la decisión más "arriesgada"? ¿Por qué?</p>
+          <p>4. ¿Cambiaría tu estrategia en el Modo Historia si jugaras muchas partidas? ¿Por qué?</p>
+          <p>5. ¿Cómo explicarías la diferencia entre "tener suerte" y "tener una estrategia basada en probabilidades"?</p>
+          <p>6. ¿Los resultados de tiradas sucesivas se influyen entre sí? ¿Qué dice la matemática?</p>
+        </div>
+
+        <h4>Evaluación</h4>
+        <ul>
+          <li><strong>Diagnóstica:</strong> Registro de primera respuesta en cada puzzle (sin haberlo estudiado) para detectar concepciones previas.</li>
+          <li><strong>Formativa:</strong> Observar el proceso de razonamiento al elegir opciones. ¿Elige por intuición o calcula?</li>
+          <li><strong>Sumativa:</strong> Puntaje del Modo Arcade al finalizar la unidad (rango ORO/PLATA/BRONCE) como indicador de desempeño.</li>
+          <li><strong>Metacognitiva:</strong> Debate: "¿Cuál puzzle te resultó más difícil? ¿Por qué?" + comparación de estadísticas del Modo Libre.</li>
+        </ul>
+      </div>
+
+      <!-- ═══ TAB 5: ACTIVIDADES ═══ -->
+      <div class="tab-panel" id="tab-did-actividades">
+        <h3>Trabajo Práctico y Actividades Sugeridas</h3>
+
+        <h4>Actividad 1 — Antes del Juego: "¿Cuánto sé del azar?"</h4>
+        <div class="card">
+          <p><strong>Objetivo:</strong> Activar conocimientos previos y detectar concepciones erróneas.</p>
+          <p><strong>Consigna:</strong> Antes de jugar, responde sin calcular:<br>
+          a) Si tirás un dado justo de 6 caras, ¿qué resultado es más probable, el 3 o el 6?<br>
+          b) Si tirás 2 dados de 12 caras, ¿qué suma sale más seguido?<br>
+          c) ¿Qué significa que algo "tiene un 25% de probabilidad"?</p>
+          <p><strong>Cierre:</strong> Guardar las respuestas. Volver a ellas después del juego.</p>
+        </div>
+
+        <h4>Actividad 2 — Durante el Juego: "Registro de Decisiones"</h4>
+        <div class="card">
+          <p><strong>Objetivo:</strong> Documentar el proceso de razonamiento probabilístico.</p>
+          <p><strong>Consigna:</strong> Mientras jugás el Modo Libre, completá para cada puzzle:<br>
+          — ¿Cuál fue tu respuesta? ¿Calculaste o fue intuitiva?<br>
+          — ¿Fue correcta? Si no, ¿por qué creés que te equivocaste?<br>
+          — ¿Qué fórmula o razonamiento usarías para resolverlo correctamente?</p>
+          <p><strong>Material:</strong> Usar la tabla de registro incluida al final de esta sección.</p>
+        </div>
+
+        <h4>Actividad 3 — Construcción del Espacio Muestral de 2d12</h4>
+        <div class="card">
+          <p><strong>Objetivo:</strong> Construir y analizar la distribución de sumas de 2d12.</p>
+          <p><strong>Consigna:</strong><br>
+          a) Construí una tabla de doble entrada con todos los 144 resultados posibles de 2d12.<br>
+          b) Para cada suma posible (2 al 24), calculá: número de casos favorables y probabilidad (fracción y porcentaje).<br>
+          c) Representá la distribución en un gráfico de barras.<br>
+          d) ¿Qué forma tiene el gráfico? ¿Por qué es simétrico alrededor del 13?</p>
+          <p><strong>Extensión:</strong> Comparar con la distribución de 2d6. ¿Qué tienen en común?</p>
+        </div>
+
+        <h4>Actividad 4 — "El Jugador Racional" (Valor Esperado)</h4>
+        <div class="card">
+          <p><strong>Objetivo:</strong> Calcular y comparar valores esperados para tomar decisiones.</p>
+          <p><strong>Consigna:</strong> Jugá "La Gran Apuesta" al menos 3 veces en dificultad Normal.<br>
+          a) Para cada opción presentada, calculá el valor esperado antes de responder.<br>
+          b) ¿Siempre elegiste la opción con mayor valor esperado? ¿Por qué sí o no?<br>
+          c) ¿Es posible perder eligiendo la opción matemáticamente óptima? ¿Qué dice eso sobre el azar?</p>
+        </div>
+
+        <h4>Actividad 5 — Experimento de Frecuencias (Ley de Grandes Números)</h4>
+        <div class="card">
+          <p><strong>Objetivo:</strong> Verificar experimentalmente la convergencia de frecuencias a probabilidades teóricas.</p>
+          <p><strong>Consigna grupal (4-5 personas):</strong><br>
+          a) Cada integrante juega el Modo Arcade completo y registra sus aciertos por puzzle.<br>
+          b) Reunir los datos grupales y calcular el porcentaje de aciertos por puzzle para todo el grupo.<br>
+          c) Comparar con la probabilidad teórica de elegir al azar (25% para 4 opciones).<br>
+          d) ¿Qué puzzles tienen porcentajes más altos? ¿Por qué creen que son más fáciles?</p>
+        </div>
+
+        <h4>Tabla de Registro — Decisiones en Modo Libre</h4>
+        <div class="formula">Puzzle          | Mi respuesta | ¿Correcta? | Razonamiento usado
+─────────────────────────────────────────────────────────
+La Urna Mágica  |              |            |
+La Moneda       |              |            |
+La Gran Apuesta |              |            |
+La Ruleta       |              |            |
+Falsificador    |              |            |
+Puertas Oráculo |              |            |
+Mapa del Tesoro |              |            |</div>
+
+        <h4>Rúbrica de Evaluación Sugerida — Modo Arcade</h4>
+        <div class="card">
+          <p><strong>Nivel 4 — Avanzado (ORO, 6-7/7):</strong> Calcula correctamente la mayoría de probabilidades. Aplica Laplace con fluidez. Justifica sus decisiones con argumentos matemáticos.</p>
+          <p><strong>Nivel 3 — Satisfactorio (PLATA, 4-5/7):</strong> Resuelve correctamente situaciones de probabilidad simple. Comete errores en contextos más complejos (condicional, valor esperado).</p>
+          <p><strong>Nivel 2 — En proceso (BRONCE, 2-3/7):</strong> Identifica espacios muestrales simples pero comete errores sistemáticos al calcular probabilidades.</p>
+          <p><strong>Nivel 1 — Inicial (menos de 2/7):</strong> Responde mayormente por intuición. Requiere andamiaje para identificar casos favorables y totales.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LOGROS Y STATS -->
+<div class="modal-overlay" id="logrosModal">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-header">
+      <h2>Logros y Estadísticas</h2>
+      <button class="modal-close" onclick="closeLogrosModal()">✕</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-ltab="logros"  onclick="_showLogrosTab('logros')">Logros</button>
+      <button class="tab"        data-ltab="informe" onclick="_showLogrosTab('informe')">Informe Docente</button>
+    </div>
+    <div class="tab-content">
+      <div class="tab-panel active" id="ltab-logros"></div>
+      <div class="tab-panel"        id="ltab-informe"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR -->
+<div class="modal-overlay" id="confirmModal" style="z-index:9999">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div class="modal-header" style="justify-content:center;border-bottom:none;padding-bottom:0">
+      <h2 id="confirmTitle" style="font-size:20px"></h2>
+    </div>
+    <p id="confirmMsg" style="margin:12px 24px 24px;color:#a0aab8;line-height:1.5"></p>
+    <div style="display:flex;gap:12px;justify-content:center;padding-bottom:20px">
+      <button id="confirmOk"  class="btn-primary" style="min-width:120px;padding:10px 20px;cursor:pointer" onclick="window.__confirmOk&&window.__confirmOk()"></button>
+      <button id="confirmNo"  style="min-width:120px;padding:10px 20px;cursor:pointer;background:#1a2030;border:1.5px solid #2a3448;border-radius:8px;color:#a0aab8;font-family:Poppins,sans-serif;font-size:15px" onclick="closeConfirmModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ITEM -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal item-modal">
+    <div class="modal-header"><h2>Artefacto</h2><button class="modal-close" onclick="closeItemModal()">x</button></div>
+    <div class="tab-content"><div id="itemContent"></div></div>
+  </div>
+</div>
+
+<!-- MODAL INFORME -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal">
+    <div class="modal-header"><h2 id="reportTitle">Informe de Batalla</h2><button class="modal-close" onclick="closeReportModal()">x</button></div>
+    <div class="tab-content" id="reportContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SPLASH LOGIC
+══════════════════════════════════════ -->
+<script>
+(function(){
+  var fill   = document.getElementById('splashFill');
+  var status = document.getElementById('splashStatus');
+  var btn    = document.getElementById('splashContinue');
+  var hint   = document.getElementById('splashFsHint');
+  var pct    = 0;
+  var ready  = false;
+  var phaserReady = false;
+
+  /* detect mobile/touch */
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+              || ('ontouchstart' in window);
+
+  function setProgress(p, msg){
+    pct = Math.max(pct, p);
+    fill.style.width = pct + '%';
+    if(msg) status.textContent = msg;
+  }
+
+  /* progress steps driven by script load events */
+  var steps = [
+    {src:'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js', pct:40, msg:'Motor de juego...'},
+    {src:'js/core/rng.js',           pct:42, msg:'Generador de azar...'},
+    {src:'js/core/i18n.js',          pct:43, msg:'Idioma...'},
+    {src:'js/data/monsters.js',      pct:50, msg:'Cargando datos...'},
+    {src:'js/data/items.js',         pct:54, msg:'Cargando datos...'},
+    {src:'js/data/npcs.js',          pct:56, msg:'Cargando personajes...'},
+    {src:'js/data/puzzles.js',       pct:58, msg:'Cargando enigmas...'},
+    {src:'js/core/state.js',         pct:60, msg:'Inicializando estado...'},
+    {src:'js/core/config.js',        pct:62, msg:'Cargando configuracion...'},
+    {src:'js/core/state-schema.js',  pct:62, msg:'Esquema de estado...'},
+    {src:'js/core/audio.js',         pct:63, msg:'Modulo de audio...'},
+    {src:'js/core/save.js',          pct:66, msg:'Sistema de guardado...'},
+    {src:'js/core/utils.js',         pct:69, msg:'Utilidades...'},
+    {src:'js/core/skills.js',        pct:70, msg:'Árbol de habilidades...'},
+    {src:'js/ui/grimorio.js',        pct:71, msg:'Grimorio...'},
+    {src:'js/ui/map-events.js',      pct:71, msg:'Eventos del mapa...'},
+    {src:'js/ui/tutorial.js',        pct:71, msg:'Tutorial...'},
+    {src:'js/render/monsters.js',    pct:72, msg:'Graficos de monstruos...'},
+    {src:'js/render/monster-svg.js', pct:74, msg:'Monstruos SVG...'},
+    {src:'js/render/npc-render.js',  pct:76, msg:'Personajes NPC...'},
+    {src:'js/render/bg-effects.js',  pct:77, msg:'Fondos y efectos...'},
+    {src:'js/render/class-fx.js',    pct:77, msg:'Efectos de clase...'},
+    {src:'js/ui/DiosaOverlay.js',    pct:77, msg:'Componentes UI...'},
+    {src:'js/scenes/MenuScene.js',   pct:78, msg:'Escena de menu...'},
+    {src:'js/scenes/IntroScene.js',  pct:82, msg:'Escena de introduccion...'},
+    {src:'js/scenes/BattleScene.js', pct:88, msg:'Escena de batalla...'},
+    {src:'js/scenes/VictoryScene.js',pct:91, msg:'Escena de victoria...'},
+    {src:'js/scenes/MapScene.js',    pct:92, msg:'Mapa del reino...'},
+    {src:'js/scenes/PuzzleScene.js',   pct:93, msg:'Escena de enigmas...'},
+    {src:'js/scenes/PuzzleBase.js',    pct:94, msg:'Base de minijuegos...'},
+    {src:'js/scenes/PuzzleUrna.js',    pct:95, msg:'Minijuego: Urna...'},
+    {src:'js/scenes/PuzzleMoneda.js',  pct:95, msg:'Minijuego: Moneda...'},
+    {src:'js/scenes/PuzzleApuesta.js', pct:96, msg:'Minijuego: Apuesta...'},
+    {src:'js/scenes/PuzzleRuleta.js',  pct:96, msg:'Minijuego: Ruleta...'},
+    {src:'js/scenes/PuzzleDados.js',   pct:96, msg:'Minijuego: Dados...'},
+    {src:'js/scenes/PuzzlePuertas.js',pct:97, msg:'Minijuego: Puertas del Oráculo...'},
+    {src:'js/scenes/PuzzleTesoro.js',  pct:97, msg:'Minijuego: Tesoro...'},
+    {src:'js/core/arcadeStats.js',      pct:97, msg:'Estadisticas arcade...'},
+    {src:'js/core/achievements.js',     pct:97, msg:'Sistema de logros...'},
+    {src:'js/ui/logrosModal.js',        pct:97, msg:'Logros UI...'},
+    {src:'js/core/points.js',           pct:97, msg:'Sistema de puntos...'},
+    {src:'js/scenes/ArcadeHubScene.js',pct:97, msg:'Hub de minijuegos...'},
+    {src:'js/scenes/LibreScene.js',    pct:98, msg:'Modo Libre...'},
+    {src:'js/scenes/ArcadeScene.js',   pct:98, msg:'Modo Arcade...'},
+    {src:'js/scenes/FinalScene.js',    pct:99, msg:'Escena final...'},
+    {src:'js/dev/dev-plugin.js',       pct:99, msg:'Plugin de testing...'}
+  ];
+  /* main.js loads AFTER user clicks Continuar so Phaser sees correct container size */
+
+  setProgress(5, 'Iniciando...');
+
+  /* Load Google Fonts = step 1 */
+  document.fonts.ready.then(function(){
+    setProgress(20, 'Tipografias listas...');
+  });
+  setProgress(10, 'Cargando tipografias...');
+
+  /* Version de release: SUBIR este numero al publicar cambios.
+     Fuerza a los navegadores (y al service worker) a traer los scripts nuevos
+     en vez de servir versiones viejas del cache HTTP heuristico. */
+  var GAME_VERSION = '4';
+  window.GAME_VERSION = GAME_VERSION;
+
+  /* load scripts sequentially, updating bar */
+  function loadNext(i){
+    if(i >= steps.length){ allScriptsLoaded(); return; }
+    var s = steps[i];
+    setProgress(s.pct * 0.8, s.msg); /* show 80% of pct while loading */
+    var el = document.createElement('script');
+    /* En modo ?dev, cache-bust total; en produccion, version fija por release */
+    var _devBust = new URLSearchParams(location.search).has('dev');
+    if(s.src.indexOf('http') === 0) el.src = s.src;
+    else el.src = s.src + '?v=' + (_devBust ? Date.now() : GAME_VERSION);
+    el.onload  = function(){ setProgress(s.pct, s.msg); loadNext(i+1); };
+    el.onerror = function(){ setProgress(s.pct, s.msg + ' (error)'); loadNext(i+1); };
+    document.body.appendChild(el);
+  }
+
+  function allScriptsLoaded(){
+    setProgress(99, 'Listo para jugar');
+    ready = true;
+    /* Auto-launch en modo dev con ?go */
+    if (window.DEV && DEV.autoLaunch) { splashLaunch(); return; }
+    /* show button after short pause so user sees bar fill */
+    setTimeout(function(){
+      setProgress(100, '');
+      setTimeout(function(){
+        status.style.opacity = '0';
+        btn.style.display = 'inline-block';
+        if(isMobile){ hint.style.display = 'block'; }
+      }, 300);
+    }, 400);
+  }
+
+  function loadMainJs(callback){
+    setProgress(100, 'Iniciando Phaser...');
+    var el = document.createElement('script');
+    var _devBust = new URLSearchParams(location.search).has('dev');
+    el.src = 'main.js?v=' + (_devBust ? Date.now() : GAME_VERSION);
+    el.onload = el.onerror = callback || function(){};
+    document.body.appendChild(el);
+  }
+
+  /* called when user clicks Continuar */
+  var _launched = false;
+  window.splashLaunch = function(){
+    /* Guard: una sola invocación. Sin esto, un segundo click (común en cargas
+       lentas) carga main.js de nuevo → segunda instancia de Phaser.Game →
+       dos canvas renderizando = pantallas mezcladas. */
+    if(_launched) return;
+    _launched = true;
+    var _cont = document.getElementById('splashContinue');
+    if(_cont){ _cont.disabled = true; _cont.style.pointerEvents = 'none'; }
+    /* 1. request fullscreen (needs user gesture) */
+    tryFullscreen();
+    /* 2. show game container BEFORE Phaser init so it gets correct size */
+    document.getElementById('gameContainer').style.display = '';
+    document.getElementById('globalMute').style.display = '';
+    /* 3. init audio on user gesture */
+    if(typeof initAudio === 'function') initAudio();
+    /* 3b. inyectar parametros dev en STATE antes de que Phaser arranque */
+    if(window.DEV) DEV.injectState();
+    /* 4. load main.js → creates Phaser.Game */
+    loadMainJs(function(){
+      /* 5. hide splash after Phaser starts */
+      var splash = document.getElementById('splashScreen');
+      splash.classList.add('hidden');
+      splash.addEventListener('transitionend', function(){
+        splash.style.display = 'none';
+      }, {once:true});
+      /* 6. salto de escena / puzzle en modo dev */
+      if(window.DEV) DEV.postPhaserInit();
+    });
+  };
+
+  function tryFullscreen(){
+    try {
+      var el = document.documentElement;
+      var req = el.requestFullscreen
+             || el.webkitRequestFullscreen
+             || el.mozRequestFullScreen
+             || el.msRequestFullscreen;
+      if(req) req.call(el).catch(function(){});
+    } catch(e){}
+  }
+
+  /* start loading scripts immediately
+     1. error-banner.js siempre primero (captura errores desde el inicio)
+     2. Si ?dev esta en la URL, carga debug.js tambien (cero impacto en produccion) */
+  (function startLoading() {
+    var eb = document.createElement('script');
+    eb.src = 'js/ui/error-banner.js?v=' + GAME_VERSION;
+    eb.onload = function () {
+      if (typeof initErrorBanner === 'function') initErrorBanner();
+      if (location.search.indexOf('dev') !== -1) {
+        var dbg = document.createElement('script');
+        dbg.src = 'js/dev/debug.js?v=' + Date.now();
+        dbg.onload = dbg.onerror = function () { loadNext(0); };
+        document.body.appendChild(dbg);
+      } else {
+        loadNext(0);
+      }
+    };
+    eb.onerror = function () { loadNext(0); }; /* si falla, el juego sigue igual */
+    document.body.appendChild(eb);
+  })();
+
+  /* PWA: service worker para uso offline (tablets del aula sin internet).
+     Solo en https o localhost; file:// no soporta SW y se ignora. */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (e) {
+        console.warn('[PWA] service worker no registrado:', e);
+      });
+    });
+  }
+})();
+</script>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     ORIENTACIÓN: aviso portrait en móviles
+══════════════════════════════════════ -->
+<div id="orientWarn" aria-hidden="true">
+  <div class="ow-inner">
+    <div class="ow-icon">📱</div>
+    <p class="ow-title">Gira tu dispositivo</p>
+    <p class="ow-sub">El juego se ve mejor en horizontal</p>
+    <div class="ow-arrow">↻</div>
+  </div>
+</div>
+
+<style>
+/* Sólo visible en portrait con pantalla pequeña (phone) */
+#orientWarn{
+  display:none;
+  position:fixed;inset:0;z-index:999999;
+  background:#0D0D14;
+  flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Cinzel',Georgia,serif;
+  padding: env(safe-area-inset-top,16px) env(safe-area-inset-right,16px)
+           env(safe-area-inset-bottom,16px) env(safe-area-inset-left,16px);
+}
+.ow-inner{text-align:center;color:#D4AF37}
+.ow-icon{font-size:52px;margin-bottom:16px;display:block}
+.ow-title{font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.ow-sub{font-size:12px;color:#4a6080;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.ow-arrow{
+  font-size:48px;color:#D4AF37;opacity:.6;
+  animation:ow-spin 2s ease-in-out infinite;
+  display:inline-block;
+}
+@keyframes ow-spin{
+  0%,100%{transform:rotate(0deg) scale(1);}
+  50%{transform:rotate(90deg) scale(1.15);}
+}
+/* Mostrar sólo en portrait phones (ancho < 600px, modo portrait) */
+@media (max-width:600px) and (orientation:portrait){
+  #orientWarn{display:flex;}
+}
+</style>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+/* ── Base shared ── */
+.btn-action{
+  position:relative;
+  padding:12px 28px;
+  border-radius:2px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:'Cinzel',serif;
+  font-size:13px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  transition:all .18s ease;
+  overflow:hidden;
+  /* Eliminar highlight azul del tap en iOS/Android */
+  -webkit-tap-highlight-color: transparent;
+  /* Touch target mínimo recomendado (44px) */
+  min-height: 44px;
+}
+/* shimmer sweep on hover */
+.btn-action::before{
+  content:"";
+  position:absolute;top:0;left:-80%;
+  width:60%;height:100%;
+  background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,0.08) 50%,transparent 100%);
+  transform:skewX(-20deg);
+  transition:left .5s ease;
+  pointer-events:none;
+}
+.btn-action:hover::before{left:130%}
+.btn-action:focus-visible{outline:1px solid rgba(212,175,55,0.6);outline-offset:2px}
+
+/* ── Primary action (Roll / confirm) ── */
+.btn-action:not(.btn-secondary):not(.btn-danger):not(.btn-magic){
+  background:linear-gradient(180deg,#2A2010 0%,#1A1408 100%);
+  color:#D4AF37;
+  border:1px solid rgba(212,175,55,0.5);
+  box-shadow:
+    0 3px 0 #0A0806,
+    0 6px 16px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(212,175,55,0.12);
+  text-shadow:0 0 12px rgba(212,175,55,0.3);
+}
+.btn-action:not(.btn-secondary):not(.btn-danger):not(.btn-magic):hover{
+  background:linear-gradient(180deg,#362A14 0%,#241C0A 100%);
+  border-color:#D4AF37;
+  box-shadow:
+    0 3px 0 #0A0806,
+    0 8px 24px rgba(212,175,55,0.18),
+    inset 0 1px 0 rgba(212,175,55,0.2);
+  color:#F0CC55;
+}
+.btn-action:not(.btn-secondary):not(.btn-danger):not(.btn-magic):active{
+  transform:translateY(2px);
+  box-shadow:0 1px 0 #0A0806,0 2px 6px rgba(0,0,0,.5);
+}
+
+/* ── Secondary (neutral actions) ── */
+.btn-secondary{
+  background:linear-gradient(180deg,#1E2836 0%,#141E2C 100%);
+  color:#8a9ab0;
+  border:1px solid #2a3848;
+  box-shadow:
+    0 3px 0 #0A0F18,
+    0 6px 14px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.btn-secondary:hover{
+  background:linear-gradient(180deg,#242F42 0%,#1A2436 100%);
+  color:#C0C8D0;
+  border-color:rgba(212,175,55,0.3);
+  box-shadow:
+    0 3px 0 #0A0F18,
+    0 8px 20px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.btn-secondary:active{
+  transform:translateY(2px);
+  box-shadow:0 1px 0 #0A0F18,0 2px 6px rgba(0,0,0,.5);
+}
+
+/* ── Danger ── */
+.btn-danger{
+  background:linear-gradient(180deg,#3A1010 0%,#280A0A 100%);
+  color:#E05548;
+  border:1px solid rgba(192,57,43,0.5);
+  box-shadow:
+    0 3px 0 #120404,
+    0 6px 14px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,100,80,0.08);
+}
+.btn-danger:hover{
+  background:linear-gradient(180deg,#4A1A1A 0%,#361010 100%);
+  border-color:#C0392B;
+  color:#FF6B5B;
+  box-shadow:
+    0 3px 0 #120404,
+    0 8px 24px rgba(192,57,43,0.3),
+    inset 0 1px 0 rgba(255,100,80,0.12);
+}
+.btn-danger:active{transform:translateY(2px);box-shadow:0 1px 0 #120404}
+
+/* ── Magic / item use ── */
+.btn-magic{
+  background:linear-gradient(180deg,#2A1A38 0%,#1C1028 100%);
+  color:#C080F0;
+  border:1px solid rgba(142,68,173,0.5);
+  box-shadow:
+    0 3px 0 #0E0818,
+    0 6px 14px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(200,100,255,0.08);
+}
+.btn-magic:hover{
+  background:linear-gradient(180deg,#3A2448 0%,#281638 100%);
+  border-color:#8E44AD;
+  color:#E0A0FF;
+  box-shadow:
+    0 3px 0 #0E0818,
+    0 8px 24px rgba(142,68,173,0.3),
+    inset 0 1px 0 rgba(200,100,255,0.12);
+}
+.btn-magic:active{transform:translateY(2px);box-shadow:0 1px 0 #0E0818}

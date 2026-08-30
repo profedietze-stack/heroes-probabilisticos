@@ -1,0 +1,66 @@
+:root{
+  --bg:#0D0D14; --bg2:#111520; --bg3:#0A0A10;
+  --gold:#D4AF37; --gold2:#B8942A;
+  --red:#C0392B; --green:#27AE60; --purple:#8E44AD;
+  --blue:#2980B9; --silver:#C0C8D0;
+  --ink:#0A0A10; --paper:#E8E0D0;
+
+  /* Escala tipográfica modal */
+  --fs-xs:  12px;   /* etiquetas, notas al pie */
+  --fs-sm:  14px;   /* texto secundario, celdas de tabla */
+  --fs-md:  15px;   /* cuerpo de texto principal */
+  --fs-lg:  17px;   /* texto de énfasis, stats */
+  --fs-xl:  19px;   /* botones, valores destacados */
+  --fs-h4:  12px;   /* encabezados h4 en modales (Cinzel caps) */
+  --fs-h3:  14px;   /* encabezados h3 en modales (Cinzel caps) */
+  --fs-h2:  18px;   /* encabezado principal modal */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* iOS Safari: -webkit-fill-available evita el bug 100vh (address bar) */
+html{
+  width:100%;height:100%;
+  height:-webkit-fill-available;
+  overflow:hidden;
+}
+body{
+  width:100%;height:100%;
+  min-height:-webkit-fill-available;
+  overflow:hidden;
+  background:#000;font-family:'Lora',Georgia,serif;color:#C0C8D0;
+  user-select:none;-webkit-user-select:none;
+  font-size:16px;line-height:1.6;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse at 25% 20%,rgba(212,175,55,0.04) 0%,transparent 45%),
+    radial-gradient(ellipse at 75% 80%,rgba(192,57,43,0.04) 0%,transparent 45%),
+    linear-gradient(170deg,#0D0D14 0%,#111520 40%,#0D0D14 100%);
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(255,255,255,0.008) 2px,rgba(255,255,255,0.008) 4px
+  );
+  opacity:.6;
+}
+/* 100% hereda de body que hereda de html (-webkit-fill-available) → fix iOS */
+/* dvh = dynamic viewport height (Chrome 108+, Safari 15.4+, Firefox 101+)  */
+#gameContainer{
+  position:relative;
+  width:100%;
+  height:100%;
+  height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+}
+#phaserGame{box-shadow:0 0 60px rgba(212,175,55,0.07),0 0 120px rgba(0,0,0,0.8);border-radius:2px}
+/* Mejora 13 — touch + nitidez canvas */
+#phaserGame canvas{
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  image-rendering: -webkit-optimize-contrast; /* Safari */
+  image-rendering: optimizeQuality;           /* Firefox fallback */
+  image-rendering: auto;                      /* Chrome usa high-quality por defecto */
+  /* Evitar selección accidental de texto en iOS al mantener pulsado */
+  -webkit-user-select: none;
+  user-select: none;
+}

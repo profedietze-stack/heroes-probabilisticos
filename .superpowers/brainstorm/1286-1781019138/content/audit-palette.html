@@ -1,0 +1,124 @@
+<h2>Auditoría Visual — Estado Actual</h2>
+<p class="subtitle">Cada escena usa una paleta distinta. El Splash Screen es la referencia correcta.</p>
+
+<style>
+  .scene-row { display:flex; gap:12px; margin-bottom:24px; align-items:stretch; }
+  .scene-card { flex:1; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); }
+  .scene-header { padding:10px 14px; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+  .scene-body { padding:14px; min-height:140px; display:flex; flex-direction:column; gap:8px; }
+  .swatch-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .swatch { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .swatch-box { width:36px; height:36px; border-radius:4px; border:1px solid rgba(255,255,255,0.15); }
+  .swatch-label { font-size:9px; color:#aaa; text-align:center; max-width:48px; }
+  .badge { display:inline-block; font-size:9px; padding:2px 7px; border-radius:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .badge-ok { background:rgba(46,204,113,0.2); color:#2ecc71; border:1px solid rgba(46,204,113,0.4); }
+  .badge-warn { background:rgba(231,76,60,0.2); color:#e74c3c; border:1px solid rgba(231,76,60,0.4); }
+  .badge-partial { background:rgba(243,156,18,0.2); color:#f39c12; border:1px solid rgba(243,156,18,0.4); }
+  .diff-row { display:flex; gap:6px; align-items:center; font-size:11px; color:#ccc; }
+  .old-val { color:#e74c3c; font-family:monospace; font-size:10px; }
+  .new-val { color:#2ecc71; font-family:monospace; font-size:10px; }
+  .arrow { color:#666; }
+</style>
+
+<!-- Referencia -->
+<div class="scene-row">
+  <div class="scene-card" style="border-color:rgba(212,175,55,0.5)">
+    <div class="scene-header" style="background:#0D0D14; color:#D4AF37;">
+      ✓ Splash Screen — Referencia Royal Obsidian
+      <span class="badge badge-ok" style="margin-left:8px">CORRECTO</span>
+    </div>
+    <div class="scene-body" style="background:#0D0D14;">
+      <div class="swatch-row">
+        <div class="swatch"><div class="swatch-box" style="background:#0D0D14;"></div><div class="swatch-label">#0D0D14 BG</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#111520;"></div><div class="swatch-label">#111520 BG2</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#D4AF37;"></div><div class="swatch-label">#D4AF37 Gold</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#C0C8D0;"></div><div class="swatch-label">#C0C8D0 Silver</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#C0392B;"></div><div class="swatch-label">#C0392B Red</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#5a7090;"></div><div class="swatch-label">#5a7090 Muted</div></div>
+      </div>
+      <div style="font-size:10px; color:#5a7090; letter-spacing:2px; text-transform:uppercase; font-family:'Courier New'">Scan-lines · Gold ornament lines · Radial ambient glow · Cinzel uppercase</div>
+    </div>
+  </div>
+</div>
+
+<!-- MenuScene -->
+<div class="scene-row">
+  <div class="scene-card" style="border-color:rgba(243,156,18,0.4)">
+    <div class="scene-header" style="background:#111520; color:#f39c12;">
+      ~ Menu Scene
+      <span class="badge badge-partial" style="margin-left:8px">PARCIAL</span>
+    </div>
+    <div class="scene-body" style="background:#111520;">
+      <div class="swatch-row">
+        <div class="swatch"><div class="swatch-box" style="background:#111520; border:1px solid #2ecc71;"></div><div class="swatch-label">BG ✓</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#D4AF37; border:1px solid #2ecc71;"></div><div class="swatch-label">Gold ✓</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#ffffff;"></div><div class="swatch-label">#fff stars ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#4a5a30;"></div><div class="swatch-label">#4a5a30 autor ✗</div></div>
+      </div>
+      <div class="diff-row">✗ Estrellas blancas mezcladas — deberían ser solo <span class="new-val">#C0C8D0</span> tenues</div>
+      <div class="diff-row">✗ Color "ProfeD." <span class="old-val">#4a5a30</span> (verde oliva random) → <span class="new-val">#2a3448</span></div>
+      <div class="diff-row">✗ Sin scan-lines, sin ambient glow</div>
+    </div>
+  </div>
+</div>
+
+<!-- IntroScene -->
+<div class="scene-row">
+  <div class="scene-card" style="border-color:rgba(231,76,60,0.5)">
+    <div class="scene-header" style="background:#0a1620; color:#e74c3c;">
+      ✗ Intro Scene — Paleta vieja (Teal-Navy)
+      <span class="badge badge-warn" style="margin-left:8px">INCORRECTO</span>
+    </div>
+    <div class="scene-body" style="background:#0a1620;">
+      <div class="swatch-row">
+        <div class="swatch"><div class="swatch-box" style="background:#0a1620;"></div><div class="swatch-label">#0a1620 BG ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#1a3a52;"></div><div class="swatch-label">#1a3a52 box ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#ffd700;"></div><div class="swatch-label">#ffd700 gold ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#ffe87a;"></div><div class="swatch-label">#ffe87a btn ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#0d1f2d;"></div><div class="swatch-label">#0d1f2d input ✗</div></div>
+      </div>
+      <div class="diff-row">✗ BG <span class="old-val">#0a1620</span> → <span class="new-val">#0D0D14</span></div>
+      <div class="diff-row">✗ Story box <span class="old-val">0x1a3a52</span> → oscuro con borde gold <span class="new-val">rgba(212,175,55,0.12)</span></div>
+      <div class="diff-row">✗ Gold <span class="old-val">#ffd700</span> → <span class="new-val">#D4AF37</span> en todo</div>
+      <div class="diff-row">✗ Botón amarillo brillante → dark button estilo Menu</div>
+      <div class="diff-row">✗ Input <span class="old-val">#0d1f2d</span> → <span class="new-val">#0D0D14</span> con borde <span class="new-val">rgba(212,175,55,0.35)</span></div>
+      <div class="diff-row">✗ Partículas <span class="old-val">0xffd700</span> → <span class="new-val">0xD4AF37</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- BattleScene -->
+<div class="scene-row">
+  <div class="scene-card" style="border-color:rgba(231,76,60,0.5)">
+    <div class="scene-header" style="background:#0a1620; color:#e74c3c;">
+      ✗ Battle Scene — Paleta vieja (Teal-Navy)
+      <span class="badge badge-warn" style="margin-left:8px">INCORRECTO</span>
+    </div>
+    <div class="scene-body" style="background:#0a1620;">
+      <div class="swatch-row">
+        <div class="swatch"><div class="swatch-box" style="background:#1a3a52;"></div><div class="swatch-label">BG top ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#0a1620;"></div><div class="swatch-label">BG bot ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#ffd700;"></div><div class="swatch-label">gold ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#1a3a52;"></div><div class="swatch-label">stroke ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#3498db;"></div><div class="swatch-label">prob text ✗</div></div>
+        <div class="swatch"><div class="swatch-box" style="background:#0d1f2d;"></div><div class="swatch-label">prob BG ✗</div></div>
+      </div>
+      <div class="diff-row">✗ Gradiente <span class="old-val">0x1a3a52→0x0a1620</span> → <span class="new-val">0x111520→0x0D0D14</span></div>
+      <div class="diff-row">✗ Nombre monstruo stroke <span class="old-val">#1a3a52</span> → <span class="new-val">#0A0A10</span></div>
+      <div class="diff-row">✗ Texto probabilidad color <span class="old-val">#3498db</span> → <span class="new-val">#C0C8D0</span> + borde gold</div>
+      <div class="diff-row">✗ Stats text <span class="old-val">#eaeaea</span> → <span class="new-val">#C0C8D0</span></div>
+      <div class="diff-row">✗ Dado texto <span class="old-val">color:#1a3a52</span> → <span class="new-val">#0A0A10</span></div>
+      <div class="diff-row">✗ HUD separator <span class="old-val">0xffd700</span> → <span class="new-val">0xD4AF37</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:8px; padding:14px; background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.2); border-radius:4px;">
+  <div style="font-size:12px; color:#D4AF37; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Resumen del trabajo</div>
+  <div style="font-size:11px; color:#8a9ab0; line-height:1.8;">
+    <strong style="color:#C0C8D0">IntroScene:</strong> 6 colores incorrectos, botón rediseñar, input rediseñar<br>
+    <strong style="color:#C0C8D0">BattleScene:</strong> 8 colores incorrectos, gradiente fondo, estilo probability panel<br>
+    <strong style="color:#C0C8D0">VictoryScene / FinalScene:</strong> verificar colores heredados<br>
+    <strong style="color:#C0C8D0">MenuScene:</strong> 2 tweaks menores (estrellas, color autor)
+  </div>
+</div>

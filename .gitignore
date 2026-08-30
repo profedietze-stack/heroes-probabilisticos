@@ -1,0 +1,20 @@
+# Dependencias
+node_modules/
+
+# Basura del sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs y temporales
+*.log
+npm-debug.log*
+.cache/
+
+# Estado efimero de herramientas locales
+.superpowers/**/state/

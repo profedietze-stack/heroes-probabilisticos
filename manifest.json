@@ -1,0 +1,16 @@
+{
+  "name": "Héroes Probabilísticos",
+  "short_name": "Héroes Prob.",
+  "description": "RPG educativo de probabilidad y estadística. Derrotá a los 10 Monstruos Matemáticos y restaurá la Probabilidad de Laplace.",
+  "lang": "es",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0D0D14",
+  "theme_color": "#0D0D14",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

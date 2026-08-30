@@ -1,0 +1,67 @@
+/* ══════════════════════════════════════
+   NPC Animations — Mercader del Azar & Oráculo de Laplace
+══════════════════════════════════════ */
+
+/* ── Keyframes ── */
+@keyframes npc-idle-bob {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes npc-orac-float {
+  0%, 100% { transform: translateY(0px); }
+  33%       { transform: translateY(-7px) rotate(0.45deg); }
+  66%       { transform: translateY(-3px) rotate(-0.3deg); }
+}
+
+@keyframes npc-blink {
+  0%, 82%, 100% { transform: scaleY(0); }
+  87%, 95%      { transform: scaleY(1); }
+}
+
+@keyframes npc-jaw {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ── Base element states ── */
+.npc-bob-wrap {
+  display: inline-block;
+  line-height: 0;
+}
+
+.npc-lid {
+  transform-box: fill-box;
+  transform-origin: top center;
+  transform: scaleY(0);
+}
+
+.npc-jaw {
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+
+/* ─────────────── IDLE ─────────────── */
+.npc-container.npc-idle .npc-bob-wrap {
+  animation: npc-idle-bob 3s ease-in-out infinite;
+}
+.npc-container.npc-idle[data-npc="oraculo"] .npc-bob-wrap {
+  animation: npc-orac-float 4s ease-in-out infinite;
+}
+.npc-container.npc-idle .npc-lid {
+  animation: npc-blink 4s ease-in-out infinite;
+}
+
+/* ─────────────── TALKING ─────────────── */
+.npc-container.npc-talking .npc-bob-wrap {
+  animation: npc-idle-bob 2.2s ease-in-out infinite;
+}
+.npc-container.npc-talking[data-npc="oraculo"] .npc-bob-wrap {
+  animation: npc-orac-float 2.8s ease-in-out infinite;
+}
+.npc-container.npc-talking .npc-lid {
+  animation: npc-blink 2.5s ease-in-out infinite;
+}
+.npc-container.npc-talking .npc-jaw {
+  animation: npc-jaw 0.22s ease-in-out infinite;
+}
