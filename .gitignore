@@ -18,3 +18,12 @@ npm-debug.log*
 
 # Estado efimero de herramientas locales
 .superpowers/**/state/
+
+# Secretos / credenciales - nunca commitear
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets.json
