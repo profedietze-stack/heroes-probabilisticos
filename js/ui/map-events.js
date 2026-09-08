@@ -109,8 +109,18 @@ function maybeMapEvent(){
 }
 
 function _showQuiz(quiz){
-  // Barajar opciones manteniendo cuál es la correcta
-  const orden = quiz.ops.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  // Barajar opciones manteniendo cuál es la correcta.
+  //
+  // Fisher-Yates, no `sort(()=>Math.random()-0.5)`: ese comparador es
+  // inconsistente y reparte mal, deja la primera opcion en su lugar mas
+  // seguido de lo que corresponde. Con diez preguntas y la correcta escrita
+  // casi siempre en la segunda posicion, el sesgo se acumula del lado
+  // equivocado.
+  const orden = quiz.ops.map((_,i)=>i);
+  for (let i = orden.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [orden[i], orden[j]] = [orden[j], orden[i]];
+  }
 
   window.__quizResp = (elegida) => {
     const acerto = elegida === quiz.ok;
