@@ -13,9 +13,7 @@
 <meta name="author" content="ProfeD.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <title>Heroes Probabilisticos - RPG Educativo por ProfeD.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Lora:ital,wght@0,400;0,600;1,400&family=Poppins:wght@400;600;800&family=Courier+Prime&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/fuentes.css">
 <link rel="stylesheet" href="css/variables.css">
 <link rel="stylesheet" href="css/modals.css">
 <link rel="stylesheet" href="css/buttons.css">
@@ -684,7 +682,7 @@ Mapa del Tesoro |              |            |</div>
 
   /* progress steps driven by script load events */
   var steps = [
-    {src:'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js', pct:40, msg:'Motor de juego...'},
+    {src:'vendor/phaser.min.js', pct:40, msg:'Motor de juego...'},
     {src:'js/core/rng.js',           pct:42, msg:'Generador de azar...'},
     {src:'js/core/i18n.js',          pct:43, msg:'Idioma...'},
     {src:'js/data/monsters.js',      pct:50, msg:'Cargando datos...'},

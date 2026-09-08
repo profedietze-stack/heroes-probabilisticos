@@ -5,14 +5,14 @@
    para invalidar el cache viejo.
 ══════════════════════════════════════ */
 
-const CACHE_VERSION = 'heroesprob-v4';
+const CACHE_VERSION = 'heroesprob-v5';
 
 const PRECACHE = [
   './',
   './index.html',
   './main.js',
   './manifest.json',
-  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
+  'vendor/phaser.min.js',
 ];
 
 self.addEventListener('install', (e) => {
