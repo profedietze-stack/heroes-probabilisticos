@@ -34,10 +34,24 @@ class PuzzleUrna extends Phaser.Scene {
     const alt = colors.find(c=>c.key!==pick.key);
     if (alt) wrong.push(_frac(alt.count, total));         // otra bola
     else     wrong.push(_frac(pick.count, total+2));
+    // Los distractores se pasan por un Set y se comparan contra la respuesta:
+    // dos opciones identicas en pantalla parecen un error del juego, y con las
+    // urnas faciles pasaba seguido. Con {r:2,b:4} y pidiendo roja, el
+    // complemento (4/6) y "la otra bola" (4/6) son la misma fraccion; con
+    // {r:3,b:3} las tres se simplifican a 1/2 y quedaba una sola opcion falsa
+    // mas dos rellenos iguales.
+    const distintos = [...new Set(wrong)].filter(l => l !== corr).slice(0, 3);
     const opts4 = _shuffle([{label:corr, ok:true},
-      ...wrong.filter(l=>l!==corr).slice(0,3).map(l=>({label:l, ok:false}))
+      ...distintos.map(l=>({label:l, ok:false}))
     ]);
-    while (opts4.length < 4) opts4.push({label:_frac(1,total+1),ok:false});
+    // El relleno tambien tiene que ser distinto de todo lo que ya esta.
+    let denomExtra = total + 1;
+    while (opts4.length < 4) {
+      const etiqueta = _frac(1, denomExtra);
+      denomExtra++;
+      if (opts4.some(o => o.label === etiqueta)) continue;
+      opts4.push({ label: etiqueta, ok: false });
+    }
     return { cfg, total, pick, colorName:names[pick.key], corr, opts: opts4,
              explain:`Hay ${pick.count} bolas ${names[pick.key]} de un total de ${total}.\nP = ${pick.count}/${total} = ${corr}` };
   }

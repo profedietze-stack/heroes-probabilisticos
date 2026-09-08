@@ -1,0 +1,8 @@
+{
+  "name": "heroes-probabilisticos",
+  "private": true,
+  "description": "Héroes Probabilísticos — RPG educativo de probabilidad (ProfeD.)",
+  "scripts": {
+    "test": "node tests/run-all.js"
+  }
+}
