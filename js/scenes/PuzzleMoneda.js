@@ -25,14 +25,46 @@ class PuzzleMoneda extends Phaser.Scene {
     const denom = Math.pow(2, n);
     const corr  = _frac(C, denom);
 
-    // Distractores
-    const wrong = new Set([corr]);
-    const mkW = (num,den) => { const f=_frac(num,den); wrong.add(f); return f; };
-    const w1 = mkW(C+1, denom);
-    const w2 = mkW(Math.max(1,C-1), denom);
-    const w3 = mkW(_binomial(n,k>0?k-1:k+1), denom);
+    // Distractores.
+    //
+    // El Set existia pero no se usaba para nada: los tres distractores se
+    // metian tal cual, y varios combos daban una opcion identica a la
+    // respuesta correcta pero marcada como incorrecta. Con {n:2,k:0} el
+    // "C-1" cae a 0, el max(1,...) lo sube a 1 y queda 1/4, que es la
+    // respuesta. Con {n:5,k:3} el C(5,2) vale lo mismo que el C(5,3) por
+    // simetria del triangulo de Pascal. Pasaba en las cuatro dificultades, y
+    // en facil en cuatro de los cinco combos: el alumno elegia una fraccion
+    // correcta y el juego se la marcaba mal.
+    //
+    // Ahora se juntan candidatos, se sacan los que valen lo mismo que la
+    // respuesta y se completan hasta tres con vecinos que todavia no esten.
+    const candidatos = [
+      _frac(C + 1, denom),
+      _frac(Math.max(1, C - 1), denom),
+      _frac(_binomial(n, k > 0 ? k - 1 : k + 1), denom),
+      _frac(_binomial(n, k < n ? k + 1 : k - 1), denom),
+      _frac(C + 2, denom),
+      _frac(Math.max(1, C - 2), denom),
+      _frac(1, denom),
+      _frac(denom - C, denom),
+    ];
+    const distractores = [];
+    const sumar = (etiqueta) => {
+      if (distractores.length === 3) return;
+      if (etiqueta === corr || distractores.includes(etiqueta)) return;
+      distractores.push(etiqueta);
+    };
+    candidatos.forEach(sumar);
+    // Los combos chicos ({n:2}) tienen tan pocas fracciones distintas que los
+    // candidatos de arriba no siempre llegan a tres. Se completa recorriendo
+    // todas las cantidades posibles de casos favorables, que es lo mismo que
+    // el alumno podria contar.
+    for (let casos = 1; casos <= denom && distractores.length < 3; casos++) {
+      sumar(_frac(casos, denom));
+    }
     const all4 = _shuffle([
-      {label:corr,ok:true},{label:w1,ok:false},{label:w2,ok:false},{label:w3,ok:false}
+      {label:corr,ok:true},
+      ...distractores.map((l) => ({ label:l, ok:false })),
     ]);
 
     const explain = `C(${n},${k}) = ${C}  |  2^${n} = ${denom}\nP(exactamente ${k} cara${k!==1?'s':''} en ${n} lanzamientos) = ${C}/${denom} = ${corr}`;
