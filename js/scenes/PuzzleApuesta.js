@@ -27,13 +27,13 @@ class PuzzleApuesta extends Phaser.Scene {
       ],
       heroe: [
         {pN:3,pD:8, pago:5,gan:12, desc:'sacar rojo en ruleta de 8 (3/8)'},  // EV=+1.375 favorable
-        {pN:1,pD:3, pago:6,gan:9,  desc:'sacar cara en 1 de 3 opciones'},    // EV=-1     desfavorable
+        {pN:1,pD:3, pago:6,gan:9,  desc:'sacar la runa marcada (1 de 3)'},    // EV=-1     desfavorable
         {pN:2,pD:9, pago:6,gan:12, desc:'dos azules de 9 bolas (2/9)'},      // EV=-2     desfavorable
         {pN:1,pD:2, pago:5,gan:11, desc:'cara o cruz (1/2)'},                // EV=+3     favorable
       ],
       legendario: [
         {pN:5,pD:18,pago:8,gan:16, desc:'sacar rojo de 18 (5/18)'},          // EV=-1.33 desfavorable
-        {pN:7,pD:16,pago:6,gan:16, desc:'dado de 16 cae ≤ 7 (7/16)'},        // EV=+2.5  favorable
+        {pN:7,pD:16,pago:6,gan:16, desc:'dado de 16 cae ≤ 7 (7/16)'},        // EV=+3.63  favorable
         {pN:9,pD:18,pago:6,gan:6,  desc:'mitad de 18 (9/18)'},               // EV= 0    neutro
       ],
     };
