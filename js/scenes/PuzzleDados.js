@@ -36,8 +36,17 @@ class PuzzleDados extends Phaser.Scene {
     const wrong = _shuffle([
       _frac(1, 6), _frac(prim.extra, 6), _frac(1, prim.total),
     ]).filter(l => l !== corr).slice(0, 3);
+    // Se completa antes de barajar (si no, la ultima posicion nunca puede tener
+    // la correcta) y con etiquetas distintas cada vez: el relleno era una
+    // constante, asi que dos rellenos daban dos opciones identicas.
+    let denomExtra = prim.total + 1;
+    while (wrong.length < 3) {
+      const etiqueta = _frac(2, denomExtra);
+      denomExtra++;
+      if (etiqueta === corr || wrong.includes(etiqueta)) continue;
+      wrong.push(etiqueta);
+    }
     const opts = _shuffle([{ label:corr, ok:true }, ...wrong.map(l => ({ label:l, ok:false }))]);
-    while (opts.length < 4) opts.push({ label:_frac(2, prim.total+1), ok:false });
 
     return {
       dice, positions, nLoaded, prim, corr, opts,

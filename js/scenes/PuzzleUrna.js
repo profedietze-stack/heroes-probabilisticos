@@ -41,17 +41,22 @@ class PuzzleUrna extends Phaser.Scene {
     // {r:3,b:3} las tres se simplifican a 1/2 y quedaba una sola opcion falsa
     // mas dos rellenos iguales.
     const distintos = [...new Set(wrong)].filter(l => l !== corr).slice(0, 3);
+    // El relleno tambien tiene que ser distinto de todo lo que ya esta, y se
+    // completa ANTES de barajar. Barajar tres opciones y pegar la cuarta al
+    // final dejaba la correcta fuera del ultimo boton en todas esas partidas:
+    // medido, caia ahi el 15 % de las veces en vez del 25 %. Y en las urnas
+    // faciles los distractores no llegan a tres seguido, asi que no era un
+    // caso raro.
+    let denomExtra = total + 1;
+    while (distintos.length < 3) {
+      const etiqueta = _frac(1, denomExtra);
+      denomExtra++;
+      if (etiqueta === corr || distintos.includes(etiqueta)) continue;
+      distintos.push(etiqueta);
+    }
     const opts4 = _shuffle([{label:corr, ok:true},
       ...distintos.map(l=>({label:l, ok:false}))
     ]);
-    // El relleno tambien tiene que ser distinto de todo lo que ya esta.
-    let denomExtra = total + 1;
-    while (opts4.length < 4) {
-      const etiqueta = _frac(1, denomExtra);
-      denomExtra++;
-      if (opts4.some(o => o.label === etiqueta)) continue;
-      opts4.push({ label: etiqueta, ok: false });
-    }
     return { cfg, total, pick, colorName:names[pick.key], corr, opts: opts4,
              explain:`Hay ${pick.count} bolas ${names[pick.key]} de un total de ${total}.\nP = ${pick.count}/${total} = ${corr}` };
   }

@@ -5,7 +5,7 @@
    para invalidar el cache viejo.
 ══════════════════════════════════════ */
 
-const CACHE_VERSION = 'heroesprob-v5';
+const CACHE_VERSION = 'heroesprob-v6';
 
 const PRECACHE = [
   './',
