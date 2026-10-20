@@ -818,10 +818,12 @@ class BattleScene extends Phaser.Scene {
     const p = getPower('prediccion');
     const bins = p.ranks[rank - 1].bins;
     const opciones = bins === 2 ? ['bajo', 'alto'] : ['bajo', 'medio', 'alto'];
+    const probTxt = { 2: { bajo: '46%', alto: '54%' }, 3: { bajo: '25%', medio: '50%', alto: '25%' } }[bins];
     this._predBtns = [];
-    let bx = this.w / 2 - (opciones.length * 85) / 2 + 39, by = 360;
+    let bx = this.w / 2 - (opciones.length * 118) / 2 + 55, by = 360;
     for (const op of opciones) {
-      const b = this.makeButton(bx, by, 78, 34, op, 0x8e44ad, 0xffffff, () => {
+      // El pago acompaña a la probabilidad: lo improbable paga más.
+      const b = this.makeButton(bx, by, 110, 34, `${op} ${probTxt[op]} +${p.ranks[rank - 1].pago[op]}`, 0x8e44ad, 0xffffff, () => {
         this._prediccionApuesta = { apuesta: op, rank };
         for (const btn of this._predBtns) {
           if (btn && btn.g) btn.g.destroy();
@@ -832,7 +834,7 @@ class BattleScene extends Phaser.Scene {
         this.mostrarMensaje(`Apostaste: ${op}.`, '#9fc2ff');
       });
       this._predBtns.push(b);
-      bx += 85;
+      bx += 118;
     }
   }
 

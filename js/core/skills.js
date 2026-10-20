@@ -44,8 +44,8 @@ const SKILL_TREE = [
     desc:'Refleja daño según cuánto se desvió la tirada enemiga de 13.',
     ranks:[0.5,0.8,1.2] },
   { id:'prediccion',   rama:'sabiduria', nombre:'Predicción de rango', tipo:'reactivo', mp:[2,2,3], xpCost:_XP,
-    desc:'Apostás el rango de la tirada enemiga antes del reveal; acertar da bonus.',
-    ranks:[{bins:2,bonus:8},{bins:3,bonus:12},{bins:3,bonus:24}] },
+    desc:'Apostás el rango de la tirada enemiga antes del reveal; acertar da bonus. Lo improbable paga más: el pago es ~1/probabilidad, así que ninguna apuesta conviene siempre.',
+    ranks:[{bins:2,pago:{bajo:8,alto:7}},{bins:3,pago:{bajo:12,medio:6,alto:12}},{bins:3,pago:{bajo:24,medio:12,alto:24}}] },
   { id:'truncar',      rama:'sabiduria', nombre:'Truncar tirada enemiga', tipo:'activo', mp:[2,2,3], xpCost:_XP,
     desc:'La suma del monstruo este turno cuenta como un valor fijo cercano a la media.',
     ranks:[13,11,9] },
@@ -138,7 +138,7 @@ function _binDe(sum, bins){
 /** Bonus de daño si la apuesta acierta el bin de la tirada enemiga; 0 si falla. */
 function prediccionBonus(apuesta, enemySum, rank){
   const r = getPower('prediccion').ranks[Math.max(0,rank-1)];
-  return _binDe(enemySum, r.bins) === apuesta ? r.bonus : 0;
+  return _binDe(enemySum, r.bins) === apuesta ? (r.pago[apuesta] || 0) : 0;
 }
 
 const _api = { SKILL_TREE, skillRank, getPower, xpMult, xpForBattle, xpForPuzzle, xpForOraculo,
