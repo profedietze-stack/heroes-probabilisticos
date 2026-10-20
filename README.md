@@ -98,7 +98,7 @@ El inventario tiene hasta 6 slots. Los objetos tienen nombres y efectos inspirad
 | 🗡 Héroe | 120 | ×1.25 | 1 |
 | 💀 Legendario | 90 | ×1.5 | 0 |
 
-**Resiliencia:** en Fácil, cada derrota otorga +1 a las tiradas futuras. El jugador aprende del fracaso sin ser castigado permanentemente.
+**Resiliencia:** en todas las dificultades, cada derrota suma +1 a las tiradas futuras (hasta +3); Fácil además arranca con +1. El jugador aprende del fracaso sin ser castigado permanentemente.
 
 ---
 
@@ -106,11 +106,12 @@ El inventario tiene hasta 6 slots. Los objetos tienen nombres y efectos inspirad
 
 - **Sin instalación.** Abre `index.html` con cualquier servidor local.
 - **Sin dependencias de Node/npm.** Todo es HTML + CSS + JS vanilla.
-- **Phaser 3.60.0** cargado desde CDN para el canvas del juego.
+- **Phaser 3.60.0** servido desde el propio sitio (`vendor/`): ningún pedido sale a terceros, así que no se filtra qué alumno abrió el juego y arranca sin internet.
 - **Audio 100% sintético** via Web Audio API — no hay archivos de sonido.
 - **Guardado automático** en `localStorage` entre sesiones.
 - **Responsive** — funciona en PC, Android, iOS y Safari. Canvas 1024×700 con `Scale.FIT`.
-- **Sin registro.** No recopila datos, no requiere cuenta, funciona offline.
+- **Sin registro.** No recopila datos, no requiere cuenta. Funciona offline después de **una** visita con internet (service worker `sw.js`, versionado en `sw-precache.json`).
+- **Pruebas:** `node tests/run-all.js` corre todas las suites (reglas, contenido educativo, guardados dañados, service worker, privacidad).
 
 ---
 
@@ -175,7 +176,7 @@ Diseñado para trabajar los siguientes temas de matemática de nivel secundario:
 
 Desarrollado como herramienta educativa para el aula.  
 Motor de juego: [Phaser 3.60.0](https://phaser.io/).  
-Tipografías: Cinzel + Lora (Google Fonts).  
+Tipografías: Cinzel, Lora, Poppins y Courier Prime (SIL Open Font License), servidas desde `fonts/`.  
 Audio sintético: Web Audio API.  
 
 ---

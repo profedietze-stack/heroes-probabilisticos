@@ -36,24 +36,14 @@ class PuzzleRuleta extends Phaser.Scene {
     const ask   = wheel.sects[Math.floor(Math.random()*wheel.sects.length)];
     const corr  = _frac(ask.parts, wheel.total);
 
+    // Distractores: los otros sectores y el complemento; si hace falta, cualquier
+    // fracción posible de la rueda. _opcionesFrac sortea el rango de la correcta
+    // entre las opciones ordenadas por valor.
     const wrong = wheel.sects
       .filter(s=>s.n!==ask.n)
       .map(s=>_frac(s.parts, wheel.total));
-    const w3 = _frac(wheel.total-ask.parts, wheel.total);
-    // Con las ruedas faciles hay pocos sectores, asi que los distractores
-    // "naturales" (los otros sectores y el complemento) no llegan a tres y hay
-    // que completar. El relleno de antes empujaba siempre la MISMA fraccion,
-    // y con la rueda de dos sectores iguales salian tres opciones identicas:
-    // "1/2, 2/3, 2/3, 2/3". Ahora se recorren las fracciones posibles de la
-    // rueda hasta juntar tres distintas.
-    const distractores = [...new Set([...wrong, w3])].filter(l => l !== corr).slice(0, 3);
-    for (let partes = 1; partes < wheel.total && distractores.length < 3; partes++) {
-      const etiqueta = _frac(partes, wheel.total);
-      if (etiqueta === corr || distractores.includes(etiqueta)) continue;
-      distractores.push(etiqueta);
-    }
-    const all = _shuffle([{label:corr,ok:true},
-      ...distractores.map(l=>({label:l,ok:false}))]);
+    wrong.push(_frac(wheel.total-ask.parts, wheel.total));
+    const all = _opcionesFrac(corr, wrong, _fraccionesDe(wheel.total));
 
     const explain = `El sector ${ask.n} ocupa ${ask.parts} de ${wheel.total} partes iguales.\nP(${ask.n}) = ${ask.parts}/${wheel.total} = ${corr}`;
     return { wheel, ask, corr, opts:all, explain };

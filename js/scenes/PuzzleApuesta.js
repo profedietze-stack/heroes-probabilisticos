@@ -30,6 +30,7 @@ class PuzzleApuesta extends Phaser.Scene {
         {pN:1,pD:3, pago:6,gan:9,  desc:'sacar la runa marcada (1 de 3)'},    // EV=-1     desfavorable
         {pN:2,pD:9, pago:6,gan:12, desc:'dos azules de 9 bolas (2/9)'},      // EV=-2     desfavorable
         {pN:1,pD:2, pago:5,gan:11, desc:'cara o cruz (1/2)'},                // EV=+3     favorable
+        {pN:2,pD:5, pago:6,gan:9,  desc:'dos rojas de 5 bolas (2/5)'},       // EV= 0     neutro
       ],
       legendario: [
         {pN:5,pD:18,pago:8,gan:16, desc:'sacar rojo de 18 (5/18)'},          // EV=-1.33 desfavorable
@@ -38,11 +39,23 @@ class PuzzleApuesta extends Phaser.Scene {
       ],
     };
     const pool = bets[dif] || bets.normal;
-    const b    = pool[Math.floor(Math.random()*pool.length)];
+    /* Tipo coherente con E(X): >0 favorable, <0 desfavorable, ≈0 neutro */
+    const _tipoDe = (x) => {
+      const p = x.pN / x.pD;
+      const e = +(p * x.gan - (1 - p) * x.pago).toFixed(2);
+      return e > 0.02 ? 'favorable' : e < -0.02 ? 'desfavorable' : 'neutro';
+    };
+    /* Se sortea PRIMERO el tipo y después una apuesta de ese tipo. Sortear la
+       apuesta dejaba la respuesta en "Favorable" el 50 % de las veces
+       (normal: 2 de 4 apuestas; héroe: 2 de 4 y ninguna neutra), así que
+       contestar siempre lo mismo acertaba medio banco. */
+    const tipos = [...new Set(pool.map(_tipoDe))];
+    const tipoSorteado = tipos[Math.floor(Math.random()*tipos.length)];
+    const delTipo = pool.filter(x => _tipoDe(x) === tipoSorteado);
+    const b    = { ...delTipo[Math.floor(Math.random()*delTipo.length)] };
     const prob = b.pN / b.pD;
     const ev   = +(prob * b.gan - (1 - prob) * b.pago).toFixed(2);
-    /* Tipo coherente con E(X): >0 favorable, <0 desfavorable, ≈0 neutro */
-    b.tipo = ev > 0.02 ? 'favorable' : ev < -0.02 ? 'desfavorable' : 'neutro';
+    b.tipo = _tipoDe(b);
     const evStr = ev > 0 ? `+${ev}` : `${ev}`;
     const explain =
       `E(X) = (${b.pN}/${b.pD}) × ${b.gan} − (${b.pD-b.pN}/${b.pD}) × ${b.pago} = ${evStr} monedas\n` +

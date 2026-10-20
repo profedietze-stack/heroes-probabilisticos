@@ -13,13 +13,13 @@ Configured in `.claude/launch.json` as `"heroes-prob"` — use `preview_start` w
 
 After the server starts, open `http://localhost:8765`, wait for the loading bar, click **Continuar**.
 
-There is no build step, no bundler, no package manager, and no tests.
+There is no build step, no bundler and no package manager. Tests: `node tests/run-all.js` (plain node, no dependencies; `npm test` does the same). After touching anything the service worker precaches, bump `GAME_VERSION` (index.html **and** sw.js) and `CACHE_VERSION` (sw.js), then run `node tests/sellar-cache.js` — `tests/cache-version.test.js` fails otherwise.
 
 ## Architecture
 
 ### Runtime Environment
 
-- **Phaser 3.60.0** loaded from CDN at runtime (`phaser.min.js`)
+- **Phaser 3.60.0** self-hosted in `vendor/phaser.min.js` (no third-party requests: privacy rule for minors, and the game must boot offline)
 - **Canvas**: fixed logical size 1024×700, `Scale.FIT` centers it in the viewport
 - **No modules**: every JS file is a plain `<script>` appended in load order; everything lives in `window` scope
 - **No transpilation**: ES6+ runs directly in the browser
@@ -28,7 +28,7 @@ There is no build step, no bundler, no package manager, and no tests.
 
 `index.html` appends scripts sequentially via the splash loader. The order matters because later scripts depend on earlier globals:
 
-1. `phaser.min.js` (CDN)
+1. `vendor/phaser.min.js`
 2. `js/data/` — `monsters.js`, `items.js`, `npcs.js`, `puzzles.js`
 3. `js/core/` — `state.js` → `config.js` → `audio.js` → `save.js` → `utils.js`
 4. `js/render/` — `monsters.js`, `monster-svg.js`, `npc-render.js`

@@ -16,55 +16,55 @@ const MONSTER_LORE = [
     titulo:"El Espectro de la Varianza",
     historia:"Nacido del caos de mil experimentos fallidos, el Espectro habita entre los resultados posibles sin pertenecer a ninguno. Los matemáticos del Reino lo invocaron sin querer al intentar calcular la desviación estándar perfecta. Ahora vaga, dispersando todo a su alrededor.",
     dato:"📊 La Varianza mide qué tan dispersos están los datos respecto a la media. ¡Este espectro ES esa dispersión hecha criatura!",
-    consejo:"Sus defensas son variables. Umbral bajo: ¡aprovechá los primeros turnos!"
+    consejo:"Umbral 9: impactás en 116 de las 144 combinaciones (80,6 %). Es el monstruo más fácil de acertar: aprovechá para probar tus objetos."
   },
   {
     titulo:"La Hidra de las Variables",
     historia:"Cada cabeza representa una variable aleatoria independiente. Cuando los estadísticos del reino quisieron modelar 7 eventos simultáneos, las variables cobraron vida propia y formaron esta bestia de múltiples voluntades.",
     dato:"🎲 Con 7 variables independientes, la distribución conjunta tiene 12⁷ = 35.831.808 resultados posibles. ¡La Hidra los conoce a todos!",
-    consejo:"Sus ataques son escalonados. Cuanto más la demorás, más fuerte golpea."
+    consejo:"Umbral 10: impactás en 108 de 144 (75 %). Pega más fuerte que el Espectro, así que no dejes bajar tu HP sin curarte."
   },
   {
     titulo:"El Golem Gaussiano",
     historia:"Forjado piedra por piedra siguiendo la sagrada Campana de Gauss, este Golem es la encarnación de la distribución normal. Su corazón late al ritmo de la media, y sus puños golpean con la fuerza de la desviación estándar.",
     dato:"🔔 La distribución normal es simétrica: el 68% de los datos cae dentro de 1σ, el 95% dentro de 2σ. ¡El Golem es más fuerte en el centro!",
-    consejo:"Tiradas extremas (2 o 24) lo dañan más. ¡Las colas de la distribución son su debilidad!"
+    consejo:"Umbral 11: impactás en 99 de 144 (68,8 %). Cada punto que tu tirada pasa del umbral suma 1,5 de daño: una tirada alta pega mucho más que una justa."
   },
   {
     titulo:"La Bruja de la Distribución",
     historia:"Maestra de todas las distribuciones conocidas, la Bruja puede transformar cualquier variable aleatoria a su antojo. Estudió durante siglos los textos prohibidos de la Estadística Bayesiana y ahora usa ese conocimiento para corromper el reino.",
     dato:"🧙 La distribución binomial, Poisson, exponencial... la Bruja las domina todas. Su maldición favorita: convertir eventos independientes en dependientes.",
-    consejo:"Cuidado con sus maldiciones. Tené pociones listas para cuando reduzca tu poder."
+    consejo:"Umbral 12: impactás en 89 de 144 (61,8 %). Cuando fallás, ella golpea un 15 % más fuerte: llevá pociones."
   },
   {
     titulo:"El Tiburón de la Desviación",
     historia:"Nació en las profundidades del Mar de la Incertidumbre, donde los intervalos de confianza se rompen y las estimaciones fallan. Cada vez que un estadístico calculó mal la desviación estándar, el Tiburón creció un centímetro más.",
-    dato:"🦈 La desviación estándar del 2d12 es σ ≈ 3.45. ¡Este Tiburón nada exactamente en ese rango de incertidumbre!",
+    dato:"🦈 La desviación estándar de la suma de 2d12 es σ ≈ 4,9 (un solo d12 tiene σ ≈ 3,45). ¡Este Tiburón nada en ese rango de incertidumbre!",
     consejo:"Su ataque aumenta con cada turno. ¡Derrotalo rápido antes de que sea demasiado tarde!"
   },
   {
     titulo:"El Dragón Bernoulli",
     historia:"Jakob Bernoulli lo conjuró accidentalmente al demostrar que todo experimento tiene exactamente dos resultados: éxito o fracaso. El Dragón tomó eso literalmente: en cada turno, o te destruye completamente, o casi no te toca. No hay término medio.",
-    dato:"🐉 La distribución de Bernoulli: P(éxito)=p, P(fracaso)=1-p. El Dragón tiene p=0.5 para sus ataques devastadores. ¡Cara o ceca con tu vida!",
-    consejo:"Sus turnos alternan daño alto y bajo. Guardá las pociones para cuando vengan los golpes fuertes."
+    dato:"🐉 La distribución de Bernoulli: P(éxito)=p, P(fracaso)=1-p. Tu tirada contra su umbral es un ensayo de Bernoulli: con umbral 14, p = 66/144 ≈ 45,8 %. ¡Cara o ceca con tu vida!",
+    consejo:"Umbral 14: impactás en 66 de 144 (45,8 %), menos de la mitad de las veces. Un objeto que suba tu tirada o baje el umbral cambia mucho la pelea."
   },
   {
     titulo:"El Espíritu Poisson",
-    historia:"Siméon-Denis Poisson nunca imaginó que su distribución cobraría vida. El Espíritu aparece donde menos se lo espera, exactamente λ veces por unidad de tiempo. Los guerreros que lo enfrentan nunca saben cuándo ni cuánto va a atacar.",
+    historia:"Siméon-Denis Poisson nunca imaginó que su distribución cobraría vida. El Espíritu aparece donde menos se lo espera, en promedio λ veces por unidad de tiempo. Los guerreros que lo enfrentan nunca saben cuándo ni cuánto va a atacar.",
     dato:"👻 La distribución de Poisson modela eventos raros pero recurrentes. P(k eventos) = (λᵏ · e⁻λ) / k! ¡El Espíritu ES esa impredecibilidad!",
-    consejo:"Alta velocidad, baja defensa. Ataques rápidos y constantes son la clave."
+    consejo:"Umbral 14 como el Dragón (45,8 %), pero con menos vida (155) y menos defensa (6): cada impacto le saca más que a él."
   },
   {
     titulo:"El Titán Normal",
     historia:"Cuando la Ley de los Grandes Números alcanzó su forma perfecta, nació el Titán. Es la convergencia absoluta, el límite central llevado a su máxima expresión. En los turnos 6, 7 y 8 alcanza su poder máximo, igual que la curva normal en su media.",
     dato:"⛰️ El Teorema Central del Límite dice que la suma de muchas variables aleatorias converge a una distribución normal. El Titán ES ese teorema hecho carne.",
-    consejo:"En los turnos 6-8 su defensa es máxima. Atacá fuerte al principio y al final de la batalla."
+    consejo:"En los turnos 6, 7 y 8 su golpe es 4 puntos más fuerte. Terminá la pelea antes, o llegá a ese tramo con la vida llena."
   },
   {
     titulo:"La Esfinge Chi-Cuadrada",
     historia:"Monstruo de los acertijos estadísticos, la Esfinge devora a quienes no pueden distinguir entre frecuencias observadas y esperadas. Cada batalla es una prueba de bondad de ajuste: ¿tus tiradas se ajustan a lo que ella espera?",
     dato:"χ² La prueba Chi-Cuadrada mide si los datos observados difieren significativamente de los esperados. ¡La Esfinge mide exactamente eso en cada ataque!",
-    consejo:"Cuanto más cercanas sean tus tiradas a la media teórica (13), menos daño te hará."
+    consejo:"Umbral 15: sólo 55 de 144 tiradas impactan (38,2 %). Sumá bonos a la tirada (Dado de la Suerte, Resiliencia) o bajá el umbral."
   },
   {
     titulo:"El Demiurgo del Determinismo",

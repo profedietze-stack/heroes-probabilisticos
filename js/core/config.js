@@ -13,6 +13,19 @@ const DIFICULTADES = {
                desc:'Sin objetos, monstruos al 150%. Solo para maestros.' },
 };
 
+/* HP, ataque y defensa de un monstruo según la dificultad. UNA sola cuenta que
+   usan la batalla (BattleScene.create) y la ficha del mapa (MapScene): la ficha
+   mostraba los números base (HP 60, ATK 4, DEF 4) aunque en Héroe o Legendario
+   el monstruo luchara con ×1,25 o ×1,5. */
+function statsDeMonstruo(m, dificultad){
+  const d = DIFICULTADES[dificultad] || DIFICULTADES.normal;
+  return {
+    hp:      Math.round(m.hpMax   * d.monsterHpMult),
+    ataque:  Math.round(m.ataque  * d.monsterAtkMult),
+    defensa: Math.round(m.defensa * d.monsterAtkMult),
+  };
+}
+
 const CFG = Object.freeze({
   // Mecánica de dados
   DICE_COMBOS:        144,   // Combinaciones totales de 2d12 (12×12)

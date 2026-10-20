@@ -860,8 +860,9 @@ class MapScene extends Phaser.Scene {
     if(this._hudCam) this.cameras.main.ignore(phz);
 
     this._dName.setText(m.nombre);
+    const _st = statsDeMonstruo(m, STATE.dificultad);   // los mismos números con los que va a pelear
     this._dStats.setText(
-      `HP: ${m.hpMax}   ⚔ ATK: ${m.ataque}   🛡 DEF: ${m.defensa}\n` +
+      `HP: ${_st.hp}   ⚔ ATK: ${_st.ataque}   🛡 DEF: ${_st.defensa}\n` +
       `Umbral de victoria: ${m.umbral}+`
     );
     const loreShort = lore.historia.length>260

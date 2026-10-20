@@ -23,6 +23,65 @@ function _binomial(n, k) {
   return Math.round(r);
 }
 
+/* Valor numérico de una etiqueta "n/d" (o "n"). */
+function _valorFrac(etiqueta) {
+  const [n, d] = String(etiqueta).split('/').map(Number);
+  return d ? n / d : n;
+}
+
+/* Arma las cuatro opciones de un enigma de fracciones.
+   Los distractores se eligen para que el RANGO de la correcta entre las
+   opciones ordenadas por valor sea parejo (la 1ª, 2ª, 3ª o 4ª más chica), no
+   sólo su posición en pantalla. Con listas fijas de errores la correcta caía
+   siempre en el mismo rango (en Dados: la 3ª más chica el 100 % de las veces)
+   y un alumno que lo nota acierta sin hacer la cuenta.
+   - plausibles: errores típicos del tema (complemento, otro sector, ±1...).
+   - relleno:    fracciones válidas del problema, sólo se usan si hacen falta
+                 para cubrir el rango sorteado.
+   Todo lo que valga lo mismo que la correcta, esté repetido o no sea una
+   probabilidad (0 < p < 1) se descarta. */
+function _opcionesFrac(corr, plausibles, relleno) {
+  const vc = _valorFrac(corr);
+  const vistos = new Set([corr]);
+  const limpio = (lista) => _shuffle(lista.filter((l) => {
+    const v = _valorFrac(l);
+    if (vistos.has(l) || !(v > 0 && v < 1) || Math.abs(v - vc) < 1e-12) return false;
+    vistos.add(l);
+    return true;
+  }));
+  const pl = limpio(plausibles);
+  const re = limpio(relleno);
+  // Último recurso para problemas con pocas fracciones posibles (2 monedas:
+  // sólo 1/4, 1/2 y 3/4): denominadores comunes de aula.
+  const re2 = limpio(_fraccionesDe(2, 3, 4, 5, 6, 8, 10, 12));
+  const lado = (abajo, n) => {
+    const salen = (l) => (_valorFrac(l) < vc) === abajo;
+    const a = pl.filter(salen).slice(0, n);
+    const b = a.concat(re.filter(salen).slice(0, n - a.length));
+    return b.concat(re2.filter(salen).slice(0, n - b.length));
+  };
+  const abajoMax = lado(true, 3).length, arribaMax = lado(false, 3).length;
+  const rangos = [0, 1, 2, 3].filter((r) => abajoMax >= r && arribaMax >= 3 - r);
+  let distractores;
+  if (rangos.length) {
+    const r = rangos[Math.floor(Math.random() * rangos.length)];
+    distractores = [...lado(true, r), ...lado(false, 3 - r)];
+  } else {
+    distractores = pl.concat(re, re2).slice(0, 3);
+  }
+  return _shuffle([
+    { label: corr, ok: true },
+    ...distractores.map((l) => ({ label: l, ok: false })),
+  ]);
+}
+
+/* Todas las fracciones propias n/d (0 < n/d < 1) para los denominadores dados. */
+function _fraccionesDe(...denominadores) {
+  const out = [];
+  denominadores.forEach((d) => { for (let n = 1; n < d; n++) out.push(_frac(n, d)); });
+  return out;
+}
+
 /* ════════════════════════════════════════
    HELPERS DE ANIMACIÓN (reusables por escenas)
 ════════════════════════════════════════ */

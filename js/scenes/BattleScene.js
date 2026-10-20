@@ -15,20 +15,25 @@ class BattleScene extends Phaser.Scene {
     if(STATE.jefeActual >= MONSTERS.length){ this.scene.start('FinalScene'); return; }
     const m = MONSTERS[STATE.jefeActual];
     this.monster = JSON.parse(JSON.stringify(m));
-    const _diff = DIFICULTADES[STATE.dificultad] || DIFICULTADES.normal;
-    STATE.jefeHp    = Math.round(m.hpMax    * _diff.monsterHpMult);
+    const _st = statsDeMonstruo(m, STATE.dificultad);
+    STATE.jefeHp    = _st.hp;
     STATE.jefeHpMax = STATE.jefeHp;
 
     // Registro de tiradas de esta batalla, para el resumen didáctico post-victoria.
     this._battleLog = { jugador: [], monstruo: [] };
-    this.monster.ataque  = Math.round(m.ataque  * _diff.monsterAtkMult);
-    this.monster.defensa = Math.round(m.defensa * _diff.monsterAtkMult);
+    this.monster.ataque  = _st.ataque;
+    this.monster.defensa = _st.defensa;
     STATE.turnoActual = 0;
     this._proximoDialogo = 1 + Math.floor(Math.random()*2);
     STATE.buffs = [];
     STATE.ataque = STATE.ataqueBase;
     STATE.defensa = STATE.defensaBase;
     STATE.reduccionDaño = 0;
+    // La escena se reutiliza entre batallas: una maldición pendiente de la
+    // anterior (derrota con el Doble 1 sin revertir) no puede heredarse, porque
+    // el primer impacto de ESTA batalla la "revertiría" sumando ataque y
+    // defensa que nunca se restaron acá.
+    this._curseAtkReduc = this._curseDefReduc = 0;
     STATE.mp = STATE.mpMax || 4;
     // Música: jefe final tiene tema propio
     Music.play(m.esFinal ? 'boss' : 'battle');
@@ -387,6 +392,7 @@ class BattleScene extends Phaser.Scene {
     this._reflejoArmado   = 0;
     this._sanguijuelaArmada = 0;
     this._cargaArmada     = 0;
+    this._prediccionApuesta = null;   // una apuesta sin cobrar (ganaste antes del ataque rival) pasaba a la batalla siguiente
 
     saveGame();
 
@@ -1555,7 +1561,11 @@ class BattleScene extends Phaser.Scene {
 
     this.mostrarMensaje('💀 ¡DOBLE 1! Poder reducido', '#ff0000', 2800, 'B');
 
-    // Reducir ataque y defensa a la mitad (temporalmente)
+    // Reducir ataque y defensa a la mitad (temporalmente).
+    // Si ya había una maldición sin revertir, se deshace primero: si no, la
+    // segunda mitad se calculaba sobre el valor ya reducido y el ataque quedaba
+    // a la mitad para toda la batalla.
+    this.revertirMaldicion();
     this._curseAtkReduc = Math.floor(STATE.ataque/2);
     this._curseDefReduc = Math.floor(STATE.defensa/2);
     STATE.ataque -= this._curseAtkReduc;
@@ -1610,7 +1620,9 @@ class BattleScene extends Phaser.Scene {
       if(typeof playClassFx === 'function') playClassFx(this, STATE.clase, this.monsterCX, this.monsterCY);
 
       // Mensaje impacto
-      const msg = sumaFinal >= 22 ? MSG_COMBATE[8] : MSG_COMBATE[0];
+      // MSG_COMBATE[8] dice "CRÍTICO ... Daño × 1.5": sólo es verdad con la Gema.
+      // Una tirada alta sin Gema pega más por el margen sobre el umbral, no ×1.5.
+      const msg = sumaFinal >= 22 ? MSG_COMBATE[12] : MSG_COMBATE[0];
       if(sumaOriginal === 13) this.mostrarMensaje(MSG_COMBATE[10], '#ffd700', 2800, 'B');
       else this.mostrarMensaje(`${msg} — ${dmg}`, '#2ecc71', 2800, 'B');
 

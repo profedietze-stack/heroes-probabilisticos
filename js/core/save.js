@@ -54,45 +54,120 @@ function saveGameLegend(){
   return ok;
 }
 
+/* ── Lectura defensiva del guardado ───────────────────────────────────────
+   Un guardado es entrada no confiable: lo puede editar un alumno desde las
+   DevTools, pero sobre todo lo puede dejar una versión anterior (o posterior)
+   del juego con otro tipo en algún campo. Antes, `loadGame` copiaba cada campo
+   con `d.campo || default` —que sólo se defiende de lo que falta— y después
+   BORRABA TODO el guardado si alguna invariante fallaba: con `inventario`
+   guardado como número el alumno perdía la partida entera y el juego le decía
+   "No hay partida guardada".
+   `sanitizeSave` valida campo por campo (tipo, rango, ids que existen) y cae al
+   valor por defecto SOLO en el campo dañado: el resto del progreso se conserva.
+   Es una función pura (no toca STATE) para poder probarla. */
+function _ent(v, def, min, max){
+  if(typeof v!=='number' || !isFinite(v)) return def;
+  return Math.min(max, Math.max(min, Math.round(v)));
+}
+function _esObj(v){ return !!v && typeof v==='object' && !Array.isArray(v); }
+function _listaEnt(v, min, max, tope){
+  if(!Array.isArray(v)) return [];
+  return v.filter(x=>typeof x==='number' && isFinite(x) && Math.round(x)===x && x>=min && x<=max).slice(0, tope);
+}
+
+function sanitizeSave(d){
+  if(!_esObj(d)) return null;
+  const dif = (typeof d.dificultad==='string' && Object.prototype.hasOwnProperty.call(DIFICULTADES, d.dificultad)) ? d.dificultad : 'normal';
+  const cfg = DIFICULTADES[dif];
+  const hpMax = _ent(d.hpMax, cfg.hpHero, 1, 5000);
+  const ataqueBase = _ent(d.ataqueBase, cfg.atkBase, 1, 99);
+  const defensaBase = _ent(d.defensaBase, cfg.defBase, 0, 99);
+  const nItems = (typeof ITEMS!=='undefined' && ITEMS.length) || 15;
+
+  // Inventario: sólo ítems que existen, cantidades enteras, sin duplicados, tope de slots.
+  const inventario = [];
+  if(Array.isArray(d.inventario)){
+    for(const it of d.inventario){
+      if(!_esObj(it)) continue;
+      const id = _ent(it.id, 0, 0, nItems), cantidad = _ent(it.cantidad, 0, 0, 99);
+      if(id<1 || cantidad<1) continue;
+      const ya = inventario.find(x=>x.id===id);
+      if(ya) ya.cantidad = Math.min(99, ya.cantidad+cantidad);
+      else if(inventario.length < CFG.MAX_INVENTORY_SLOTS) inventario.push({id, cantidad});
+    }
+  }
+
+  // Skills: sólo poderes del árbol, rango entero de 0 a 3.
+  const skills = {};
+  if(_esObj(d.skills) && typeof SKILL_TREE!=='undefined'){
+    for(const p of SKILL_TREE){
+      const r = _ent(d.skills[p.id], 0, 0, 3);
+      if(r>0) skills[p.id] = r;
+    }
+  }
+
+  // Estadísticas: se conserva lo que sirve y se reparan los tipos.
+  const s0 = _esObj(d.stats) ? d.stats : {};
+  const stats = Object.assign({}, s0, {
+    tiradas: Array.isArray(s0.tiradas) ? s0.tiradas.filter(_esObj).slice(-2000) : [],
+    derrotas: _ent(s0.derrotas, 0, 0, 1e6),
+    objetosUsados: _esObj(s0.objetosUsados) ? s0.objetosUsados : {},
+    tiempoInicio: _ent(s0.tiempoInicio, Date.now(), 0, 8.64e15),
+    dañoTotalFinal: _ent(s0.dañoTotalFinal, 0, 0, 1e9),
+    objetosUsadosFinal: _ent(s0.objetosUsadosFinal, 0, 0, 1e6),
+    turnosEpicos: Array.isArray(s0.turnosEpicos) ? s0.turnosEpicos.filter(_esObj) : [],
+  });
+
+  const enigmas = {};
+  if(_esObj(d.enigmasCompletados)){
+    for(const k of Object.keys(d.enigmasCompletados)) enigmas[k] = _ent(d.enigmasCompletados[k], 0, 0, 1e6);
+  }
+
+  const xp = _ent(d.xp, 0, 0, 1e7);
+  const nombre = (typeof d.nombre==='string' ? d.nombre.trim().slice(0,15) : '') || 'Héroe';
+  return {
+    nombre, dificultad: dif,
+    jefeActual: _ent(d.jefeActual, 0, 0, 10),
+    nodeActual: _ent(d.nodeActual, 0, 0, 29),
+    hpMax, hp: _ent(d.hp, hpMax, 1, hpMax),
+    ataqueBase, ataque: _ent(d.ataque, ataqueBase, 1, 99),
+    defensaBase, defensa: _ent(d.defensa, defensaBase, 0, 99),
+    resiliencia: _ent(d.resiliencia, 0, 0, 3),
+    inventario, stats, skills,
+    loreVisto: _listaEnt(d.loreVisto, 0, 99, 100),
+    quizHechas: _listaEnt(d.quizHechas, 0, 99, 100),
+    enigmasCompletados: enigmas,
+    tiradaGlobal: _ent(d.tiradaGlobal, 0, 0, 1e7),
+    diosaContador: _ent(d.diosaContador, 0, 0, 1e6),
+    oro: _ent(d.oro, 0, 0, 1e7),
+    xp, xpTotal: Math.max(xp, _ent(d.xpTotal, xp, 0, 1e7)),
+    mpMax: _ent(d.mpMax, 4, 4, 8),
+    hpUpgrades: _ent(d.hpUpgrades, 0, 0, 200),
+    eventoNodo: _ent(d.eventoNodo, 0, 0, 29),
+    clase: (['guerrero','hechicero','arquero','alquimista'].includes(d.clase)) ? d.clase : 'guerrero',
+  };
+}
+
 function loadGame(){
   try{
     const raw=localStorage.getItem(SAVE_KEY);
     if(!raw) return false;
-    const d=JSON.parse(raw);
-    STATE.nombre=d.nombre||"Héroe";
-    STATE.jefeActual=d.jefeActual||0;
-    STATE.dificultad=d.dificultad||'normal';
-    STATE.hp=(typeof d.hp==='number')?d.hp:150; STATE.hpMax=(typeof d.hpMax==='number'&&d.hpMax>0)?d.hpMax:150;
-    STATE.ataque=(typeof d.ataque==='number')?d.ataque:8; STATE.defensa=(typeof d.defensa==='number')?d.defensa:5;
-    STATE.ataqueBase=d.ataqueBase||8; STATE.defensaBase=d.defensaBase||5;
-    STATE.resiliencia=d.resiliencia||0;
-    STATE.inventario=d.inventario||[];
-    STATE.stats=d.stats||STATE.stats;
-    STATE.loreVisto=d.loreVisto||[];
-    STATE.tiradaGlobal=d.tiradaGlobal||0;
-    STATE.diosaContador=d.diosaContador||0;
-    STATE.nodeActual=d.nodeActual||0;
-    STATE.enigmasCompletados=d.enigmasCompletados||{};
-    STATE.oro=d.oro||0;
-    STATE.xp=d.xp||0;
-    STATE.xpTotal=d.xpTotal||0;
-    STATE.mpMax=d.mpMax||4;
-    STATE.hpUpgrades=d.hpUpgrades||0;
-    STATE.eventoNodo=d.eventoNodo||0;
-    STATE.quizHechas=d.quizHechas||[];
-    STATE.skills=d.skills||{};
-    STATE.clase=d.clase||'guerrero';
-    STATE.buffs=[];
+    let d;
+    try{ d=JSON.parse(raw); }catch(e){ console.warn('[loadGame] Guardado ilegible, se descarta.'); clearSave(); return false; }
+    const s=sanitizeSave(d);
+    if(!s){ console.warn('[loadGame] El guardado no es un objeto, se descarta.'); clearSave(); return false; }
+    Object.assign(STATE, s, { buffs:[] });
     if(typeof checkStateInvariants==='function'){
       const errs=checkStateInvariants();
       if(errs.length){
-        console.warn('[loadGame] Save invalido, invariantes violadas:', errs);
-        clearSave();
+        // No debería pasar tras sanitizeSave. Si pasa, NO se borra el guardado:
+        // mejor un error visible que perder la partida en silencio.
+        console.warn('[loadGame] Invariantes violadas tras sanear:', errs);
         return false;
       }
     }
     return true;
-  }catch(e){ return false; }
+  }catch(e){ console.warn('[loadGame] Error al cargar:', e); return false; }
 }
 
 function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }

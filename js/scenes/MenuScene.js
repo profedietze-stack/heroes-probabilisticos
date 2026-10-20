@@ -111,7 +111,7 @@ class MenuScene extends Phaser.Scene {
         if(hasSave()){ showConfirm('Ya tenés una aventura en curso. Si comenzás una nueva, se perderá todo el progreso guardado.', start.bind(this), {title:'¿Comenzar nueva aventura?', okLabel:'Nueva aventura'}); }
         else { start(); }
       }},
-      {label:'◈  Cargar Partida',   y:h*0.57, action:()=>{ if(loadGame()){ showToast(`¡Bienvenido de nuevo, ${STATE.nombre}!`); this.fadeGo('MapScene'); } else { showToast('No hay partida guardada.'); } }},
+      {label:'◈  Cargar Partida',   y:h*0.57, action:()=>{ if(loadGame()){ showToast(`¡Bienvenido de nuevo, ${STATE.nombre}!`); this.fadeGo('MapScene'); } else { showToast(hasSave() ? 'La partida guardada está dañada y no se pudo cargar.' : 'No hay partida guardada.', 5000); } }},
       {label:'🎲  Modo Minijuegos',  y:h*0.65, action:()=>{ this.goFullscreen(); this.fadeGo('ArcadeHubScene'); }},
       {label:'🏅  Logros y Stats',    y:h*0.73, action:()=>openLogrosModal()},
       {label:'📚  Info Didáctica',   y:h*0.81, action:()=>openInfoDidactica()}
