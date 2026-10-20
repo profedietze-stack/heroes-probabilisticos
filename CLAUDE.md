@@ -43,6 +43,7 @@ There is no build step, no bundler and no package manager. Tests: `node tests/ru
 | `STATE` | `js/core/state.js` | All mutable game state (HP, inventory, current boss, etc.) |
 | `CFG` | `js/core/config.js` | Frozen game constants |
 | `DIFICULTADES` | `js/core/config.js` | Difficulty multipliers keyed by `'facil'|'normal'|'heroe'|'legendario'` |
+| `CLASES` | `js/core/clases.js` | The 4 classes (pure data + functions). Each has one advantage and one cost; HP/MP/ATK/DEF are baked when the class is chosen (IntroScene), the rest is applied per battle. Balance is measured with `node tools/simular.js`; `tests/equilibrio.test.js` guards it |
 | `PUZZLE_CATALOG` | `js/data/puzzles.js` | Array of 7 puzzle definitions (id, sceneKey, recompensa) |
 | `Music` | `js/core/audio.js` | IIFE with `play(theme)`, `stop()`, `setVol(v)`; themes: `'menu'`, `'battle'`, `'boss'` |
 | `AC` | `js/core/audio.js` | `AudioContext` — must call `initAudio()` on first user gesture |
