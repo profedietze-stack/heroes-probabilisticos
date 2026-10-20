@@ -48,7 +48,13 @@ function showTab(ev,name){
 }
 function openInfoDidactica(){ document.getElementById('infoDidModal').classList.add('active'); }
 function closeInfoDidactica(){ document.getElementById('infoDidModal').classList.remove('active'); }
-function openItemModal(html){ document.getElementById('itemContent').innerHTML=html; document.getElementById('itemModal').classList.add('active'); }
+function openItemModal(html, titulo){
+  const h2 = document.querySelector('#itemModal .modal-header h2');
+  if(h2) h2.textContent = titulo || 'Artefacto';
+  const caja = document.querySelector('#itemModal .modal');
+  if(caja) caja.style.maxWidth = '';   // cada llamada parte del ancho normal
+  document.getElementById('itemContent').innerHTML=html; document.getElementById('itemModal').classList.add('active');
+}
 function closeItemModal(){ document.getElementById('itemModal').classList.remove('active'); }
 /* Moneda — el emoji 🪙 no renderiza en algunas fuentes (PC): usar estas alternativas. */
 function coinSpan(size=14){

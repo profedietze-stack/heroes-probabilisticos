@@ -382,3 +382,19 @@ Medido en Chromium móvil apaisado (812×375): con el lienzo fijo de 1024×700 e
 - **Menú migrado:** apaisado, dos columnas (título a la izquierda, 5 botones de 48 px a la derecha); retrato, una columna. Medido en 812×375, 667×375, 932×430 y 375×812: factor 1, 0 botones bajo 44 px, texto mínimo 14 px. También subió el contraste de los grises del menú.
 - **Guardas:** `tests/movil.test.js` (reglas del lienzo, cableado, medidas del menú).
 - **Pendiente:** migrar mapa, batalla, enigmas, tienda, intro, final y arcade, una a una, con el mismo método de medición.
+
+## Addendum 5 — Teléfono, etapa 2: batalla y mapa (versión 13 / `heroesprob-v15`)
+
+Medido en Chromium móvil con `?movil=1` (812×375, 667×375 y 932×430; factor 1):
+
+| Pantalla | Botones bajo 44 px | Texto mínimo |
+|---|---|---|
+| Batalla (antes: 3 de 4 bajo 44 px, texto desde 5,4 px) | 0 | 14 px |
+| Mapa (antes: 3 de 4 bajo 44 px, texto desde 8,7 px) | 0 | 12,2 px (rótulos decorativos del mundo) |
+
+- **Batalla (`BattleScene._layout`):** HUD (HP, MP, Atk/Def/Res/Oro) a la izquierda, dados y chips de predicción al centro, Inventario y Grimorio a la derecha, monstruo achicado entre la barra y el panel. El resultado de la tirada es DOM (el monstruo es DOM y tapaba al texto del canvas). El panel de poderes se abre hacia arriba con letra de 13 px y botones de 58 px. Los modales en pantallas bajas tienen cabecera compacta.
+- **Hallazgo previo, corregido:** los chips de *Predicción* caían en y=724 sobre un lienzo de 700 px: no se veían en PC ni tablet. Ahora entran.
+- **Mapa (`MapScene._layout`):** HUD de una fila (54 px) con botones de 44 px, zoom 0,5–2,2 (el mundo sigue siendo 1024×700), zoom al nodo en 1,35 y el dossier del jefe como modal DOM con scroll y botón ¡Enfrentar! de 44 px.
+- **PC y tablet:** sin cambios (mismos números, comprobados por test y en pantalla).
+- **Guardas:** `tests/batalla-movil.test.js`, `tests/mapa-movil.test.js`.
+- **Pendiente de migrar:** enigmas (7) y tienda, intro (nombre, dificultad, clase), victoria, final, arcade y modo libre. Siguen en 1024×700 con factor 0,54.

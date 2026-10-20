@@ -59,8 +59,20 @@ const _DH = 70;
 class MapScene extends Phaser.Scene {
   constructor(){ super('MapScene'); }
 
+  /* Medidas del mapa. El mundo siempre mide 1024×700; lo que cambia es la ventana (cámara) y el HUD.
+     Teléfono apaisado (alto < 500, lienzo = pantalla real): HUD de una fila con botones de 44 px,
+     letras de 14 px y zoom propio. Escritorio/tablet: las de siempre. */
+  _layout(w, h){
+    if(h >= 500){
+      return { compacto:false, hudH:100, zoomMin:1.0, zoomNode:1.8, dragMin:1.05, bounds:[-20, 40, w+40, h-20], panDy:40 };
+    }
+    return { compacto:true, hudH:54, zoomMin:0.5, zoomNode:1.35, dragMin:0.55, bounds:[-30, -30, 1084, 760], panDy:0 };
+  }
+
   create(){
     const w = this.scale.width, h = this.scale.height;
+    const L = this.L = this._layout(w, h);
+    const WW = 1024, WH = 700;   // medidas del mundo (el fondo y las antorchas se dibujan sobre él)
     if(typeof Music !== 'undefined') Music.play('mapa');
     if(typeof Ambience !== 'undefined') Ambience.play('drip');
     this.events.once('shutdown', ()=>{ if(typeof Ambience !== 'undefined') Ambience.stop(); });
@@ -69,66 +81,86 @@ class MapScene extends Phaser.Scene {
     try{ document.querySelectorAll('#heroName').forEach(el=>el.remove()); }catch(e){}
     // Arrancar en vista general (todo el mapa) y luego zoom al nodo actual
     this.cameras.main.setScroll(0, 0);
-    this.cameras.main.setZoom(1.0);
+    this.cameras.main.setZoom(L.zoomMin);
     this.cameras.main.fadeIn(600, 0, 0, 0);
     this._cur = Math.min(STATE.nodeActual||0, 28);
 
     // Bounds: min scrollY=40 → nodos top (y=155) quedan en screen y=115 (bajo HUD 100px)
-    this.cameras.main.setBounds(-20, 40, w+40, h-20);
+    this.cameras.main.setBounds(L.bounds[0], L.bounds[1], L.bounds[2], L.bounds[3]);
+    if(L.compacto) this.cameras.main.centerOn(WW/2, WH/2);   // vista general del mundo entero
     this._setupZoom();
 
     /* ── World space ── */
-    this._drawBrickBg(w, h);
+    this._drawBrickBg(WW, WH);
     this._drawCorridors();
-    this._drawTorches(w, h);
+    this._drawTorches(WW, WH);
     this._drawAtmosphere(w, h);
     this._drawNodes();
     this._drawZoneLabels();
-    this._drawCobwebs(w, h);   // DESPUÉS de atmósfera → queda encima de la vigneta
+    this._drawCobwebs(WW, WH);   // DESPUÉS de atmósfera → queda encima de la vigneta
 
     /* ── HUD bar (fijo a camara) ── */
     const hdr = this.add.graphics().setScrollFactor(0).setDepth(15);
     hdr.fillStyle(0x080604, 0.93);
-    hdr.fillRect(0, 0, w, 100);
+    hdr.fillRect(0, 0, w, L.hudH);
     hdr.lineStyle(1, 0x6a4020, 0.55);
-    hdr.lineBetween(0, 100, w, 100);
+    hdr.lineBetween(0, L.hudH, w, L.hudH);
 
-    this.add.text(w/2, 28, '⚔  El Calabozo de Arithmos  ⚔', {
-      fontFamily:'Cinzel', fontSize:'22px', color:'#D4AF37', fontStyle:'700',
-      stroke:'#0A0A10', strokeThickness:3,
-      shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:18,fill:true}
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+    if(!L.compacto){
+      this.add.text(w/2, 28, '⚔  El Calabozo de Arithmos  ⚔', {
+        fontFamily:'Cinzel', fontSize:'22px', color:'#D4AF37', fontStyle:'700',
+        stroke:'#0A0A10', strokeThickness:3,
+        shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:18,fill:true}
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
 
-    this.add.text(w/2, 60,
-      `Héroe: ${STATE.nombre}   •   Cámara ${Math.min(this._cur+1,29)} de 29`, {
-      fontFamily:'Cinzel', fontSize:'11px', color:'#4a5060'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+      this.add.text(w/2, 60,
+        `Héroe: ${STATE.nombre}   •   Cámara ${Math.min(this._cur+1,29)} de 29`, {
+        fontFamily:'Cinzel', fontSize:'11px', color:'#4a5060'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+    }
 
     /* HP / Oro / XP */
-    this._hpTxt = this.add.text(16, 16,
+    // Teléfono: a la derecha del botón de sonido (que flota en la esquina) y en dos renglones de 14 px.
+    const hx = L.compacto ? 80 : 16, hy = L.compacto ? 7 : 16, fz = L.compacto ? '14px' : '13px';
+    this._hpTxt = this.add.text(hx, hy,
       `❤ ${Math.max(0,STATE.hp)}/${STATE.hpMax}`, {
-      fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'700',
+      fontFamily:'Cinzel', fontSize:fz, color:'#D4AF37', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
 
-    const coinX = 190;
+    const coinX = L.compacto ? hx + 128 : 190;
     const coinGr = this.add.graphics().setDepth(20).setScrollFactor(0);
-    drawCoinIcon(coinGr, coinX, 24, 7);
-    this._oroTxt = this.add.text(coinX+12, 16, `${STATE.oro||0}`, {
-      fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'700',
+    drawCoinIcon(coinGr, coinX, hy + 8, 7);
+    this._oroTxt = this.add.text(coinX+12, hy, `${STATE.oro||0}`, {
+      fontFamily:'Cinzel', fontSize:fz, color:'#D4AF37', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
 
-    this.add.text(16, 44, `✨ XP: ${STATE.xp||0}`, {
-      fontFamily:'Cinzel', fontSize:'13px', color:'#9fc2ff', fontStyle:'700',
+    this.add.text(hx, L.compacto ? 30 : 44, `✨ XP: ${STATE.xp||0}`, {
+      fontFamily:'Cinzel', fontSize:fz, color:'#9fc2ff', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
+    if(L.compacto) this.add.text(coinX - 7, 30, `Cámara ${Math.min(this._cur+1,29)} de 29`, {
+      fontFamily:'Cinzel', fontSize:'14px', color:'#9aa6b4'
+    }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
 
-    this._mkTopBtn(w-16, 10, '📦 Inventario', ()=>this._abrirInventario());
-    this._mkTopBtn(w-16, 38, '📖 Grimorio',   ()=>openGrimorio());
-    this._mkTopBtn(w-16, 66, '⮐ Salir',       ()=>this._confirmSalir());
+    if(L.compacto){
+      // Una fila de botones de 44 px, de derecha a izquierda; se deja libre el botón de pantalla completa.
+      const corto = w < 760;
+      let rx = w - 56;
+      [['⮐ Salir', ()=>this._confirmSalir()],
+       ['📖 Grimorio', ()=>openGrimorio()],
+       [corto ? '📦 Bolsa' : '📦 Inventario', ()=>this._abrirInventario()]].forEach(([lbl, fn])=>{
+        const b = this._mkTopBtn(rx, 5, lbl, fn, true);
+        rx -= b.displayWidth + 8;
+      });
+    } else {
+      this._mkTopBtn(w-16, 10, '📦 Inventario', ()=>this._abrirInventario());
+      this._mkTopBtn(w-16, 38, '📖 Grimorio',   ()=>openGrimorio());
+      this._mkTopBtn(w-16, 66, '⮐ Salir',       ()=>this._confirmSalir());
+    }
 
-    this._buildDossier(w, h);
+    if(!L.compacto) this._buildDossier(w, h);   // en el teléfono el dossier es un modal con scroll
 
     // Cámara secundaria para HUD: zoom fijo en 1, nunca scrollea
     // La cámara principal solo renderiza world objects (scrollFactor=1)
@@ -153,16 +185,18 @@ class MapScene extends Phaser.Scene {
   _zoomToNode(idx){
     const cam = this.cameras.main;
     const pos = _nodePos(idx);
-    // Compensar HUD de 100px: bajar el target 40px en world coords
-    cam.pan(pos.x, pos.y + 40, 1000, 'Sine.easeInOut');
-    cam.zoomTo(1.8, 1000, 'Sine.easeInOut');
+    // Compensar el HUD: el nodo queda en el centro del área libre debajo de él
+    const L = this.L;
+    const dy = L.compacto ? -(L.hudH/2) / L.zoomNode : L.panDy;
+    cam.pan(pos.x, pos.y + dy, 1000, 'Sine.easeInOut');
+    cam.zoomTo(L.zoomNode, 1000, 'Sine.easeInOut');
   }
 
   /* ── Zoom + pan manual ── */
   _setupZoom(){
     const cam = this.cameras.main;
     this.input.on('wheel', (_p, _go, _dx, deltaY) => {
-      cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY*0.0008, 1.0, 2.2));
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY*0.0008, this.L.zoomMin, 2.2));
     });
     this.input.addPointer(1);
     let _pd = 0;
@@ -170,12 +204,12 @@ class MapScene extends Phaser.Scene {
       const p2 = this.input.pointer2;
       if(p2 && p2.isDown && ptr.isDown){
         const d = Phaser.Math.Distance.Between(ptr.x,ptr.y,p2.x,p2.y);
-        if(_pd>0) cam.setZoom(Phaser.Math.Clamp(cam.zoom+(d-_pd)*0.005, 1.0, 2.2));
+        if(_pd>0) cam.setZoom(Phaser.Math.Clamp(cam.zoom+(d-_pd)*0.005, this.L.zoomMin, 2.2));
         _pd = d;
         return;
       }
       _pd = 0;
-      if(ptr.isDown && cam.zoom > 1.05){
+      if(ptr.isDown && cam.zoom > this.L.dragMin){
         cam.scrollX -= (ptr.x - ptr.prevPosition.x) / cam.zoom;
         cam.scrollY -= (ptr.y - ptr.prevPosition.y) / cam.zoom;
       }
@@ -524,7 +558,7 @@ class MapScene extends Phaser.Scene {
     g.fillRect(x, y+ph-2, _DW, 6);
 
     const hint = this.add.text(pos.x, pos.y+_DH/2+14, '▼ Toca', {
-      fontFamily:'Cinzel', fontSize:'11px', color:'#D4AF37'
+      fontFamily:'Cinzel', fontSize: this.L.compacto ? '14px' : '11px', color:'#D4AF37'
     }).setOrigin(0.5);
     this.tweens.add({targets:hint, alpha:{from:0.3,to:1}, duration:680, yoyo:true, repeat:-1});
 
@@ -648,11 +682,13 @@ class MapScene extends Phaser.Scene {
   }
 
   /* ── Botones superiores ── */
-  _mkTopBtn(rx, y, label, onUp){
+  _mkTopBtn(rx, y, label, onUp, grande=false){
     const t = this.add.text(rx, y, label, {
-      fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700',
-      backgroundColor:'#1a1408', padding:{x:10, y:5}
-    }).setOrigin(1,0).setDepth(21).setScrollFactor(0).setInteractive({useHandCursor:true});
+      fontFamily:'Cinzel', fontSize: grande ? '14px' : '12px', color:'#D4AF37', fontStyle:'700',
+      backgroundColor:'#1a1408', padding: grande ? {x:12, y:13} : {x:10, y:5}
+    }).setOrigin(1,0).setDepth(21).setScrollFactor(0);
+    if(grande) t.setFixedSize(0, 44);   // zona táctil de 44 px de alto
+    t.setInteractive({useHandCursor:true});
     t.on('pointerover', ()=>{ t.setColor('#F5D97A'); snd_item&&snd_item(); });
     t.on('pointerout',  ()=>t.setColor('#D4AF37'));
     t.on('pointerup',   onUp);
@@ -831,7 +867,39 @@ class MapScene extends Phaser.Scene {
     ];
   }
 
+  /* Teléfono: el dossier del jefe es un modal con scroll (letra de 14 px, botones de 44 px). */
+  _showDossierMovil(mIdx){
+    const m = MONSTERS[mIdx], lore = MONSTER_LORE[mIdx];
+    if(!m || !lore) return;
+    const _st = statsDeMonstruo(m, STATE.dificultad);   // los mismos números con los que va a pelear
+    window.__enfrentarJefe = ()=>{
+      closeItemModal();
+      snd_buff && snd_buff();
+      if(typeof sceneWipe === 'function') sceneWipe(this, 'BattleScene');
+      else {
+        this.cameras.main.fadeOut(350,0,0,0);
+        this.cameras.main.once('camerafadeoutcomplete',()=>this.scene.start('BattleScene'));
+      }
+    };
+    const html =
+      '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">' +
+        '<div style="flex:0 0 160px;text-align:center;margin:0 auto">' + monsterSvgHTML(m.forma, m.color, 0.6) +
+          '<button class="btn-action" style="margin-top:8px;min-height:44px;width:160px;padding:8px 6px;font-size:14px" onclick="window.__enfrentarJefe()">⚔ ¡Enfrentar!</button></div>' +
+        '<div style="flex:1 1 260px;min-width:0;font-family:Poppins,sans-serif;font-size:14px;line-height:1.5">' +
+          `<h3 style="color:#D4AF37;font-family:Cinzel,serif;font-size:16px;margin:0 0 6px">${m.nombre}</h3>` +
+          `<p style="color:#C0C8D0;margin:0 0 8px">HP: ${_st.hp} &nbsp; ⚔ ATK: ${_st.ataque} &nbsp; 🛡 DEF: ${_st.defensa}<br>Umbral de victoria: ${m.umbral}+</p>` +
+          `<p style="color:#a9b7c8;margin:0 0 8px">${lore.historia}</p>` +
+          `<p style="color:#b8c8d6;font-style:italic;margin:0 0 8px">${lore.dato}</p>` +
+          `<p style="color:#9fb4d0;margin:0">💡 ${lore.consejo}</p>` +
+        '</div>' +
+      '</div>';
+    openItemModal(html, `Guardián ${mIdx + 1}`);
+    const caja = document.querySelector('#itemModal .modal');
+    if(caja) caja.style.maxWidth = '640px';   // retrato y texto lado a lado
+  }
+
   showDossier(mIdx){
+    if(this.L.compacto){ this._showDossierMovil(mIdx); return; }
     const m    = MONSTERS[mIdx];
     const lore = MONSTER_LORE[mIdx];
     if(!m||!lore) return;
@@ -878,6 +946,7 @@ class MapScene extends Phaser.Scene {
   }
 
   hideDossier(){
+    if(!this._dossierObjs) return;
     const dom = this._portraitDom;
     const phz = this._portraitHitZone;
     if(phz){ phz.destroy(); this._portraitHitZone=null; }
@@ -895,3 +964,5 @@ class MapScene extends Phaser.Scene {
     if(this._hpTxt  && this._hpTxt.scene)  this._hpTxt.setText(`❤ ${Math.max(0,STATE.hp)}/${STATE.hpMax}`);
   }
 }
+
+MapScene.DISENO_MOVIL = true;

@@ -1392,6 +1392,14 @@ const _SVG_BUILDERS = {
 //   setState — call with 'idle'|'attack'|'hurt'|'enraged'|'dead'
 //              'attack'/'hurt' auto-revert to 'idle' after anim
 // ─────────────────────────────────────────────
+/* El mismo dibujo del monstruo como cadena HTML (sin objeto Phaser): lo usa el dossier del teléfono. */
+function monsterSvgHTML(forma, color, scale=1){
+  _injectMonsterCSS();
+  const builder = _SVG_BUILDERS[forma] || _svgPlaceholder;
+  const w = 200, h = 240;
+  return `<svg class="monster-svg state-idle" viewBox="0 0 ${w} ${h}" width="${Math.round(w*scale)}" height="${Math.round(h*scale)}" xmlns="http://www.w3.org/2000/svg">${builder(color)}</svg>`;
+}
+
 function createMonsterDOM(scene, forma, color, cx, cy, scale=1){
   _injectMonsterCSS();
 
