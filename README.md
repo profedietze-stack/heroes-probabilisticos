@@ -122,7 +122,7 @@ Cada clase desbloquea un logro y un título con su primera victoria, y otro logr
 - **Phaser 3.60.0** servido desde el propio sitio (`vendor/`): ningún pedido sale a terceros, así que no se filtra qué alumno abrió el juego y arranca sin internet.
 - **Audio 100% sintético** via Web Audio API — no hay archivos de sonido.
 - **Guardado automático** en `localStorage` entre sesiones.
-- **Responsive** — funciona en PC, Android, iOS y Safari. Canvas 1024×700 con `Scale.FIT`.
+- **Responsive** — funciona en PC, Android, iOS y Safari. Canvas 1024×700 con `Scale.FIT` en PC y tablet; en el **teléfono apaisado** el lienzo mide la pantalla real (1 unidad = 1 px) y cada escena tiene un diseño compacto con botones de 44 px o más y letras de 12 px o más (`js/core/movil.js`; `?movil=1` lo fuerza en PC para probar). En vertical se pide girar el teléfono.
 - **Sin registro.** No recopila datos, no requiere cuenta. Funciona offline después de **una** visita con internet (service worker `sw.js`, versionado en `sw-precache.json`).
 - **Pruebas:** `node tests/run-all.js` corre todas las suites (reglas, contenido educativo, guardados dañados, service worker, privacidad).
 
