@@ -29,6 +29,9 @@ class PuzzleTesoro extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: todo se dibuja directo en coordenadas de pantalla (la ventana de ilustración ocupa el ancho).
+    const _w = this.scale.width, _h = this.scale.height;
+    const pz = pzCompactoInit(this, { x:8, y:44, w:_w - 16, h:_h - 52 }, { ancho:true });
     const { w, h } = pzBg(this, 'oraculo');
     this._w = w; this._h = h;
     pzHeader(this, 'Mapa del Tesoro', 'oraculo', w);
@@ -53,22 +56,23 @@ class PuzzleTesoro extends Phaser.Scene {
       '• Favorables = cuántos cofres tienen tesoro; total = cuántas rutas hay.',
     ]);
 
-    this._prompt = this.add.text(w/2, 96,
+    this._prompt = this.add.text(w/2, pz ? 58 : 96,
       'Tocá cada cofre al final de las rutas para revisarlo.', {
-      fontFamily:'Cinzel', fontSize:'14px', color:'#70c8e0',
-      fontStyle:'600', align:'center', wordWrap:{ width:w*0.85 }
+      fontFamily:'Cinzel', fontSize: pz ? '15px' : '14px', color:'#70c8e0',
+      fontStyle:'600', align:'center', wordWrap:{ width: pz ? w - 40 : w*0.85 }
     }).setOrigin(0.5);
 
     /* Contadores en vivo */
     this._revealed = 0;
     this._foundTes = 0;
-    this._cntTxt = this.add.text(w/2, 122, '', {
-      fontFamily:'Poppins', fontSize:'12px', color:'#9ab0c0'
+    this._cntTxt = this.add.text(w/2, pz ? 84 : 122, '', {
+      fontFamily:'Poppins', fontSize: pz ? '14px' : '12px', color: pz ? '#b0c0d0' : '#9ab0c0'
     }).setOrigin(0.5);
     this._updateCounters();
 
     /* Árbol */
     this._buildTree();
+    pzCompactoFin(this);
   }
 
   _updateCounters() {
@@ -92,12 +96,13 @@ class PuzzleTesoro extends Phaser.Scene {
       byLevel.push(next);
     }
     const leaves = byLevel[D];
-    const xL = 110, xR = this._w - 110;
+    const pz = this._pz;
+    const xL = pz ? 60 : 110, xR = this._w - (pz ? 60 : 110);
     leaves.forEach((lf, i) => {
       lf.x = leaves.length === 1 ? this._w/2 : xL + (xR - xL) * i / (leaves.length - 1);
       lf.leafIndex = i;
     });
-    const yTop = 168, yBot = 392;
+    const yTop = pz ? 132 : 168, yBot = pz ? 250 : 392;
     for (let l = 0; l <= D; l++) {
       const y = D === 0 ? yTop : yTop + (yBot - yTop) * l / D;
       byLevel[l].forEach(n => n.y = y);
@@ -140,8 +145,8 @@ class PuzzleTesoro extends Phaser.Scene {
     const rTxt = this.add.text(0, 0, '🚩', { fontSize:'16px' }).setOrigin(0.5);
     rootG.add([rg, rTxt]);
     pzPopIn(this, rootG, 200, 14);
-    const rLbl = this.add.text(root.x, root.y - 26, 'Entrada', {
-      fontFamily:'Poppins', fontSize:'10px', color:'#7a8a98'
+    const rLbl = this.add.text(root.x, root.y - (this._pz ? 28 : 26), 'Entrada', {
+      fontFamily:'Poppins', fontSize: this._pz ? '13px' : '10px', color: this._pz ? '#9aaabb' : '#7a8a98'
     }).setOrigin(0.5);
     pzPopIn(this, rLbl, 260, 8);
 
@@ -164,11 +169,13 @@ class PuzzleTesoro extends Phaser.Scene {
       cont.add(g);
       const obj = { cont, g, isTes, revealed:false };
       this._drawChest(obj, 'closed');
-      cont.add(this.add.text(0, 26, `R${i+1}`, {
-        fontFamily:'Poppins', fontSize:'8px', color:'#5a6a78'
+      cont.add(this.add.text(0, this._pz ? 28 : 26, `R${i+1}`, {
+        fontFamily:'Poppins', fontSize: this._pz ? '13px' : '8px', color: this._pz ? '#9aaabb' : '#5a6a78'
       }).setOrigin(0.5));
 
-      cont.setInteractive(new Phaser.Geom.Rectangle(-20, -22, 40, 44), Phaser.Geom.Rectangle.Contains, { useHandCursor:true });
+      // Zona táctil de 48 px en el teléfono (el dibujo del cofre mide 32).
+      const HZ = this._pz ? 24 : 20;
+      cont.setInteractive(new Phaser.Geom.Rectangle(-HZ, -HZ - 2, HZ*2, HZ*2 + 4), Phaser.Geom.Rectangle.Contains, { useHandCursor:true });
       cont.input.cursor = 'pointer';
       cont.on('pointerover', () => { if (!obj.revealed) this.tweens.add({ targets:cont, scaleX:1.12, scaleY:1.12, duration:120 }); });
       cont.on('pointerout',  () => { if (!obj.revealed) this.tweens.add({ targets:cont, scaleX:1, scaleY:1, duration:120 }); });
@@ -246,6 +253,7 @@ class PuzzleTesoro extends Phaser.Scene {
 
     this._num = 0;
     this._den = 0;
+    if (this._pz) { this._openAnswerMovil(); return; }
     const cy = 470;
 
     /* Línea de fracción central */
@@ -301,21 +309,60 @@ class PuzzleTesoro extends Phaser.Scene {
     });
   }
 
-  _stepper(cx, cy, get, set) {
+  /* Teléfono: la fracción se arma en UNA fila (tesoros / rutas totales / confirmar) bajo el árbol. */
+  _openAnswerMovil() {
+    const w = this._w, y0 = 322;
+    const xA = w/2 - 270, xB = w/2 - 70;
+    const txt = (x, y, t, size, col, orig) => this.add.text(x, y, t, {
+      fontFamily:'Cinzel', fontSize:size, color:col, fontStyle:'700'
+    }).setOrigin(orig === undefined ? 0.5 : orig, 0.5).setDepth(5);
+    const rot = (x, t) => this.add.text(x, y0 + 32, t, { fontFamily:'Poppins', fontSize:'13px', color:'#aab8c8' })
+      .setOrigin(0.5).setDepth(5);
+
+    this._numTxt = txt(xA, y0, '0', '30px', '#F5D97A');
+    this._denTxt = txt(xB, y0, '0', '30px', '#aae4f4');
+    const barra = txt((xA + xB)/2, y0, '/', '34px', '#70c8e0');
+    const l1 = rot(xA, 'tesoros'), l2 = rot(xB, 'rutas totales');
+    this._stepper(xA, y0, () => this._num,
+      v => { this._num = Phaser.Math.Clamp(v, 0, this._cfg.total); this._numTxt.setText('' + this._num); }, 52, 22);
+    this._stepper(xB, y0, () => this._den,
+      v => { this._den = Phaser.Math.Clamp(v, 0, this._cfg.total); this._denTxt.setText('' + this._den); }, 52, 22);
+
+    const bx = w/2 + 235, BW = 230, BH = 46;
+    const bg = this.add.graphics().setDepth(5);
+    const drawB = (hov) => {
+      bg.clear();
+      bg.fillStyle(0x0e2a3a, hov ? 0.96 : 0.82); bg.fillRoundedRect(bx - BW/2, y0 - BH/2, BW, BH, 10);
+      bg.lineStyle(2, 0x70c8e0, hov ? 1 : 0.7); bg.strokeRoundedRect(bx - BW/2, y0 - BH/2, BW, BH, 10);
+    };
+    drawB(false);
+    const bt = txt(bx, y0, '✓ Confirmar', '16px', '#9ad8f0');
+    const hit = this.add.rectangle(bx, y0, BW, BH, 0, 0).setDepth(7).setInteractive({ useHandCursor:true });
+    hit.on('pointerover', () => { drawB(true); bt.setColor('#cdeefb'); });
+    hit.on('pointerout',  () => { drawB(false); bt.setColor('#9ad8f0'); });
+    hit.on('pointerup',   () => this._confirm());
+    [this._numTxt, this._denTxt, barra, l1, l2, bg, bt].forEach(o => {
+      o.setAlpha(0);
+      this.tweens.add({ targets:o, alpha:1, duration:400, delay:120 });
+    });
+  }
+
+  _stepper(cx, cy, get, set, sep, rad) {
+    const R = rad || 15, SEP = sep || 34;
     const mk = (dx, label, delta) => {
       const g = this.add.graphics().setDepth(5);
       const draw = (hov) => {
         g.clear();
         g.fillStyle(0x122436, hov ? 0.96 : 0.8);
-        g.fillCircle(cx + dx, cy, 15);
+        g.fillCircle(cx + dx, cy, R);
         g.lineStyle(1.5, 0x70c8e0, hov ? 1 : 0.6);
-        g.strokeCircle(cx + dx, cy, 15);
+        g.strokeCircle(cx + dx, cy, R);
       };
       draw(false);
       const t = this.add.text(cx + dx, cy - 1, label, {
         fontFamily:'Cinzel', fontSize:'20px', color:'#9ad8f0', fontStyle:'700'
       }).setOrigin(0.5).setDepth(6);
-      const hit = this.add.circle(cx + dx, cy, 17, 0, 0).setDepth(7).setInteractive({ useHandCursor:true });
+      const hit = this.add.circle(cx + dx, cy, R + 2, 0, 0).setDepth(7).setInteractive({ useHandCursor:true });
       hit.on('pointerover', () => draw(true));
       hit.on('pointerout',  () => draw(false));
       hit.on('pointerup',   () => {
@@ -325,8 +372,8 @@ class PuzzleTesoro extends Phaser.Scene {
       });
       [g, t].forEach(o => { o.setAlpha(0); this.tweens.add({ targets:o, alpha:1, duration:400, delay:120 }); });
     };
-    mk(-34, '−', -1);
-    mk(34,  '+', +1);
+    mk(-SEP, '−', -1);
+    mk(SEP,  '+', +1);
   }
 
   _confirm() {
@@ -346,3 +393,5 @@ class PuzzleTesoro extends Phaser.Scene {
     pzResult(this, correct, explain, hp, 6);
   }
 }
+
+PuzzleTesoro.DISENO_MOVIL = true;

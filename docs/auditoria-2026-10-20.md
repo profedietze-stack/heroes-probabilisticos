@@ -397,4 +397,28 @@ Medido en Chromium móvil con `?movil=1` (812×375, 667×375 y 932×430; factor 
 - **Mapa (`MapScene._layout`):** HUD de una fila (54 px) con botones de 44 px, zoom 0,5–2,2 (el mundo sigue siendo 1024×700), zoom al nodo en 1,35 y el dossier del jefe como modal DOM con scroll y botón ¡Enfrentar! de 44 px.
 - **PC y tablet:** sin cambios (mismos números, comprobados por test y en pantalla).
 - **Guardas:** `tests/batalla-movil.test.js`, `tests/mapa-movil.test.js`.
-- **Pendiente de migrar:** enigmas (7) y tienda, intro (nombre, dificultad, clase), victoria, final, arcade y modo libre. Siguen en 1024×700 con factor 0,54.
+- **Pendiente de migrar:** ver el Addendum 6.
+
+## Addendum 6 — Teléfono, etapa 2: enigmas, Mercader/Oráculo y tienda (versión 14 / `heroesprob-v16`)
+
+Medido en Chromium móvil con `?movil=1` (812×375, factor 1) y recorriendo cada enigma de principio a fin:
+
+| Pantalla | Botones bajo 44 px | Texto mínimo |
+|---|---|---|
+| Urna, Moneda, Ruleta | 0 | 13 px |
+| Dados (2 fases) | 0 | 11 px (números de las barras del histograma) |
+| Puertas (ronda y veredicto) | 0 | 13 px |
+| Tesoro (árbol y fracción) | 0 | 13 px |
+| Apuesta (contrato, medidor, firma) | 0 | 11 px (rótulos del medidor) |
+| Mercader/Oráculo (NPC, diálogo, enigmas) | 0 | 11 px (rótulo del botón sobre el mostrador) |
+| Tienda (modal) | botones de 44 px en filas | 13 px |
+
+- **Mecanismo (`PuzzleBase.js`):** en teléfono el enigma usa dos cámaras. La principal (pantalla completa) dibuja el fondo, la pregunta, las respuestas, la ayuda y el resultado (objetos con `scrollFactor` 0); una segunda cámara, la de la *ilustración*, muestra la parte del mundo donde dibuja cada enigma (urna, ruleta, monedas, contrato…) a escala 1:1 o menor. Antes de cada dibujo (`postupdate`) se reparte cada objeto entre las dos cámaras según su `scrollFactor` real, así que vale también para lo que se crea tarde. En escritorio y tablet `scene._pz` es `null` y no se crea nada.
+- **Enigmas:** pregunta y respuestas 2×2 de 48 px a la derecha; ilustración a la izquierda (Urna, Moneda, Ruleta, Apuesta) o a lo ancho (Dados, Puertas, Tesoro). En Tesoro la fracción se arma en una fila bajo el árbol, con botones − y + de 44 px; en Dados las respuestas van en fila.
+- **Resultado y ayuda:** el resultado y el veredicto ocupan casi toda la pantalla, con letra de 14 px y "Continuar" de 44 px; la ayuda "?" abre un modal con scroll.
+- **Mercader/Oráculo:** NPC chico a la izquierda, diálogo y botones a la derecha y "Volver al mapa" de 44 px sobre el mostrador. La tienda es una lista de filas con el botón de compra de 44 px.
+- **Guardas:** `tests/enigmas-movil.test.js` (9 casos: zonas, zoom, botones, reparto por `scrollFactor`, escritorio sin cambios).
+- **Pendiente de migrar:** intro (nombre, dificultad y clase), victoria, final, arcade y modo libre; siguen en 1024×700 (factor 0,54).
+- **Bug hallado midiendo, corregido (también en PC):** al tocar "Continuar" en el aviso "Antes de continuar" del Mercader con el mouse, el aviso no avanzaba. Phaser también recibe el "soltar" de un clic hecho *sobre* un modal DOM; si cae encima del botón de un enigma, lo dispara, el aviso se vuelve a armar entre el "soltar" y el "click" del botón del modal, y el "click" se pierde. Ahora `PuzzleScene` ignora los botones de la escena mientras haya un modal abierto (`_modalAbierto()`). Test con rojo comprobado en `tests/enigmas-movil.test.js`.
+- **Aviso "Antes de continuar" y tienda:** compactos en el teléfono (ícono al costado, botones de 44 px; la tienda en filas) para que entren sin scroll.
+- **Recorrido completo verificado en el teléfono emulado, con clics reales:** mapa → puerta → Mercader → "Probar mi suerte" → enigma → respuesta → resultado → mapa, sin errores de consola.

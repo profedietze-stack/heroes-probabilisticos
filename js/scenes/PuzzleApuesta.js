@@ -72,6 +72,9 @@ class PuzzleApuesta extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: contrato y simulación a la izquierda (ventana de ilustración); medidor, pregunta y respuestas a la derecha.
+    const _Z = pzCompacto(this) ? pzZonas(this, false) : null;
+    const pz = _Z && pzCompactoInit(this, { x:_Z.ill.x, y:_Z.ill.y, w:_Z.ill.w, h:_Z.ill.h });
     const {w,h} = pzBg(this, 'mercader');
     pzHeader(this, 'Apuesta del Mercader', 'mercader', w);
     const p = this._prob;
@@ -80,6 +83,13 @@ class PuzzleApuesta extends Phaser.Scene {
     this._rollsDone = 0;
     this._maxRolls  = 3;
     this._rolling   = false;
+    this._slotW = 164; this._slotH = 20; this._dieS = 40;
+    if (pz) {
+      this._buildInfo(w, h);
+      this._createMovil(p, w, h);
+      pzCompactoFin(this);
+      return;
+    }
 
     /* Botón info + overlay */
     this._buildInfo(w, h);
@@ -101,6 +111,103 @@ class PuzzleApuesta extends Phaser.Scene {
     this._buildSimLeft(258, p);
     this._buildInfoRight(738, p);
     this._buildBottom(w, p);
+  }
+
+  /* ══ Teléfono: contrato + simulación a la izquierda; valor esperado, pregunta y respuestas a la derecha ══ */
+  _createMovil(p, w, h) {
+    const Z = this._pz.Z, L = Z.ill, U = Z.ui;
+    const cxL = L.x + L.w/2, xR = U.x + U.w/2;
+
+    /* ── Izquierda: contrato ── */
+    this._drawContractMovil(cxL, L.y + 54, p);
+
+    /* Barra de probabilidad */
+    this._drawProbBar(cxL, L.y + 120, p, 300, 20, '13px');
+
+    /* Dado (a la izquierda) y 3 resultados (a la derecha) */
+    const dieX = L.x + 66, dieY = L.y + 184;
+    this._dieS = 28;
+    this._dieCont = this.add.container(dieX, dieY).setDepth(5);
+    this._dieG    = this.add.graphics();
+    this._dieCont.add(this._dieG);
+    this._dieFace = 6;
+    this._dieHl   = 'idle';
+    this._redrawDie();
+    this.tweens.add({ targets: this._dieCont, angle: { from:-3, to:3 },
+      duration: 2000, yoyo:true, repeat:-1, ease:'Sine.easeInOut', delay:1200 });
+    this._dieLbl = this.add.text(dieX, dieY + 50, 'Probá el dado', {
+      fontFamily:'Poppins', fontSize:'13px', color:'#9aaabb', align:'center'
+    }).setOrigin(0.5).setDepth(4).setAlpha(0);
+    this.tweens.add({ targets: this._dieLbl, alpha: 1, duration: 400, delay: 1100 });
+
+    this._slotW = 220; this._slotH = 26;
+    const sx = L.x + L.w - 124;
+    this._slots = [];
+    for (let i = 0; i < 3; i++) {
+      const ry = L.y + 156 + i * 30;
+      const sc = this.add.container(sx, ry).setDepth(4).setAlpha(0);
+      const sg = this.add.graphics();
+      sg.fillStyle(0x0a1020, 0.5);
+      sg.fillRoundedRect(-110, -13, 220, 26, 5);
+      sg.lineStyle(1, 0x3a4a5a, 0.55);
+      sg.strokeRoundedRect(-110, -13, 220, 26, 5);
+      const st = this.add.text(0, 0, `Tirada ${i+1}: —`, {
+        fontFamily:'Poppins', fontSize:'14px', color:'#8a9aab'
+      }).setOrigin(0.5);
+      sc.add([sg, st]);
+      this._slots.push({ cont: sc, g: sg, t: st });
+    }
+    this._totalBg = this.add.graphics().setDepth(3).setAlpha(0);
+    this._totalBg.fillStyle(0x080e1a, 0.82);
+    this._totalBg.fillRoundedRect(sx-110, L.y + 246, 220, 28, 7);
+    this._totalBg.lineStyle(1.5, 0x3a4e62, 0.7);
+    this._totalBg.strokeRoundedRect(sx-110, L.y + 246, 220, 28, 7);
+    this._totalTxt = this.add.text(sx, L.y + 260, 'Total: 0 💰', {
+      fontFamily:'Cinzel', fontSize:'14px', color:'#7a98b0', fontStyle:'700'
+    }).setOrigin(0.5).setDepth(4).setAlpha(0);
+
+    /* Botón lanzar (46 px) */
+    this._rollBtn = pzActionBtn(this, cxL, L.y + 298, '🎲  Lanzar dado', 0xD4AF37, () => this._doRoll(p));
+
+    /* ── Derecha: valor esperado, pregunta y respuestas (interfaz fija) ── */
+    pzFijo(this, () => {
+      pzPopIn(this, this.add.text(xR, U.y + 8, 'E(X) = P(ganar)×ganancia − P(perder)×pérdida', {
+        fontFamily:'Poppins', fontSize:'13px', color:'#9fb4c8', align:'center', wordWrap:{ width: U.w - 8 }
+      }).setOrigin(0.5, 0), 700);
+      this._drawEVMeter(xR, U.y + 60, p);
+      pzPreguntaMovil(this, [
+        { txt:'¿Esta apuesta es favorable, desfavorable o neutra?', fam:'Cinzel', color:'#D4AF37', estilo:'600', size:'15px' },
+      ], U.y + 132);
+      pzButtons(this, p.opts, 0, (a) => { this._signDecision(p, a.ok); });
+    });
+  }
+
+  /* Contrato del teléfono: 4 renglones de 13 px */
+  _drawContractMovil(cx, cy, p) {
+    const sw = 372, sh = 94, sx = -sw/2, sy = -sh/2;
+    const cont = this.add.container(cx, cy);
+    const g = this.add.graphics();
+    g.fillGradientStyle(0x352607, 0x352607, 0x231803, 0x231803, 0.97);
+    g.fillRoundedRect(sx, sy, sw, sh, 8);
+    g.lineStyle(1.5, 0x8a6828, 0.85);
+    g.strokeRoundedRect(sx, sy, sw, sh, 8);
+    g.lineStyle(1, 0xD4AF37, 0.18);
+    g.strokeRoundedRect(sx+4, sy+4, sw-8, sh-8, 6);
+    cont.add(g);
+    const mk = (x, y, txt, col, fam, extra) => this.add.text(x, y, txt, Object.assign({
+      fontFamily: fam || 'Poppins', fontSize:'13px', color: col, align:'center', wordWrap:{ width: sw - 30 }
+    }, extra || {})).setOrigin(0.5);
+    const t1 = mk(0, sy+14, '⚔  Contrato de Apuesta  ⚔', '#F5D97A', 'Cinzel', { fontStyle:'600', letterSpacing:1 });
+    const t2 = mk(0, sy+36, `Condición: ${p.desc}`, '#e6c888');
+    const t3 = mk(-sw*0.31, sy+62, `P(ganar): ${p.pN}/${p.pD}`, '#9cc2dc');
+    const t4 = mk(0, sy+62, `💰 Ganás: +${p.gan}`, '#58e868');
+    const t5 = mk(sw*0.31, sy+62, `💸 Perdés: −${p.pago}`, '#f07878');
+    const t6 = mk(0, sy+82, `E(X) = (${p.pN}/${p.pD})×${p.gan} − (${p.pD-p.pN}/${p.pD})×${p.pago}`, '#8aa0b0');
+    const texts = [t1,t2,t3,t4,t5,t6];
+    texts.forEach(t => { t.setAlpha(0); cont.add(t); });
+    cont.scaleY = 0.04; cont.setAlpha(0);
+    this.tweens.add({ targets: cont, scaleY: 1, alpha: 1, duration: 520, ease: 'Back.easeOut',
+      onComplete: () => texts.forEach((t,i) => this.tweens.add({ targets: t, alpha: 1, duration: 270, delay: i*55 })) });
   }
 
   /* ══ Contrato compacto (tira superior, ancho completo) ══ */
@@ -217,8 +324,8 @@ class PuzzleApuesta extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(4).setAlpha(0);
   }
 
-  _drawProbBar(cx, cy, p) {
-    const bw = 172, bh = 14;
+  _drawProbBar(cx, cy, p, bwArg, bhArg, fsArg) {
+    const bw = bwArg || 172, bh = bhArg || 14;
     const cont = this.add.container(cx, cy).setAlpha(0).setDepth(2);
     const g = this.add.graphics();
     const winW = Math.max(6, (p.pN / p.pD) * bw);
@@ -232,10 +339,10 @@ class PuzzleApuesta extends Phaser.Scene {
     g.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 5);
     cont.add(g);
     const wl = this.add.text(-bw/2 + winW/2, 0, `${p.pN}/${p.pD} ganar`, {
-      fontFamily:'Poppins', fontSize:'7.5px', color:'#50d870', fontStyle:'700'
+      fontFamily:'Poppins', fontSize: fsArg || '7.5px', color:'#50d870', fontStyle:'700'
     }).setOrigin(0.5);
     const ll = this.add.text(-bw/2 + winW + (bw-winW)/2, 0, 'perder', {
-      fontFamily:'Poppins', fontSize:'7.5px', color:'#d05050'
+      fontFamily:'Poppins', fontSize: fsArg || '7.5px', color:'#d05050'
     }).setOrigin(0.5);
     cont.add([wl, ll]);
     this.tweens.add({ targets: cont, alpha: 1, duration: 380, delay: 1000 });
@@ -243,7 +350,7 @@ class PuzzleApuesta extends Phaser.Scene {
 
   _redrawDie() {
     const g = this._dieG;
-    const s = 40, face = this._dieFace, hl = this._dieHl;
+    const s = this._dieS || 40, K = s / 40, face = this._dieFace, hl = this._dieHl;
     g.clear();
     /* Sombra */
     g.fillStyle(0x000000, 0.38);
@@ -271,7 +378,7 @@ class PuzzleApuesta extends Phaser.Scene {
     /* Puntos (pips) */
     const pipCol = hl==='win' ? 0x80ffaa : hl==='lose' ? 0xff8080 : 0xa8c4de;
     g.fillStyle(pipCol, 0.96);
-    const r = 5.5;
+    const r = 5.5 * K;
     const pips = {
       1: [[0,0]],
       2: [[-14,-14],[14,14]],
@@ -280,7 +387,7 @@ class PuzzleApuesta extends Phaser.Scene {
       5: [[-14,-14],[14,-14],[0,0],[-14,14],[14,14]],
       6: [[-14,-13],[14,-13],[-14,0],[14,0],[-14,13],[14,13]],
     };
-    (pips[face] || pips[1]).forEach(([dx,dy]) => g.fillCircle(dx, dy, r));
+    (pips[face] || pips[1]).forEach(([dx,dy]) => g.fillCircle(dx * K, dy * K, r));
   }
 
   _doRoll(p) {
@@ -339,9 +446,9 @@ class PuzzleApuesta extends Phaser.Scene {
         const brCol = won ? 0x40e070 : 0xd04040;
         slot.g.clear();
         slot.g.fillStyle(bgCol, 0.72);
-        slot.g.fillRoundedRect(-82, -10, 164, 20, 4);
+        slot.g.fillRoundedRect(-this._slotW/2, -this._slotH/2, this._slotW, this._slotH, 4);
         slot.g.lineStyle(1.5, brCol, 0.72);
-        slot.g.strokeRoundedRect(-82, -10, 164, 20, 4);
+        slot.g.strokeRoundedRect(-this._slotW/2, -this._slotH/2, this._slotW, this._slotH, 4);
         slot.t.setText(`${won?'✓':'✗'} Tirada ${idx+1}: ${won?'+':'-'}${won?p.gan:p.pago} 💰`);
         slot.t.setColor(wCol);
         slot.cont.setAlpha(0);
@@ -411,7 +518,8 @@ class PuzzleApuesta extends Phaser.Scene {
   }
 
   _drawEVMeter(cx, cy, p) {
-    const barW = 278, barH = 12;
+    const pzm = this._pz;
+    const barW = pzm ? 300 : 278, barH = pzm ? 14 : 12;
     const cont = this.add.container(cx, cy).setAlpha(0).setDepth(3);
 
     const bg = this.add.graphics();
@@ -427,10 +535,10 @@ class PuzzleApuesta extends Phaser.Scene {
     bg.lineBetween(0, -barH/2-7, 0, barH/2+7);
     cont.add(bg);
 
-    const negL = this.add.text(-barW/2-9, 0, '−', {fontFamily:'Cinzel',fontSize:'13px',color:'#b84040',fontStyle:'700'}).setOrigin(1,0.5);
-    const posL = this.add.text( barW/2+9, 0, '+', {fontFamily:'Cinzel',fontSize:'13px',color:'#38a856',fontStyle:'700'}).setOrigin(0,0.5);
-    const ll   = this.add.text(-barW/2, barH/2+7, 'DESFAVORABLE', {fontFamily:'Poppins',fontSize:'7px',color:'#7a2828',letterSpacing:0.8}).setOrigin(0,0);
-    const rl   = this.add.text( barW/2, barH/2+7, 'FAVORABLE',    {fontFamily:'Poppins',fontSize:'7px',color:'#287848',letterSpacing:0.8}).setOrigin(1,0);
+    const negL = this.add.text(-barW/2-9, 0, '−', {fontFamily:'Cinzel',fontSize: pzm ? '16px' : '13px',color:'#b84040',fontStyle:'700'}).setOrigin(1,0.5);
+    const posL = this.add.text( barW/2+9, 0, '+', {fontFamily:'Cinzel',fontSize: pzm ? '16px' : '13px',color:'#38a856',fontStyle:'700'}).setOrigin(0,0.5);
+    const ll   = this.add.text(-barW/2, barH/2+7, 'DESFAVORABLE', {fontFamily:'Poppins',fontSize: pzm ? '11px' : '7px',color: pzm ? '#d07070' : '#7a2828',letterSpacing:0.8}).setOrigin(0,0);
+    const rl   = this.add.text( barW/2, barH/2+7, 'FAVORABLE',    {fontFamily:'Poppins',fontSize: pzm ? '11px' : '7px',color: pzm ? '#58c888' : '#287848',letterSpacing:0.8}).setOrigin(1,0);
     cont.add([negL,posL,ll,rl]);
 
     /* Marcador diamante */
@@ -440,11 +548,11 @@ class PuzzleApuesta extends Phaser.Scene {
     mk.fillTriangle(0, 9, 9,0, -9,0);
     cont.add(mk);
 
-    const evTxt = this.add.text(0, barH/2+28, 'E(X) = ?', {
-      fontFamily:'Cinzel', fontSize:'14px', color:'#5a7888', fontStyle:'700'
+    const evTxt = this.add.text(0, barH/2 + (pzm ? 32 : 28), 'E(X) = ?', {
+      fontFamily:'Cinzel', fontSize: pzm ? '17px' : '14px', color: pzm ? '#8aa8b8' : '#5a7888', fontStyle:'700'
     }).setOrigin(0.5);
-    const evForm = this.add.text(0, barH/2+48, '', {
-      fontFamily:'Poppins', fontSize:'9.5px', color:'#304858', align:'center'
+    const evForm = this.add.text(0, barH/2 + (pzm ? 54 : 48), '', {
+      fontFamily:'Poppins', fontSize: pzm ? '13px' : '9.5px', color:'#304858', align:'center'
     }).setOrigin(0.5);
     cont.add([evTxt, evForm]);
 
@@ -472,7 +580,7 @@ class PuzzleApuesta extends Phaser.Scene {
           mk.fillTriangle(0,-10, 10,0, -10,0);
           mk.fillTriangle(0, 10, 10,0, -10,0);
           pzBounceScale(this, evTxt, 1.3, 240);
-          if (p.ev !== 0) pzBurst(this, cx+targetX, cy, [fHex, 0xffffff], 20, 6, 5);
+          if (p.ev !== 0) pzBurst(this, cx+targetX, cy, [fHex, 0xffffff], 20, 6, 5, !!pzm);
         }
       });
     });
@@ -499,7 +607,14 @@ class PuzzleApuesta extends Phaser.Scene {
 
   /* ══ Decisión: firmar o rechazar el contrato (Opción A) ══ */
   _signDecision(p, classOk) {
+    // Teléfono: el contrato firmado es interfaz (cubre toda la pantalla, sin la ilustración).
+    if (this._pz && !this._pzEnFijo) {
+      this._pzEnFijo = true;
+      try { return pzFijo(this, () => this._signDecision(p, classOk)); } finally { this._pzEnFijo = false; }
+    }
+    const pzs = this._pz;
     const w = this.scale.width, h = this.scale.height;
+    if (pzs && pzs.cams) pzs.cams.ill.setVisible(false);
 
     /* Contexto de puntaje */
     const _md     = this._data && this._data.modoArcade;
@@ -510,12 +625,12 @@ class PuzzleApuesta extends Phaser.Scene {
     const simTotal = this._simTotal;
 
     /* Overlay */
-    const dim = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0).setDepth(40);
+    const dim = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0).setDepth(pzs ? 55 : 40);
     this.tweens.add({ targets: dim, fillAlpha: 0.7, duration: 300 });
     snd_item && snd_item();
 
-    const pw = 560, ph = 320, px = w/2 - pw/2, py = h/2 - ph/2;
-    const cont = this.add.container(w/2, h/2).setDepth(41);
+    const pw = pzs ? Math.min(w - 24, 640) : 560, ph = pzs ? Math.min(h - 24, 310) : 320, px = w/2 - pw/2, py = h/2 - ph/2;
+    const cont = this.add.container(w/2, h/2).setDepth(pzs ? 56 : 41);
     const panel = this.add.graphics();
     panel.fillGradientStyle(0x241803, 0x241803, 0x140d02, 0x140d02, 1);
     panel.fillRoundedRect(-pw/2, -ph/2, pw, ph, 14);
@@ -525,30 +640,30 @@ class PuzzleApuesta extends Phaser.Scene {
     panel.strokeRoundedRect(-pw/2+5, -ph/2+5, pw-10, ph-10, 10);
     cont.add(panel);
 
-    const title = this.add.text(0, -ph/2+34, '✍  El Contrato del Mercader', {
-      fontFamily:'Cinzel', fontSize:'18px', color:'#F5D97A', fontStyle:'700'
+    const title = this.add.text(0, -ph/2 + (pzs ? 28 : 34), '✍  El Contrato del Mercader', {
+      fontFamily:'Cinzel', fontSize: pzs ? '17px' : '18px', color:'#F5D97A', fontStyle:'700'
     }).setOrigin(0.5);
     cont.add(title);
 
     const simCol = simTotal > 0 ? '#50e880' : simTotal < 0 ? '#e85050' : '#D4AF37';
     const simSign = simTotal >= 0 ? '+' : '';
-    const l1 = this.add.text(0, -ph/2+74,
+    const l1 = this.add.text(0, -ph/2 + (pzs ? 66 : 74),
       `Probaste el contrato ${this._rollsDone} ${this._rollsDone===1?'vez':'veces'}: resultado ${simSign}${simTotal} monedas.`, {
-      fontFamily:'Poppins', fontSize:'12px', color: simCol, align:'center', wordWrap:{ width:pw-60 }
+      fontFamily:'Poppins', fontSize: pzs ? '14px' : '12px', color: simCol, align:'center', wordWrap:{ width:pw-(pzs ? 48 : 60) }
     }).setOrigin(0.5);
-    const l2 = this.add.text(0, -ph/2+104,
+    const l2 = this.add.text(0, -ph/2 + (pzs ? 100 : 104),
       `Tu análisis: E(X) = ${p.evStr} monedas por jugada.`, {
-      fontFamily:'Poppins', fontSize:'12px', color:'#b8c8d8', align:'center'
+      fontFamily:'Poppins', fontSize: pzs ? '14px' : '12px', color:'#c3d2e2', align:'center'
     }).setOrigin(0.5);
-    const l3 = this.add.text(0, -ph/2+134,
+    const l3 = this.add.text(0, -ph/2 + (pzs ? 134 : 134),
       'Si firmás, esas jugadas cuentan de verdad. ¿Qué decidís?', {
-      fontFamily:'Poppins', fontSize:'11px', color:'#8a9ab0', align:'center', wordWrap:{ width:pw-60 }
+      fontFamily:'Poppins', fontSize: pzs ? '14px' : '11px', color: pzs ? '#a9b8c8' : '#8a9ab0', align:'center', wordWrap:{ width:pw-(pzs ? 48 : 60) }
     }).setOrigin(0.5);
     cont.add([l1, l2, l3]);
 
     /* Botones Firmar / Rechazar */
     const mkBtn = (label, dx, accent, onClick) => {
-      const bw = 180, bh = 48, by = ph/2 - 50;
+      const bw = pzs ? 200 : 180, bh = pzs ? 46 : 48, by = pzs ? ph/2 - 40 : ph/2 - 50;
       const g = this.add.graphics();
       const draw = (hov) => {
         g.clear();
@@ -560,11 +675,11 @@ class PuzzleApuesta extends Phaser.Scene {
       draw(false);
       const ah = '#' + accent.toString(16).padStart(6,'0');
       const t = this.add.text(dx, by, label, {
-        fontFamily:'Cinzel', fontSize:'15px', color: ah, fontStyle:'700'
+        fontFamily:'Cinzel', fontSize: pzs ? '16px' : '15px', color: ah, fontStyle:'700'
       }).setOrigin(0.5);
       cont.add([g, t]);
       const hit = this.add.rectangle(w/2 + dx, h/2 + by, bw, bh, 0, 0)
-        .setDepth(43).setInteractive({ useHandCursor:true });
+        .setDepth(pzs ? 58 : 43).setInteractive({ useHandCursor:true });
       hit.on('pointerover', () => { draw(true); snd_item && snd_item(); });
       hit.on('pointerout',  () => draw(false));
       hit.on('pointerup',   () => { hit.destroy(); onClick(); });
@@ -598,14 +713,16 @@ class PuzzleApuesta extends Phaser.Scene {
         }});
     };
 
-    mkBtn('✍ Firmar', -110, 0x40c060, () => finalize(true));
-    mkBtn('✗ Rechazar', 110, 0xc05040, () => finalize(false));
+    mkBtn('✍ Firmar', pzs ? -115 : -110, 0x40c060, () => finalize(true));
+    mkBtn('✗ Rechazar', pzs ? 115 : 110, 0xc05040, () => finalize(false));
 
-    const hint = this.add.text(0, ph/2 - 16,
-      'Firmá si conviene (E(X) > 0), rechazá si no (E(X) < 0).', {
-      fontFamily:'Poppins', fontSize:'9.5px', color:'#6a5a30', fontStyle:'italic'
-    }).setOrigin(0.5);
-    cont.add(hint);
+    if (!pzs) {
+      const hint = this.add.text(0, ph/2 - 16,
+        'Firmá si conviene (E(X) > 0), rechazá si no (E(X) < 0).', {
+        fontFamily:'Poppins', fontSize:'9.5px', color:'#6a5a30', fontStyle:'italic'
+      }).setOrigin(0.5);
+      cont.add(hint);
+    }
 
     cont.setScale(0.5); cont.setAlpha(0);
     this.tweens.add({ targets: cont, scaleX:1, scaleY:1, alpha:1, duration:420, ease:'Back.easeOut' });
@@ -613,6 +730,22 @@ class PuzzleApuesta extends Phaser.Scene {
 
   /* ══ Botón ? + overlay explicativo ══ */
   _buildInfo(w, h) {
+    if (this._pz) {
+      _pzInfoMovil(this, 'mercader', 'Valor esperado y el contrato', [
+        '◆ ¿Qué es el valor esperado E(X)?',
+        'Es cuánto ganás o perdés en PROMEDIO por jugada, a la larga:',
+        'E(X) = P(ganar) × ganancia − P(perder) × pérdida',
+        'EV > 0 conviene (favorable) · EV < 0 no conviene (desfavorable) · EV = 0 es justa (neutra).',
+        '',
+        '◆ El contrato y el dado',
+        'El contrato es la apuesta del Mercader. Podés probarlo tirando el dado 3 veces: cada tirada simula jugar el contrato una vez. Esas tiradas resuelven el contrato de verdad si lo firmás.',
+        '',
+        '◆ Tu objetivo',
+        '1) Clasificá la apuesta: favorable, desfavorable o neutra.',
+        '2) Decidí: firmá las que convienen, rechazá las que no. Firmar una buena apuesta suma puntos; firmar una mala los resta.',
+      ]);
+      return;
+    }
     const bx = w - 40, by = 30;
     const btn = this.add.graphics().setDepth(50);
     const drawBtn = (hov) => {
@@ -683,3 +816,5 @@ class PuzzleApuesta extends Phaser.Scene {
     closeTxt.on('pointerup', () => show(false));
   }
 }
+
+PuzzleApuesta.DISENO_MOVIL = true;

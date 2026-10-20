@@ -44,6 +44,9 @@ class PuzzleUrna extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: la urna y su leyenda se ven en una ventana a la izquierda; la pregunta y las respuestas, a la derecha.
+    const _w = this.scale.width;
+    const pz = pzCompactoInit(this, { x:_w/2 - 200, y:148, w:400, h:296 });
     const {w,h} = pzBg(this, 'mercader');
     pzHeader(this, 'La Urna Misteriosa', 'mercader', w);
     pzInfoButton(this, 'mercader', 'La Urna Misteriosa', [
@@ -66,6 +69,12 @@ class PuzzleUrna extends Phaser.Scene {
     ]);
 
     const p = this._prob;
+    if (pz) {
+      pzPreguntaMovil(this, [
+        { txt:`La urna contiene ${p.total} bolas de distintos colores.`, color:'#a9b8c8' },
+        { txt:`¿Cuál es la probabilidad de sacar una bola ${p.colorName}?`, fam:'Cinzel', color:'#D4AF37', estilo:'600', size:'15px' },
+      ]);
+    } else {
     pzPopIn(this, this.add.text(w/2, 96,
       `La urna contiene ${p.total} bolas de distintos colores.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center'
@@ -74,6 +83,7 @@ class PuzzleUrna extends Phaser.Scene {
       `¿Cuál es la probabilidad de sacar una bola ${p.colorName}?`, {
       fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'600', align:'center'
     }).setOrigin(0.5), 160);
+    }
 
     /* ── Urna primero (queda al fondo) ── */
     const urnCY = 286;
@@ -89,7 +99,7 @@ class PuzzleUrna extends Phaser.Scene {
     const colors = Object.entries(p.cfg).filter(([,v]) => v > 0).map(([k,v]) => ({ key:k, col:BALL_COLORS[k], n:v }));
 
     pzPopIn(this, this.add.text(w/2, trayY - 30, 'Bolas extraídas', {
-      fontFamily:'Poppins', fontSize:'10px', color:'#6a7c8c', fontStyle:'600'
+      fontFamily:'Poppins', fontSize: pz ? '13px' : '10px', color: pz ? '#9aaabb' : '#6a7c8c', fontStyle:'600'
     }).setOrigin(0.5), 1300);
 
     /* ── Botón sacar bola (justo debajo de los indicadores) ── */
@@ -138,7 +148,7 @@ class PuzzleUrna extends Phaser.Scene {
               const NAMES = {r:'Roja',b:'Azul',g:'Verde',y:'Amarilla'};
               const isTarget = picked.key === p.pick.key;
               const lbl = this.add.text(bEndX, bEndY + 18, NAMES[picked.key], {
-                fontFamily:'Poppins', fontSize:'9px',
+                fontFamily:'Poppins', fontSize: pz ? '12px' : '9px',
                 color: isTarget ? '#40e870' : '#9ab0c0', fontStyle: isTarget ? '700' : '400'
               }).setOrigin(0.5).setAlpha(0).setDepth(7);
               this.tweens.add({ targets: lbl, alpha: 1, y: bEndY + 20, duration: 280, delay: 100 });
@@ -152,6 +162,7 @@ class PuzzleUrna extends Phaser.Scene {
     pzButtons(this, p.opts, 458, (a)=>{
       pzResult(this, a.ok, p.explain, PUZZLE_CATALOG[0].recompensa.hp, 0);
     });
+    pzCompactoFin(this);
   }
 
   _drawUrn(cx, cy, cfg, targetKey) {
@@ -229,7 +240,7 @@ class PuzzleUrna extends Phaser.Scene {
     // Leyenda (indicadores) centrada respecto a la urna
     const BALL_PLURAL = {r:'rojas', b:'azules', g:'verdes', y:'amarillas'};
     const entries = Object.entries(cfg).filter(([,v]) => v > 0);
-    const ITEM_SP = 86;
+    const ITEM_SP = this._pz ? 92 : 86;
     const startX  = cx - (entries.length - 1) * ITEM_SP / 2 - 28;
     const legendY = cy + 46;
     entries.forEach(([k,v], li) => {
@@ -240,7 +251,7 @@ class PuzzleUrna extends Phaser.Scene {
       lg.fillCircle(0, 0, 7);
       if (isT) { lg.lineStyle(2, 0xD4AF37, 0.9); lg.strokeCircle(0, 0, 9); }
       const lt = this.add.text(12, -7, `${v} ${v > 1 ? BALL_PLURAL[k] : BALL_NAMES[k]}`, {
-        fontFamily:'Poppins', fontSize:'10px', color: isT ? '#D4AF37' : '#9ab0c0',
+        fontFamily:'Poppins', fontSize: this._pz ? '13px' : '10px', color: isT ? '#D4AF37' : '#9ab0c0',
         fontStyle: isT ? '700' : '400'
       });
       item.add([lg, lt]);
@@ -248,3 +259,5 @@ class PuzzleUrna extends Phaser.Scene {
     });
   }
 }
+
+PuzzleUrna.DISENO_MOVIL = true;

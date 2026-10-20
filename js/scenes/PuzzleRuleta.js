@@ -50,6 +50,9 @@ class PuzzleRuleta extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: la ruleta se ve en una ventana a la izquierda; pregunta y respuestas, a la derecha.
+    const _w = this.scale.width;
+    const pz = pzCompactoInit(this, { x:_w/2 - 135, y:118, w:270, h:312 });
     const {w,h} = pzBg(this, 'mercader');
     pzHeader(this, 'Ruleta del Reino', 'mercader', w);
     pzInfoButton(this, 'mercader', 'Ruleta del Reino', [
@@ -73,6 +76,12 @@ class PuzzleRuleta extends Phaser.Scene {
     const p = this._prob;
 
     /* ── Pregunta ── */
+    if (pz) {
+      pzPreguntaMovil(this, [
+        { txt:`La ruleta tiene ${p.wheel.total} sectores del mismo tamaño.`, color:'#a9b8c8' },
+        { txt:`¿Cuál es la probabilidad de caer en el sector ${p.ask.n}?`, fam:'Cinzel', color:'#D4AF37', estilo:'600', size:'15px' },
+      ]);
+    } else {
     pzPopIn(this, this.add.text(w/2, 94,
       `La ruleta tiene ${p.wheel.total} sectores del mismo tamaño.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center'
@@ -81,6 +90,7 @@ class PuzzleRuleta extends Phaser.Scene {
       `¿Cuál es la probabilidad de caer en el sector ${p.ask.n}?`, {
       fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'600', align:'center'
     }).setOrigin(0.5), 160);
+    }
 
     /* ── Ruleta visual ── */
     this._drawWheel(w/2, 258, 112, p.wheel.sects, p.wheel.total, p.ask);
@@ -89,6 +99,7 @@ class PuzzleRuleta extends Phaser.Scene {
     pzButtons(this, p.opts, 480, (a)=>{
       pzResult(this, a.ok, p.explain, PUZZLE_CATALOG[3].recompensa.hp, 3);
     });
+    pzCompactoFin(this);
   }
 
   _drawWheel(cx, cy, r, sects, total, ask) {
@@ -152,7 +163,7 @@ class PuzzleRuleta extends Phaser.Scene {
       const ly     = Math.sin(midA) * (r * 0.62);
       const isAsk  = s.n === ask.n;
       const lbl    = this.add.text(lx, ly, `${s.n}\n${s.parts}`, {
-        fontFamily:'Poppins', fontSize: isAsk ? '11px' : '10px',
+        fontFamily:'Poppins', fontSize: this._pz ? (isAsk ? '14px' : '13px') : (isAsk ? '11px' : '10px'),
         color: isAsk ? '#ffffff' : '#e8e0d8', fontStyle: isAsk ? '800' : '700',
         align:'center', stroke:'#000000', strokeThickness: isAsk ? 4 : 3
       }).setOrigin(0.5);
@@ -180,7 +191,7 @@ class PuzzleRuleta extends Phaser.Scene {
 
     /* ── Popup "cayó en X" ── */
     const popupTxt = this.add.text(cx, cy + r + 30, '', {
-      fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700'
+      fontFamily:'Cinzel', fontSize: this._pz ? '16px' : '12px', color:'#D4AF37', fontStyle:'700'
     }).setOrigin(0.5).setAlpha(0).setDepth(6);
 
     /* ── Función detectar sector ── */
@@ -244,7 +255,7 @@ class PuzzleRuleta extends Phaser.Scene {
 
     /* Hint */
     const hint = this.add.text(cx, cy + r + 52, '↻ Toca para girar', {
-      fontFamily:'Poppins', fontSize:'10px', color:'#8a6a40', fontStyle:'600'
+      fontFamily:'Poppins', fontSize: this._pz ? '13px' : '10px', color: this._pz ? '#b89868' : '#8a6a40', fontStyle:'600'
     }).setOrigin(0.5).setAlpha(0);
     this.time.delayedCall(2900, () => this.tweens.add({ targets: hint, alpha: 1, duration: 400 }));
 
@@ -278,3 +289,5 @@ class PuzzleRuleta extends Phaser.Scene {
     });
   }
 }
+
+PuzzleRuleta.DISENO_MOVIL = true;

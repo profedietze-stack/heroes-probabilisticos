@@ -32,6 +32,9 @@ class PuzzlePuertas extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: todo se dibuja directo en coordenadas de pantalla (la ventana de ilustración ocupa el ancho).
+    const _w = this.scale.width, _h = this.scale.height;
+    const pz = pzCompactoInit(this, { x:8, y:44, w:_w - 16, h:_h - 52 }, { ancho:true });
     const { w, h } = pzBg(this, 'oraculo');
     this._w = w; this._h = h;
     pzHeader(this, 'Las Puertas del Oráculo', 'oraculo', w);
@@ -65,48 +68,51 @@ class PuzzlePuertas extends Phaser.Scene {
     this._doors = [];
 
     /* Texto de instrucción */
-    this._prompt = this.add.text(w/2, 92, '', {
-      fontFamily:'Cinzel', fontSize:'15px', color:'#70c8e0', fontStyle:'600',
-      align:'center', wordWrap:{ width:w*0.8 }
+    this._prompt = this.add.text(w/2, pz ? 60 : 92, '', {
+      fontFamily:'Cinzel', fontSize: pz ? '16px' : '15px', color:'#70c8e0', fontStyle:'600',
+      align:'center', wordWrap:{ width: pz ? w - 40 : w*0.8 }
     }).setOrigin(0.5);
 
     /* Contador de rondas */
-    this._roundTxt = this.add.text(w/2, 120, '', {
-      fontFamily:'Poppins', fontSize:'11px', color:'#5a6a78'
+    this._roundTxt = this.add.text(w/2, pz ? 86 : 120, '', {
+      fontFamily:'Poppins', fontSize: pz ? '13px' : '11px', color: pz ? '#9aaabb' : '#5a6a78'
     }).setOrigin(0.5);
 
     /* Marcadores (cambiando / quedándose) */
-    this._buildScoreboard(w, 470);
+    this._buildScoreboard(w, pz ? 282 : 470);
 
     /* Zona de botones de acción */
-    this._actionY = 556;
+    this._actionY = pz ? 334 : 556;
 
-    this._buildDoors(w, 318);
+    this._buildDoors(w, pz ? 168 : 318);
     this._startRound();
+    pzCompactoFin(this);
   }
 
   /* ══ Marcador en vivo ══ */
   _buildScoreboard(w, y) {
+    const pz = this._pz;
+    const BW2 = pz ? 120 : 110, BH2 = pz ? 22 : 26;
     const mk = (cx, label, col) => {
       const cont = this.add.container(cx, y).setDepth(3);
       const g = this.add.graphics();
       g.fillStyle(0x07101e, 0.82);
-      g.fillRoundedRect(-110, -26, 220, 52, 8);
+      g.fillRoundedRect(-BW2, -BH2, BW2*2, BH2*2, 8);
       g.lineStyle(1.2, col, 0.4);
-      g.strokeRoundedRect(-110, -26, 220, 52, 8);
-      const lt = this.add.text(0, -13, label, {
-        fontFamily:'Poppins', fontSize:'10px', color:'#7a8a98'
+      g.strokeRoundedRect(-BW2, -BH2, BW2*2, BH2*2, 8);
+      const lt = this.add.text(0, pz ? -10 : -13, label, {
+        fontFamily:'Poppins', fontSize: pz ? '13px' : '10px', color: pz ? '#9aaabb' : '#7a8a98'
       }).setOrigin(0.5);
-      const vt = this.add.text(0, 7, '0 / 0', {
-        fontFamily:'Cinzel', fontSize:'15px', fontStyle:'700',
+      const vt = this.add.text(0, pz ? 9 : 7, '0 / 0', {
+        fontFamily:'Cinzel', fontSize: pz ? '16px' : '15px', fontStyle:'700',
         color:'#' + col.toString(16).padStart(6,'0')
       }).setOrigin(0.5);
       cont.add([g, lt, vt]);
       pzPopIn(this, cont, 600, 16);
       return vt;
     };
-    this._swTxt = mk(w/2 - 124, 'Cambiando ganaste', 0x40c8a0);
-    this._stTxt = mk(w/2 + 124, 'Quedándote ganaste', 0xc89040);
+    this._swTxt = mk(w/2 - (pz ? 130 : 124), 'Cambiando ganaste', 0x40c8a0);
+    this._stTxt = mk(w/2 + (pz ? 130 : 124), 'Quedándote ganaste', 0xc89040);
   }
 
   _updateScoreboard() {
@@ -118,10 +124,11 @@ class PuzzlePuertas extends Phaser.Scene {
   /* ══ Construcción de puertas ══ */
   _buildDoors(w, cy) {
     const N = this._cfg.doors;
-    const maxRowW = w - 120;
+    const pz = this._pz;
+    const maxRowW = pz ? w - 40 : w - 120;
     const gap = N >= 6 ? 12 : 18;
-    let dw = Math.min(120, Math.floor((maxRowW - gap*(N-1)) / N));
-    dw = Math.max(74, dw);
+    let dw = Math.min(pz ? 84 : 120, Math.floor((maxRowW - gap*(N-1)) / N));
+    dw = Math.max(pz ? 60 : 74, dw);
     const dh = Math.round(dw * 1.5);
     this._dw = dw; this._dh = dh;
     const totalW = N*dw + (N-1)*gap;
@@ -131,8 +138,8 @@ class PuzzlePuertas extends Phaser.Scene {
       const x = startX + i*(dw + gap);
       const cont = this.add.container(x, cy).setDepth(4);
       const g = this.add.graphics();
-      const lbl = this.add.text(0, dh/2 + 16, `Puerta ${i+1}`, {
-        fontFamily:'Poppins', fontSize:'10px', color:'#6a7a88'
+      const lbl = this.add.text(0, dh/2 + (pz ? 14 : 16), `Puerta ${i+1}`, {
+        fontFamily:'Poppins', fontSize: pz ? '13px' : '10px', color: pz ? '#9aaabb' : '#6a7a88'
       }).setOrigin(0.5);
       cont.add([g, lbl]);
 
@@ -328,7 +335,7 @@ class PuzzlePuertas extends Phaser.Scene {
       };
       draw(false);
       const txt = this.add.text(0, 0, def.label, {
-        fontFamily:'Cinzel', fontSize:'14px', fontStyle:'700',
+        fontFamily:'Cinzel', fontSize: this._pz ? '15px' : '14px', fontStyle:'700',
         color:'#' + def.col.toString(16).padStart(6,'0')
       }).setOrigin(0.5);
       cont.add([g, txt]);
@@ -356,11 +363,14 @@ class PuzzlePuertas extends Phaser.Scene {
     /* Recompensa + bookkeeping según modo */
     const reward = this._applyReward(correct, aciertos, rounds);
 
-    const dim = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0).setDepth(20);
+    const pz = this._pz;
+    const sf = pz ? 0 : 1;   // en el teléfono el veredicto es interfaz: cubre toda la pantalla
+    const dim = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0).setDepth(pz ? 55 : 20).setScrollFactor(sf);
     this.tweens.add({ targets:dim, fillAlpha:0.66, duration:320 });
+    if (pz && pz.cams) pz.cams.ill.setVisible(false);
 
-    const bw = 560, bh = 360;
-    const cont = this.add.container(w/2, h/2).setDepth(21);
+    const bw = pz ? Math.min(w - 24, 640) : 560, bh = pz ? Math.min(h - 24, 320) : 360;
+    const cont = this.add.container(w/2, h/2).setDepth(pz ? 56 : 21).setScrollFactor(sf);
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x0a2028, 0x0a2028, 0x05151a, 0x05151a, 1);
     bg.fillRoundedRect(-bw/2, -bh/2, bw, bh, 14);
@@ -368,8 +378,8 @@ class PuzzlePuertas extends Phaser.Scene {
     bg.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 14);
     cont.add(bg);
 
-    const title = this.add.text(0, -bh/2+34, 'El Veredicto del Oráculo', {
-      fontFamily:'Cinzel', fontSize:'20px', color:'#9ad8f0', fontStyle:'700'
+    const title = this.add.text(0, -bh/2+(pz ? 26 : 34), 'El Veredicto del Oráculo', {
+      fontFamily:'Cinzel', fontSize: pz ? '18px' : '20px', color:'#9ad8f0', fontStyle:'700'
     }).setOrigin(0.5);
     cont.add(title);
 
@@ -386,19 +396,19 @@ class PuzzlePuertas extends Phaser.Scene {
       moraleja = `Siempre te quedaste (${stPct}%).\nProbá cambiar: la otra puerta gana ${optPct}% de las veces.`;
     }
 
-    const stats = this.add.text(0, -bh/2+76, [
+    const stats = this.add.text(0, -bh/2+(pz ? 52 : 76), [
       `Ganaste ${aciertos} de ${rounds} rondas.`,
-      '',
+      pz ? '' : '',
       moraleja,
     ].join('\n'), {
-      fontFamily:'Poppins', fontSize:'12.5px', color:'#b8d0dc',
-      align:'center', lineSpacing:5, wordWrap:{ width:bw-70 }
+      fontFamily:'Poppins', fontSize: pz ? '14px' : '12.5px', color:'#c3d6e0',
+      align:'center', lineSpacing: pz ? 3 : 5, wordWrap:{ width:bw-(pz ? 48 : 70) }
     }).setOrigin(0.5, 0);
     cont.add(stats);
 
     /* Recompensa */
-    const rewTxt = this.add.text(0, bh/2-92, reward.label, {
-      fontFamily:'Cinzel', fontSize:'17px', color:reward.color, fontStyle:'700',
+    const rewTxt = this.add.text(0, bh/2-(pz ? 88 : 92), reward.label, {
+      fontFamily:'Cinzel', fontSize: pz ? '16px' : '17px', color:reward.color, fontStyle:'700',
       align:'center'
     }).setOrigin(0.5);
     cont.add(rewTxt);
@@ -409,13 +419,13 @@ class PuzzlePuertas extends Phaser.Scene {
     const drawB = (hov) => {
       btnG.clear();
       btnG.fillStyle(0x0e2a3a, hov?0.96:0.8);
-      btnG.fillRoundedRect(-100, bh/2-54, 200, 38, 9);
+      btnG.fillRoundedRect(-100, bh/2-(pz ? 60 : 54), 200, pz ? 44 : 38, 9);
       btnG.lineStyle(2, 0x70c8e0, hov?1:0.7);
-      btnG.strokeRoundedRect(-100, bh/2-54, 200, 38, 9);
+      btnG.strokeRoundedRect(-100, bh/2-(pz ? 60 : 54), 200, pz ? 44 : 38, 9);
     };
     drawB(false);
-    const btnT = this.add.text(0, bh/2-35, 'Continuar →', {
-      fontFamily:'Cinzel', fontSize:'14px', color:'#9ad8f0', fontStyle:'700'
+    const btnT = this.add.text(0, bh/2-(pz ? 38 : 35), 'Continuar →', {
+      fontFamily:'Cinzel', fontSize: pz ? '16px' : '14px', color:'#9ad8f0', fontStyle:'700'
     }).setOrigin(0.5);
     cont.add([btnG, btnT]);
 
@@ -423,8 +433,8 @@ class PuzzlePuertas extends Phaser.Scene {
     this.tweens.add({ targets:cont, scaleX:1, scaleY:1, alpha:1, duration:460, ease:'Back.easeOut' });
 
     this.time.delayedCall(700, () => {
-      const hit = this.add.rectangle(w/2, h/2 + bh/2 - 35, 200, 38, 0, 0)
-        .setDepth(30).setInteractive({ useHandCursor:true });
+      const hit = this.add.rectangle(w/2, h/2 + bh/2 - (pz ? 38 : 35), 200, pz ? 44 : 38, 0, 0)
+        .setDepth(pz ? 60 : 30).setScrollFactor(sf).setInteractive({ useHandCursor:true });
       hit.on('pointerover', () => { drawB(true); btnT.setColor('#cdeefb'); snd_item&&snd_item(); });
       hit.on('pointerout',  () => { drawB(false); btnT.setColor('#9ad8f0'); });
       hit.on('pointerup',   () => { hit.destroy(); this._exit(correct); });
@@ -497,3 +507,5 @@ class PuzzlePuertas extends Phaser.Scene {
     });
   }
 }
+
+PuzzlePuertas.DISENO_MOVIL = true;

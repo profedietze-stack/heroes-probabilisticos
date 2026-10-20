@@ -82,6 +82,96 @@ function _fraccionesDe(...denominadores) {
   return out;
 }
 
+
+/* ════════════════════════════════════════
+   TELÉFONO APAISADO (lienzo = pantalla real, alto < 500)
+   La pantalla del enigma se reparte entre dos cámaras:
+   · principal (pantalla completa): fondo, pregunta, respuestas y botones: objetos con scrollFactor 0;
+   · "ilustración": una ventana a la izquierda que muestra la parte del mundo donde dibuja el enigma
+     (urna, ruleta, dados…), con el zoom que haga falta para que entre.
+   En escritorio y tablet no se crea nada y todo sigue igual (scene._pz es null).
+════════════════════════════════════════ */
+function pzCompacto(scene){ return scene.scale.height < 500; }
+
+/* Zonas de la pantalla: cabecera arriba, ilustración a la izquierda, pregunta y respuestas a la derecha.
+   Con `ancho` la ilustración usa todo el ancho (enigmas sin cuadrícula de respuestas). */
+function pzZonas(scene, ancho){
+  const w = scene.scale.width, h = scene.scale.height;
+  const top = 44, pad = 8;
+  const rightW = ancho ? 0 : Math.min(400, Math.round(w * 0.5));
+  const illW = ancho ? w - 2*pad : w - rightW - 3*pad;
+  return { w, h, top, pad,
+    ill: { x: pad, y: top, w: illW, h: h - top - pad },
+    ui:  { x: pad + illW + pad, y: top, w: rightW, h: h - top - pad } };
+}
+
+/* Se llama al empezar create(), antes de dibujar nada.
+   rect = zona del mundo (coordenadas del enigma) que contiene la ilustración. Devuelve null en escritorio. */
+function pzCompactoInit(scene, rect, opts){
+  scene._pz = null;
+  if(!pzCompacto(scene)) return null;
+  const Z = pzZonas(scene, opts && opts.ancho);
+  const zoom = Math.min((opts && opts.zoomMax) || 1, Z.ill.w / rect.w, Z.ill.h / rect.h);
+  const pz = { Z, rect, zoom, cams: null, fixed: false };
+  // Lo que se crea dentro de pzFijo() queda fijo a la pantalla (interfaz).
+  pz.onAdd = (go) => { if(pz.fixed) go.setScrollFactor(0); };
+  // Antes de cada dibujo se reparte la cámara de cada objeto según su scrollFactor ACTUAL
+  // (así vale también para lo que se crea tarde o se fija después de crearlo).
+  pz.sync = () => {
+    if(!pz.cams) return;
+    const m = pz.cams.main.id, il = pz.cams.ill.id;
+    const marcar = (go, fijo) => {
+      const f = fijo || go.scrollFactorX === 0;
+      go.cameraFilter = f ? ((go.cameraFilter | il) & ~m) : ((go.cameraFilter | m) & ~il);
+      if(go.list) go.list.forEach(c => marcar(c, f));
+    };
+    scene.children.list.forEach(go => marcar(go, false));
+  };
+  scene.sys.events.on('addedtoscene', pz.onAdd);
+  scene.events.on('postupdate', pz.sync);
+  scene.events.once('shutdown', () => {
+    scene.sys.events.off('addedtoscene', pz.onAdd);
+    scene.events.off('postupdate', pz.sync);
+  });
+  scene._pz = pz;
+  return pz;
+}
+
+/* Ejecuta fn() haciendo que todo lo que cree quede fijo a la pantalla (interfaz). */
+function pzFijo(scene, fn){
+  if(!scene._pz) return fn();
+  const prev = scene._pz.fixed; scene._pz.fixed = true;
+  try { return fn(); } finally { scene._pz.fixed = prev; }
+}
+
+/* Se llama al terminar create(): crea la cámara de la ilustración y reparte los objetos. */
+function pzCompactoFin(scene){
+  const pz = scene._pz;
+  if(!pz) return;
+  const main = scene.cameras.main;
+  const ill = scene.cameras.add(pz.Z.ill.x, pz.Z.ill.y, pz.Z.ill.w, pz.Z.ill.h).setName('ilustracion');
+  ill.setZoom(pz.zoom);
+  ill.centerOn(pz.rect.x + pz.rect.w/2, pz.rect.y + pz.rect.h/2);
+  pz.cams = { main, ill };
+  pz.sync();
+  ill.fadeIn(400, 0, 0, 0);
+}
+
+/* Pregunta del enigma en el teléfono: textos apilados arriba de la zona derecha. Devuelve el y libre. */
+function pzPreguntaMovil(scene, items, y0){
+  const U = scene._pz.Z.ui;
+  let y = (y0 === undefined) ? U.y + 2 : y0;
+  items.forEach((it, i) => {
+    const t = scene.add.text(U.x + U.w/2, y, it.txt, {
+      fontFamily: it.fam || 'Poppins', fontSize: it.size || '14px', color: it.color || '#c0cad8',
+      fontStyle: it.estilo || 'normal', align:'center', wordWrap:{ width: U.w - 8 }, lineSpacing: 3
+    }).setOrigin(0.5, 0).setScrollFactor(0);
+    pzPopIn(scene, t, 80 + i*80);
+    y += t.height + 8;
+  });
+  return y;
+}
+
 /* ════════════════════════════════════════
    HELPERS DE ANIMACIÓN (reusables por escenas)
 ════════════════════════════════════════ */
@@ -112,8 +202,9 @@ function pzFloatY(scene, obj, amp = 8, dur = 2600, delay = 0) {
 }
 
 /* Estallido de partículas radiales en (x,y). */
-function pzBurst(scene, x, y, color = 0xD4AF37, count = 26, depth = 30, spread = 6) {
+function pzBurst(scene, x, y, color = 0xD4AF37, count = 26, depth = 30, spread = 6, fijo = false) {
   const g = scene.add.graphics().setDepth(depth);
+  if (fijo) g.setScrollFactor(0);
   const parts = [];
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2;
@@ -189,7 +280,11 @@ function pzBounceScale(scene, obj, scale, dur) {
 
 /* Botón de acción secundaria (lanzar, sacar, etc). Retorna el container. */
 function pzActionBtn(scene, cx, cy, label, accentNum, onClick) {
-  var BW = 176, BH = 34;
+  var BW = 176, BH = 34, FS = '12px';
+  if (scene._pz) {   // teléfono: 46 px de alto reales (el zoom de la ilustración los achica)
+    var K = 1 / scene._pz.zoom;
+    BW = Math.ceil(190 * K); BH = Math.ceil(46 * K); FS = Math.ceil(14 * K) + 'px';
+  }
   var cont = scene.add.container(cx, cy).setDepth(4);
   var g    = scene.add.graphics();
 
@@ -207,7 +302,7 @@ function pzActionBtn(scene, cx, cy, label, accentNum, onClick) {
   draw(false);
 
   var txt = scene.add.text(0, 0, label, {
-    fontFamily: 'Cinzel', fontSize: '12px', color: '#cdd8ee', fontStyle: '600'
+    fontFamily: 'Cinzel', fontSize: FS, color: '#cdd8ee', fontStyle: '600'
   }).setOrigin(0.5);
   cont.add([g, txt]);
   cont.setSize(BW, BH).setInteractive({ useHandCursor: true });
@@ -266,6 +361,7 @@ function pzScanBeam(scene, x1, y, x2, height, duration, onStep, onComplete) {
    lines: array de strings. Líneas que empiezan con '◆' = subtítulo.
 ════════════════════════════════════════ */
 function pzInfoButton(scene, npcKey, titulo, lines) {
+  if (scene._pz) return _pzInfoMovil(scene, npcKey, titulo, lines);
   const w = scene.scale.width, h = scene.scale.height;
   const accentNum = npcKey === 'oraculo' ? 0x4aa0d8 : 0x8a6828;
   const accentBri = npcKey === 'oraculo' ? 0x70c8e0 : 0xD4AF37;
@@ -333,10 +429,37 @@ function pzInfoButton(scene, npcKey, titulo, lines) {
   return { show };
 }
 
+/* Teléfono: la ayuda es un modal con scroll (letra de 14 px) y el "?" mide 44 px. */
+function _pzInfoMovil(scene, npcKey, titulo, lines) {
+  const w = scene.scale.width;
+  const accentNum = npcKey === 'oraculo' ? 0x4aa0d8 : 0x8a6828;
+  const accentBri = npcKey === 'oraculo' ? 0x70c8e0 : 0xD4AF37;
+  const accentHex = npcKey === 'oraculo' ? '#70c8e0' : '#F5D97A';
+  const bx = w - 76, by = 24;
+  const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const html = '<div style="font-family:Poppins,sans-serif;font-size:14px;line-height:1.55;color:#c8d4e0">' +
+    lines.map(l => {
+      if (!l) return '<div style="height:6px"></div>';
+      if (l.charAt(0) === '◆') return `<div style="color:${accentHex};font-family:Cinzel,serif;font-weight:700;margin-top:6px">${esc(l.slice(1).trim())}</div>`;
+      return `<div>${esc(l)}</div>`;
+    }).join('') + '</div>';
+  const show = (v) => { if (v) openItemModal(html, titulo); else closeItemModal(); };
+
+  const btn = scene.add.graphics().setDepth(50).setScrollFactor(0);
+  btn.fillStyle(npcKey === 'oraculo' ? 0x041a2a : 0x2a1c04, 0.85); btn.fillCircle(bx, by, 20);
+  btn.lineStyle(1.5, accentNum, 0.9); btn.strokeCircle(bx, by, 20);
+  scene.add.text(bx, by, '?', { fontFamily:'Cinzel', fontSize:'20px', color:accentHex, fontStyle:'700' })
+    .setOrigin(0.5).setDepth(51).setScrollFactor(0);
+  const hit = scene.add.circle(bx, by, 22, 0, 0).setDepth(52).setScrollFactor(0).setInteractive({ useHandCursor:true });
+  hit.on('pointerup', () => { snd_item && snd_item(); show(true); });
+  return { show };
+}
+
 /* ════════════════════════════════════════
    BUSTO NPC — esquina inferior izquierda (solo Modo Minijuegos)
 ════════════════════════════════════════ */
 function pzNPCBust(scene, npcKey, w, h) {
+  if (scene._pz) return;   // en el teléfono no hay lugar para el busto
   if (typeof createNPCElement !== 'function' || typeof NPC_DATA === 'undefined') return;
   const data = NPC_DATA[npcKey];
   if (!data) return;
@@ -387,7 +510,11 @@ function pzNPCBust(scene, npcKey, w, h) {
    FONDO temático animado
 ════════════════════════════════════════ */
 function pzBg(scene, npcKey) {
+  return pzFijo(scene, () => _pzBg(scene, npcKey));
+}
+function _pzBg(scene, npcKey) {
   const w = scene.scale.width, h = scene.scale.height;
+  const bandH = scene._pz ? 40 : 66;
   const accent     = npcKey === 'oraculo' ? 0x306090 : 0x6a4010;
   const accentBright= npcKey === 'oraculo' ? 0x4aa0d8 : 0xc88820;
   const accentHex  = npcKey === 'oraculo' ? '#4aa0d8' : '#c88820';
@@ -441,10 +568,10 @@ function pzBg(scene, npcKey) {
   // Banda superior con barrido de brillo
   const band = scene.add.graphics().setDepth(0);
   band.fillStyle(accent, 0.16);
-  band.fillRect(0, 0, w, 66);
+  band.fillRect(0, 0, w, bandH);
   band.lineStyle(1, accentBright, 0.4);
-  band.lineBetween(0, 66, w, 66);
-  const sweep = scene.add.rectangle(-120, 33, 120, 66, accentBright, 0.18).setDepth(0);
+  band.lineBetween(0, bandH, w, bandH);
+  const sweep = scene.add.rectangle(-120, bandH/2, 120, bandH, accentBright, 0.18).setDepth(0);
   const doSweep = () => {
     sweep.x = -120;
     scene.tweens.add({ targets: sweep, x: w+120, duration: 2200,
@@ -469,6 +596,7 @@ function pzHeader(scene, puzName, npcKey, w) {
   if (!(scene._data && scene._data.modoArcade) && typeof saveGameLegend === 'function') {
     saveGameLegend();
   }
+  if (scene._pz) { pzFijo(scene, () => _pzHeaderMovil(scene, puzName, npcKey, w)); return; }
   const accentCol = npcKey === 'oraculo' ? '#70c8e0' : '#D4AF37';
   const accentNum = npcKey === 'oraculo' ? 0x70c8e0 : 0xD4AF37;
   const npcLabel  = npcKey === 'oraculo' ? 'Oráculo de Laplace' : 'Mercader del Azar';
@@ -543,25 +671,67 @@ function pzHeader(scene, puzName, npcKey, w) {
   }
 }
 
+/* Teléfono: título de 16 px y, en Modo Minijuegos, "← Volver" de 44 px (a la derecha del botón de sonido). */
+function _pzHeaderMovil(scene, puzName, npcKey, w) {
+  const accentCol = npcKey === 'oraculo' ? '#70c8e0' : '#D4AF37';
+  const title = scene.add.text(w/2, 22, puzName.toUpperCase(), {
+    fontFamily:'Cinzel', fontSize:'16px', color:accentCol, fontStyle:'700', letterSpacing:2,
+    stroke:'#050408', strokeThickness:3
+  }).setOrigin(0.5);
+  title.setAlpha(0);
+  scene.tweens.add({ targets: title, alpha: 1, duration: 500 });
+  const modoArcade = scene._data && scene._data.modoArcade;
+  if (modoArcade) {
+    const back = scene.add.text(80, 22, '← Volver', {
+      fontFamily:'Poppins', fontSize:'14px', color:'#9cc4e0', fontStyle:'600',
+      backgroundColor:'#0a1828', padding:{ x:12, y:13 }
+    }).setOrigin(0, 0.5).setDepth(6).setFixedSize(0, 44).setInteractive({ useHandCursor:true });
+    back.on('pointerup', () => {
+      snd_item && snd_item();
+      scene.cameras.main.fadeOut(280, 0, 0, 0);
+      scene.cameras.main.once('camerafadeoutcomplete', () => {
+        if (modoArcade === 'libre') scene.scene.start('LibreScene');
+        else scene.scene.start('ArcadeScene', { mode:'select' });
+      });
+    });
+  }
+}
+
 /* ════════════════════════════════════════
    BOTONES de respuesta (cuadrícula 2×2) animados
 ════════════════════════════════════════ */
 function pzButtons(scene, answers, cy, onPick) {
+  const pz = scene._pz;
   const w = scene.scale.width;
-  const BW = 210, BH = 56, GAP = 14, cx = w/2;
+  let BW = 210, BH = 56, GAP = 14, cx = w/2;
+  let FS = '16px';
+  if (pz) {   // teléfono: 2×2 al pie de la zona derecha, de 48 px de alto
+    const U = pz.Z.ui;
+    GAP = 8; BH = 48; BW = Math.floor((U.w - GAP) / 2); cx = U.x + U.w/2;
+    cy = U.y + U.h - (2*BH + GAP);
+    FS = '15px';
+    if (pz.respFila) {   // en fila: todas las respuestas lado a lado, a lo ancho de la pantalla
+      const n = answers.length;
+      BH = 46; BW = Math.floor((pz.Z.w - 2*pz.Z.pad - (n-1)*GAP) / n);
+      cy = pz.respFila.y;
+    }
+  }
   const pulse = { v: 0 };
   const buttons = [];
   let locked = false;
 
   answers.forEach((a, i) => {
-    const bx = cx + (i%2===0 ? -(BW+GAP/2) : GAP/2) + BW/2;
-    const by = cy + Math.floor(i/2) * (BH+GAP) + BH/2;
+    const fila = !!(pz && pz.respFila);
+    const bx = fila ? pz.Z.pad + i*(BW+GAP) + BW/2 : cx + (i%2===0 ? -(BW+GAP/2) : GAP/2) + BW/2;
+    const by = fila ? cy + BH/2 : cy + Math.floor(i/2) * (BH+GAP) + BH/2;
 
     const cont = scene.add.container(bx, by).setDepth(3);
+    if (pz) cont.setScrollFactor(0);
     const bgG = scene.add.graphics();
     const glowG = scene.add.graphics();
     const txt = scene.add.text(0, 0, a.label, {
-      fontFamily:'Cinzel', fontSize:'16px', color:'#cdd8ee', fontStyle:'600'
+      fontFamily:'Cinzel', fontSize:FS, color:'#cdd8ee', fontStyle:'600',
+      align:'center', wordWrap: pz ? { width: BW - 14 } : undefined
     }).setOrigin(0.5);
     cont.add([glowG, bgG, txt]);
 
@@ -622,7 +792,7 @@ function pzButtons(scene, answers, cy, onPick) {
       if (a.ok) {
         scene.tweens.add({ targets: cont, scaleX: 1.12, scaleY: 1.12, duration: 180,
           yoyo: true, ease: 'Quad.easeOut' });
-        pzBurst(scene, bx, by, [0x40d070, 0x70e090, 0xD4AF37], 24, 12);
+        pzBurst(scene, bx, by, [0x40d070, 0x70e090, 0xD4AF37], 24, 12, 6, !!pz);
       } else {
         scene.tweens.add({ targets: cont, x: { from: bx-6, to: bx }, duration: 60,
           repeat: 4, yoyo: true });
@@ -653,6 +823,7 @@ function pzButtons(scene, answers, cy, onPick) {
    RESULTADO — modal dramático animado
 ════════════════════════════════════════ */
 function pzResult(scene, correct, explain, hp, puzId) {
+  if (scene._pz) { pzFijo(scene, () => _pzResultMovil(scene, correct, explain, hp, puzId)); return; }
   const w = scene.scale.width, h = scene.scale.height;
 
   // Oscurecimiento
@@ -786,6 +957,73 @@ function pzResult(scene, correct, explain, hp, puzId) {
   });
 }
 
+/* Teléfono: el resultado ocupa casi toda la pantalla (la ilustración se oculta), letra de 14 px y botón de 44 px. */
+function _pzResultMovil(scene, correct, explain, hp, puzId) {
+  const w = scene.scale.width, h = scene.scale.height;
+  if (scene._pz.cams) scene._pz.cams.ill.setVisible(false);
+  const dim = scene.add.rectangle(w/2, h/2, w, h, 0x000000, 0).setDepth(55).setInteractive();
+  scene.tweens.add({ targets: dim, fillAlpha: 0.72, duration: 300 });
+  if (correct) { snd_buff && snd_buff(); }
+  else { snd_fail && snd_fail(); scene.cameras.main.shake(320, 0.008); }
+
+  const bw = Math.min(w - 24, 620), bh = Math.min(h - 24, 310);
+  const cont = scene.add.container(w/2, h/2).setDepth(56);
+  const accent = correct ? 0x38c060 : 0xc04040;
+  const accentBright = correct ? 0x70ff9a : 0xff6a6a;
+  const bg2 = scene.add.graphics();
+  bg2.fillGradientStyle(correct ? 0x0a2410 : 0x240a0a, correct ? 0x0a2410 : 0x240a0a,
+    correct ? 0x051a0a : 0x1a0505, correct ? 0x051a0a : 0x1a0505, 1);
+  bg2.fillRoundedRect(-bw/2, -bh/2, bw, bh, 14);
+  bg2.lineStyle(2.5, accentBright, 0.9); bg2.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 14);
+  bg2.lineStyle(1, accent, 0.4); bg2.strokeRoundedRect(-bw/2+5, -bh/2+5, bw-10, bh-10, 11);
+  cont.add(bg2);
+
+  const icon = scene.add.text(0, -bh/2 + 32, correct ? '✓' : '✗', {
+    fontFamily:'Cinzel', fontSize:'38px', color: correct ? '#50e080' : '#e85050', fontStyle:'700', stroke:'#000', strokeThickness:4
+  }).setOrigin(0.5);
+  const titleTxt = scene.add.text(0, -bh/2 + 68, correct ? '¡CORRECTO!' : 'RESPUESTA INCORRECTA', {
+    fontFamily:'Cinzel', fontSize:'17px', color: correct ? '#40c870' : '#e06868', fontStyle:'700', letterSpacing:1
+  }).setOrigin(0.5);
+  cont.add([icon, titleTxt]);
+
+  const _arcade = scene._data && scene._data.modoArcade;
+  const gain = correct ? hp : Math.floor(hp/3);
+  let premio = '';
+  if (!_arcade) {
+    if (gain > 0) premio = `+${gain} HP`;
+  } else {
+    const dif = (scene._data && scene._data.dificultad) || 'normal';
+    const delta = Math.round(ptsCalc(correct, dif, _arcade === 'libre' ? 'libre' : 'arcade') * (scene._ptsMult || 1));
+    premio = `${delta >= 0 ? '+' : '-'}${Math.abs(delta)} pts`;
+  }
+  let y = -bh/2 + 92;
+  if (premio) {
+    cont.add(scene.add.text(0, y, premio, { fontFamily:'Cinzel', fontSize:'16px', color:'#D4AF37', fontStyle:'700' }).setOrigin(0.5, 0));
+    y += 26;
+  }
+  cont.add(scene.add.text(0, y + 2, explain, {
+    fontFamily:'Poppins', fontSize:'14px', color:'#c3d2e2', wordWrap:{ width: bw - 48 }, lineSpacing:3, align:'center'
+  }).setOrigin(0.5, 0));
+
+  cont.setScale(0.6); cont.setAlpha(0);
+  scene.tweens.add({ targets: cont, scaleX: 1, scaleY: 1, alpha: 1, duration: 380, ease: 'Back.easeOut' });
+  if (correct) scene.time.delayedCall(260, () => pzBurst(scene, w/2, h/2 - 70, [0xD4AF37, 0x40d070, 0xffffff], 36, 12, 8, true));
+
+  const _gain = (!_arcade) ? gain : 0;
+  const btnG = scene.add.graphics().setDepth(57).setAlpha(0);
+  const bx = w/2, by = h/2 + bh/2 - 32;
+  btnG.fillStyle(correct ? 0x0e3a1c : 0x3a0e12, 0.95); btnG.fillRoundedRect(bx - 110, by - 22, 220, 44, 8);
+  btnG.lineStyle(2, correct ? 0x40d070 : 0xd04050, 1); btnG.strokeRoundedRect(bx - 110, by - 22, 220, 44, 8);
+  const btnTxt = scene.add.text(bx, by, 'Continuar →', {
+    fontFamily:'Cinzel', fontSize:'16px', color: correct ? '#50e080' : '#e06060', fontStyle:'700'
+  }).setOrigin(0.5).setDepth(58).setAlpha(0);
+  scene.time.delayedCall(900, () => {
+    scene.tweens.add({ targets: [btnG, btnTxt], alpha: 1, duration: 300 });
+    const hit = scene.add.rectangle(bx, by, 220, 44, 0, 0).setDepth(60).setScrollFactor(0).setInteractive({ useHandCursor:true });
+    hit.on('pointerup', () => { hit.destroy(); pzComplete(scene, _gain, puzId, correct); });
+  });
+}
+
 function pzComplete(scene, hp, puzId, correct) {
   const arcade = scene._data && scene._data.modoArcade;
   const dif    = (scene._data && scene._data.dificultad) || 'normal';
@@ -812,6 +1050,7 @@ function pzComplete(scene, hp, puzId, correct) {
   } else {
     if (typeof ptsAdd === 'function') ptsAdd(Math.round(ptsCalc(correct, dif, 'arcade') * _m), 'arcade');
   }
+  if (scene._pz && scene._pz.cams) scene._pz.cams.ill.fadeOut(350, 0, 0, 0);
   scene.cameras.main.fadeOut(350, 0, 0, 0);
   scene.cameras.main.once('camerafadeoutcomplete', () => {
     if (arcade === 'libre') {
