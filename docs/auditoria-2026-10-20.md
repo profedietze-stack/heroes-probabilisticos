@@ -373,3 +373,12 @@ sin saltar. Un Guardián 1 dura ≈ 25-30 s; uno como el jefe 5, ≈ 2,5 min.
 
 - **D5:** medido en Chromium a 1920×1080, el canvas salía 1580×1080 (×1,54): Phaser 3.60 ignora `scale.max`. Ahora `#phaserGame` tiene `max-width:1024px; max-height:700px` en `css/variables.css`: a 1920×1080 el canvas mide 1024×700 centrado, escala 1:1; en un teléfono (375 de ancho) sigue ajustando al ancho. Guarda: `tests/accesibilidad.test.js`.
 - **D9:** `_backup/` y `.superpowers/` salieron del índice y quedaron ignorados (siguen en disco).
+
+## Addendum 4 — Teléfono, etapa 2 (prueba con el menú; versión 11 / `heroesprob-v13`)
+
+Medido en Chromium móvil apaisado (812×375): con el lienzo fijo de 1024×700 el factor era 0,536, el texto llegaba a 5,4 px y casi todos los botones medían menos de 44 px (menú: 6 de 6; batalla 3 de 4; enigmas 7 de 8 y 10 de 11).
+
+- **Mecanismo (`js/core/movil.js`):** en teléfono (táctil y lado corto ≤ 700 px; `?movil=1` lo fuerza en PC) cada escena que declare `X.DISENO_MOVIL = true` recibe un lienzo del tamaño de la pantalla (1 unidad = 1 px CSS); las demás siguen en 1024×700. Un plugin ajusta el tamaño al empezar cada escena y, al girar el teléfono, una escena migrada se rehace. En PC y tablet no cambia nada (comprobado con el flujo menú → mapa → menú → cargar).
+- **Menú migrado:** apaisado, dos columnas (título a la izquierda, 5 botones de 48 px a la derecha); retrato, una columna. Medido en 812×375, 667×375, 932×430 y 375×812: factor 1, 0 botones bajo 44 px, texto mínimo 14 px. También subió el contraste de los grises del menú.
+- **Guardas:** `tests/movil.test.js` (reglas del lienzo, cableado, medidas del menú).
+- **Pendiente:** migrar mapa, batalla, enigmas, tienda, intro, final y arcade, una a una, con el mismo método de medición.

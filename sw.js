@@ -19,8 +19,8 @@
    Los tests fallan si no se hizo (tests/cache-version.test.js).
 ══════════════════════════════════════ */
 
-const GAME_VERSION  = '10';
-const CACHE_VERSION = 'heroesprob-v12';
+const GAME_VERSION  = '11';
+const CACHE_VERSION = 'heroesprob-v13';
 
 /* index.html pide los scripts con ?v=<GAME_VERSION>: se precachean con el MISMO
    URL (la caché compara el pedido completo, con su query). */
@@ -53,6 +53,7 @@ const CODIGO = [
   V('js/core/audio.js'),
   V('js/core/save.js'),
   V('js/core/utils.js'),
+  V('js/core/movil.js'),
   V('js/core/skills.js'),
   V('js/ui/grimorio.js'),
   V('js/ui/map-events.js'),
