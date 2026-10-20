@@ -68,3 +68,5 @@ body::before{
   -webkit-user-select: none;
   user-select: none;
 }
+/* Teléfono: el lienzo mide la pantalla real (ver js/core/movil.js), sin el tope de 1024x700. */
+html.movil #phaserGame{max-width:none;max-height:none;box-shadow:none;border-radius:0}
