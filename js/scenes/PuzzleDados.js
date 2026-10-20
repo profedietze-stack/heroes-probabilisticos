@@ -33,20 +33,16 @@ class PuzzleDados extends Phaser.Scene {
 
     const prim = dice[positions[0]];
     const corr = _frac(prim.extra, prim.total);
-    const wrong = _shuffle([
-      _frac(1, 6), _frac(prim.extra, 6), _frac(1, prim.total),
-    ]).filter(l => l !== corr).slice(0, 3);
-    // Se completa antes de barajar (si no, la ultima posicion nunca puede tener
-    // la correcta) y con etiquetas distintas cada vez: el relleno era una
-    // constante, asi que dos rellenos daban dos opciones identicas.
-    let denomExtra = prim.total + 1;
-    while (wrong.length < 3) {
-      const etiqueta = _frac(2, denomExtra);
-      denomExtra++;
-      if (etiqueta === corr || wrong.includes(etiqueta)) continue;
-      wrong.push(etiqueta);
-    }
-    const opts = _shuffle([{ label:corr, ok:true }, ...wrong.map(l => ({ label:l, ok:false }))]);
+    // Errores típicos: ignorar el peso extra (1/6), olvidar que el total sube
+    // (extra/6) o contar sólo la cara cargada contra el total (1/total). Con
+    // sólo esos tres la correcta era la tercera más chica el 100 % de las
+    // veces, en las cuatro dificultades; _opcionesFrac sortea el rango y
+    // completa con fracciones posibles del problema.
+    const opts = _opcionesFrac(
+      corr,
+      [_frac(1, 6), _frac(prim.extra, 6), _frac(1, prim.total)],
+      _fraccionesDe(prim.total, 6),
+    );
 
     return {
       dice, positions, nLoaded, prim, corr, opts,

@@ -77,22 +77,51 @@ for (const escena of ESCENAS) {
   });
 }
 
-test('el relleno se agrega antes de barajar, no después', () => {
-  // Comprobación estructural: si vuelve el `push` sobre el array ya barajado,
-  // el sesgo vuelve con él aunque la medición de arriba tarde en delatarlo.
-  for (const archivo of ['PuzzleUrna', 'PuzzleDados']) {
+test('las opciones de fracciones se arman con _opcionesFrac, que baraja al final', () => {
+  // Comprobación estructural: si vuelve un `push` sobre el array ya barajado,
+  // esa posición nunca puede tener la correcta aunque la medición de arriba
+  // tarde en delatarlo. _opcionesFrac agrega todo ANTES de barajar.
+  for (const archivo of ['PuzzleMoneda', 'PuzzleRuleta', 'PuzzleUrna', 'PuzzleDados']) {
     const codigo = leer(`js/scenes/${archivo}.js`);
     const gen = codigo.slice(codigo.indexOf('_gen('), codigo.indexOf('create()'));
-    const barajado = gen.search(/_shuffle\(\s*\[\s*\{\s*label\s*:\s*corr/);
-    assert.ok(barajado > -1, `${archivo}: no se encontró el barajado de las opciones`);
-    const relleno = gen.slice(barajado).search(/\.push\(\s*\{\s*label/);
-    assert.equal(
-      relleno, -1,
-      `${archivo}: se sigue agregando una opción después de barajar, ` +
-      'así que esa posición nunca puede tener la correcta',
-    );
+    assert.ok(/_opcionesFrac\(/.test(gen), `${archivo}: ya no arma las opciones con _opcionesFrac`);
+    assert.ok(!/\.push\(\s*\{\s*label/.test(gen), `${archivo}: agrega una opción a mano después de armarlas`);
   }
+  const base = leer('js/scenes/PuzzleBase.js');
+  const fn = base.slice(base.indexOf('function _opcionesFrac'), base.indexOf('function _fraccionesDe'));
+  const barajado = fn.lastIndexOf('_shuffle([');
+  assert.ok(barajado > -1, '_opcionesFrac no baraja el resultado');
+  assert.ok(!/\.push\(/.test(fn.slice(barajado)), '_opcionesFrac agrega algo después de barajar');
 });
+
+// Rango de la correcta entre las opciones ORDENADAS por valor (la 1ª, 2ª, 3ª o
+// 4ª más chica). La posición en pantalla puede salir 25/25/25/25 y aun así la
+// correcta ser siempre "la segunda más chica": el alumno lo aprende sin hacer
+// la cuenta. Se mide acá, no sólo el índice del botón.
+const valor = (l) => { const [n, d] = String(l).split('/').map(Number); return d ? n / d : n; };
+
+for (const escena of ['PuzzleMoneda', 'PuzzleRuleta', 'PuzzleDados', 'PuzzleUrna']) {
+  for (const dif of DIFICULTADES) {
+    test(`${escena}/${dif}: la correcta cae en cualquier rango de valor`, () => {
+      const rango = [0, 0, 0, 0];
+      const N = 1500;
+      for (let i = 0; i < N; i++) {
+        const p = generar(escena, dif);
+        const valores = p.opts.map((o) => valor(o.label)).sort((a, b) => a - b);
+        rango[valores.indexOf(valor(p.opts.find((o) => o.ok).label))]++;
+      }
+      const pct = rango.map((n) => (n / N) * 100);
+      const detalle = pct.map((v, i) => `${i + 1}ª más chica: ${v.toFixed(0)} %`).join('  ');
+      // Hay combinaciones en las que la correcta es tan chica (o tan grande) que
+      // no hay lugar de un lado: ahí el tope es real y no un patrón aprendible.
+      // Lo que no puede pasar es que un rango domine o que quede casi vacío.
+      pct.forEach((v) => {
+        assert.ok(v <= 55, `${escena}/${dif}: un rango concentra demasiado (${detalle})`);
+      });
+      assert.ok(pct.filter((v) => v >= 8).length >= 3, `${escena}/${dif}: la correcta sólo cae en uno o dos rangos (${detalle})`);
+    });
+  }
+}
 
 test('el relleno nunca repite una etiqueta que ya está', () => {
   // El relleno de los Dados era una constante: si hacía falta más de uno,

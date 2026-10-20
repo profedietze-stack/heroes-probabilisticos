@@ -111,3 +111,19 @@ test('la condición que se le muestra al alumno describe la probabilidad real', 
     }
   }
 });
+
+test('la respuesta correcta se reparte entre favorable, desfavorable y neutro', () => {
+  // Sortear la apuesta (y no el tipo) dejaba "Favorable" como respuesta el 50 %
+  // de las veces, y en héroe no había ninguna neutra: con contestar siempre lo
+  // mismo se acertaba medio banco, sin calcular el valor esperado.
+  for (const dif of DIFICULTADES) {
+    const cuenta = { favorable: 0, desfavorable: 0, neutro: 0 };
+    const N = 1500;
+    for (let i = 0; i < N; i++) cuenta[generar(dif).tipo]++;
+    for (const [tipo, n] of Object.entries(cuenta)) {
+      const pct = (n / N) * 100;
+      assert.ok(pct >= 22 && pct <= 45,
+        `${dif}: "${tipo}" es la respuesta el ${pct.toFixed(0)} % de las veces (${JSON.stringify(cuenta)})`);
+    }
+  }
+});

@@ -26,39 +26,21 @@ class PuzzleUrna extends Phaser.Scene {
       .map(([k,v])=>({key:k, count:v}));
     const pick = colors[Math.floor(Math.random()*colors.length)];
     const names = {r:'roja',b:'azul',g:'verde',y:'amarilla'};
+    const plural = {r:'rojas',b:'azules',g:'verdes',y:'amarillas'};
     const corr  = _frac(pick.count, total);
-    // Distractores plausibles
-    const wrong = [];
-    wrong.push(_frac(total-pick.count, total));          // complemento
-    wrong.push(_frac(pick.count+1, total));               // +1 arriba
+    // Distractores plausibles: complemento, un caso de más, la cantidad de otra
+    // bola. Si hace falta, cualquier fracción posible de la urna (_opcionesFrac
+    // sortea el rango de la correcta entre las opciones ordenadas; antes, en
+    // "héroe" y "legendario" la correcta nunca era la más grande).
+    const plausibles = [
+      _frac(total-pick.count, total),                    // complemento
+      _frac(pick.count+1, total),                        // +1 arriba
+    ];
     const alt = colors.find(c=>c.key!==pick.key);
-    if (alt) wrong.push(_frac(alt.count, total));         // otra bola
-    else     wrong.push(_frac(pick.count, total+2));
-    // Los distractores se pasan por un Set y se comparan contra la respuesta:
-    // dos opciones identicas en pantalla parecen un error del juego, y con las
-    // urnas faciles pasaba seguido. Con {r:2,b:4} y pidiendo roja, el
-    // complemento (4/6) y "la otra bola" (4/6) son la misma fraccion; con
-    // {r:3,b:3} las tres se simplifican a 1/2 y quedaba una sola opcion falsa
-    // mas dos rellenos iguales.
-    const distintos = [...new Set(wrong)].filter(l => l !== corr).slice(0, 3);
-    // El relleno tambien tiene que ser distinto de todo lo que ya esta, y se
-    // completa ANTES de barajar. Barajar tres opciones y pegar la cuarta al
-    // final dejaba la correcta fuera del ultimo boton en todas esas partidas:
-    // medido, caia ahi el 15 % de las veces en vez del 25 %. Y en las urnas
-    // faciles los distractores no llegan a tres seguido, asi que no era un
-    // caso raro.
-    let denomExtra = total + 1;
-    while (distintos.length < 3) {
-      const etiqueta = _frac(1, denomExtra);
-      denomExtra++;
-      if (etiqueta === corr || distintos.includes(etiqueta)) continue;
-      distintos.push(etiqueta);
-    }
-    const opts4 = _shuffle([{label:corr, ok:true},
-      ...distintos.map(l=>({label:l, ok:false}))
-    ]);
+    plausibles.push(alt ? _frac(alt.count, total) : _frac(pick.count, total+2));
+    const opts4 = _opcionesFrac(corr, plausibles, _fraccionesDe(total));
     return { cfg, total, pick, colorName:names[pick.key], corr, opts: opts4,
-             explain:`Hay ${pick.count} bolas ${names[pick.key]} de un total de ${total}.\nP = ${pick.count}/${total} = ${corr}` };
+             explain:`Hay ${pick.count} ${pick.count===1?'bola '+names[pick.key]:'bolas '+plural[pick.key]} de un total de ${total}.\nP = ${pick.count}/${total} = ${corr}` };
   }
 
   create() {

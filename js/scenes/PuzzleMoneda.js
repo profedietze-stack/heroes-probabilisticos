@@ -25,19 +25,14 @@ class PuzzleMoneda extends Phaser.Scene {
     const denom = Math.pow(2, n);
     const corr  = _frac(C, denom);
 
-    // Distractores.
-    //
-    // El Set existia pero no se usaba para nada: los tres distractores se
-    // metian tal cual, y varios combos daban una opcion identica a la
-    // respuesta correcta pero marcada como incorrecta. Con {n:2,k:0} el
-    // "C-1" cae a 0, el max(1,...) lo sube a 1 y queda 1/4, que es la
-    // respuesta. Con {n:5,k:3} el C(5,2) vale lo mismo que el C(5,3) por
-    // simetria del triangulo de Pascal. Pasaba en las cuatro dificultades, y
-    // en facil en cuatro de los cinco combos: el alumno elegia una fraccion
-    // correcta y el juego se la marcaba mal.
-    //
-    // Ahora se juntan candidatos, se sacan los que valen lo mismo que la
-    // respuesta y se completan hasta tres con vecinos que todavia no esten.
+    // Distractores: errores típicos (un caso más o menos, el caso vecino por
+    // simetría, 1 caso, el complemento) y, si hace falta, cualquier fracción
+    // posible de n lanzamientos. _opcionesFrac sortea el RANGO de la correcta
+    // entre las opciones ordenadas, no sólo su posición en pantalla: con la
+    // lista fija de antes, en "legendario" la correcta era la tercera más chica
+    // el 100 % de las veces y en "fácil" la más chica el 80 %.
+    // Quita lo que valga lo mismo que la correcta ({n:2,k:0}: C-1 = 0 sube a 1
+    // y daba 1/4; {n:5,k:3}: C(5,2) = C(5,3) por la simetría de Pascal).
     const candidatos = [
       _frac(C + 1, denom),
       _frac(Math.max(1, C - 1), denom),
@@ -48,26 +43,9 @@ class PuzzleMoneda extends Phaser.Scene {
       _frac(1, denom),
       _frac(denom - C, denom),
     ];
-    const distractores = [];
-    const sumar = (etiqueta) => {
-      if (distractores.length === 3) return;
-      if (etiqueta === corr || distractores.includes(etiqueta)) return;
-      distractores.push(etiqueta);
-    };
-    candidatos.forEach(sumar);
-    // Los combos chicos ({n:2}) tienen tan pocas fracciones distintas que los
-    // candidatos de arriba no siempre llegan a tres. Se completa recorriendo
-    // todas las cantidades posibles de casos favorables, que es lo mismo que
-    // el alumno podria contar.
-    for (let casos = 1; casos <= denom && distractores.length < 3; casos++) {
-      sumar(_frac(casos, denom));
-    }
-    const all4 = _shuffle([
-      {label:corr,ok:true},
-      ...distractores.map((l) => ({ label:l, ok:false })),
-    ]);
+    const all4 = _opcionesFrac(corr, candidatos, _fraccionesDe(denom));
 
-    const explain = `C(${n},${k}) = ${C}  |  2^${n} = ${denom}\nP(exactamente ${k} cara${k!==1?'s':''} en ${n} lanzamientos) = ${C}/${denom} = ${corr}`;
+    const explain = `C(${n},${k}) = ${C}  |  2^${n} = ${denom}\nP(exactamente ${k} cara${k!==1?'s':''} en ${n} lanzamientos) = ${C}/${denom}${corr!==`${C}/${denom}`?` = ${corr}`:''}`;
     return {n, k, corr, opts:all4, explain};
   }
 
