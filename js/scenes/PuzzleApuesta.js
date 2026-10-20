@@ -119,7 +119,7 @@ class PuzzleApuesta extends Phaser.Scene {
     const cxL = L.x + L.w/2, xR = U.x + U.w/2;
 
     /* ── Izquierda: contrato ── */
-    this._drawContractMovil(cxL, L.y + 54, p);
+    this._drawContractMovil(cxL, L.y + 54, p, Math.min(372, L.w - 8));   // el contrato entra en la columna (667×375: ~310 px)
 
     /* Barra de probabilidad */
     this._drawProbBar(cxL, L.y + 120, p, 300, 20, '13px');
@@ -183,8 +183,8 @@ class PuzzleApuesta extends Phaser.Scene {
   }
 
   /* Contrato del teléfono: 4 renglones de 13 px */
-  _drawContractMovil(cx, cy, p) {
-    const sw = 372, sh = 94, sx = -sw/2, sy = -sh/2;
+  _drawContractMovil(cx, cy, p, ancho) {
+    const sw = ancho || 372, sh = 94, sx = -sw/2, sy = -sh/2;
     const cont = this.add.container(cx, cy);
     const g = this.add.graphics();
     g.fillGradientStyle(0x352607, 0x352607, 0x231803, 0x231803, 0.97);

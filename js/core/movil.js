@@ -39,6 +39,15 @@ class LienzoMovilPlugin extends Phaser.Plugins.ScenePlugin {
   }
 }
 
+/* ¿El cambio de pantalla justifica rehacer la escena? Sólo girar o un cambio grande de ancho. Esconder la barra de
+   direcciones, abrir el teclado o la pantalla completa mueven el alto unos píxeles: reiniciar ahí le cambia la
+   pregunta al alumno en pleno enigma. Esos cambios los absorbe el modo FIT del lienzo. */
+function cambioJustificaReinicio(actual, nuevo){
+  const giro = (actual.width > actual.height) !== (nuevo.w > nuevo.h);
+  const ancho = Math.abs(nuevo.w - actual.width) / actual.width > 0.25;
+  return giro || ancho;
+}
+
 /* Girar el teléfono o cambiar el tamaño: una escena migrada se rehace con las medidas nuevas. */
 function vigilarGiro(game){
   if(!MOVIL) return;
@@ -50,7 +59,11 @@ function vigilarGiro(game){
         if(s.constructor && s.constructor.DISENO_MOVIL){
           const k = tamanoLienzo(true, MOVIL, window.innerWidth, window.innerHeight);
           const gs = game.scale.gameSize;
-          if(gs.width !== k.w || gs.height !== k.h) s.scene.restart();
+          if(cambioJustificaReinicio(gs, k)){
+            // Un aviso o la tienda abiertos quedarían apuntando a la escena vieja.
+            try{ closeItemModal(); }catch(e){}
+            s.scene.restart();
+          }
         }
       });
     }, 250);

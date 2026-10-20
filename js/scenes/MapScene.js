@@ -140,7 +140,8 @@ class MapScene extends Phaser.Scene {
       fontFamily:'Cinzel', fontSize:fz, color:'#9fc2ff', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
-    if(L.compacto) this.add.text(coinX - 7, 30, `Cámara ${Math.min(this._cur+1,29)} de 29`, {
+    // Pantalla angosta: "Cám. 1/29" para no quedar debajo del botón Bolsa.
+    if(L.compacto) this.add.text(coinX - 7, 30, w < 760 ? `Cám. ${Math.min(this._cur+1,29)}/29` : `Cámara ${Math.min(this._cur+1,29)} de 29`, {
       fontFamily:'Cinzel', fontSize:'14px', color:'#9aa6b4'
     }).setOrigin(0,0).setDepth(20).setScrollFactor(0);
 
@@ -656,9 +657,10 @@ class MapScene extends Phaser.Scene {
       {label:'Galería de Laplace',  x:690, y:458},
       {label:'El Abismo Final',          x:511, y:585},
     ];
+    const tel = this.scale.height < 500;   // teléfono: el rótulo oscuro sobre piedra oscura no se leía
     ZONES.forEach(z=>{
       this.add.text(z.x, z.y, z.label, {
-        fontFamily:'Cinzel', fontSize:'9px', color:'#2e2218', fontStyle:'italic'
+        fontFamily:'Cinzel', fontSize: tel ? '11px' : '9px', color: tel ? '#7a6244' : '#2e2218', fontStyle:'italic'
       }).setOrigin(0.5);
     });
   }

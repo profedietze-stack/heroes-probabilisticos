@@ -444,6 +444,8 @@ function _pzInfoMovil(scene, npcKey, titulo, lines) {
       return `<div>${esc(l)}</div>`;
     }).join('') + '</div>';
   const show = (v) => { if (v) openItemModal(html, titulo); else closeItemModal(); };
+  // Salir de la escena con la ayuda abierta no la deja tapando la escena siguiente.
+  scene.events.once('shutdown', () => closeItemModal());
 
   const btn = scene.add.graphics().setDepth(50).setScrollFactor(0);
   btn.fillStyle(npcKey === 'oraculo' ? 0x041a2a : 0x2a1c04, 0.85); btn.fillCircle(bx, by, 20);

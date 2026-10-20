@@ -54,8 +54,23 @@ function openItemModal(html, titulo){
   const caja = document.querySelector('#itemModal .modal');
   if(caja) caja.style.maxWidth = '';   // cada llamada parte del ancho normal
   document.getElementById('itemContent').innerHTML=html; document.getElementById('itemModal').classList.add('active');
+  /* Mientras el modal está abierto Phaser no recibe nada: también le llega el "soltar" de un toque hecho SOBRE el
+     modal y, si cae encima de una respuesta del enigma, la contesta sin querer (mismo caso que showConfirm). */
+  try{
+    if(window.game) window.game.input.enabled = false;
+    clearInterval(openItemModal._vigia);
+    // Red de seguridad: si el modal se cierra por otro camino que closeItemModal, el input no queda muerto.
+    openItemModal._vigia = setInterval(()=>{
+      const m = document.getElementById('itemModal');
+      if(!m || !m.classList.contains('active')){ clearInterval(openItemModal._vigia); try{ window.game.input.enabled = true; }catch(e){} }
+    }, 250);
+  }catch(e){}
 }
-function closeItemModal(){ document.getElementById('itemModal').classList.remove('active'); }
+function closeItemModal(){
+  document.getElementById('itemModal').classList.remove('active');
+  // Igual que closeConfirmModal: se reactiva en el próximo tick para que el "soltar" del toque que cerró no llegue al canvas.
+  try{ clearInterval(openItemModal._vigia); if(window.game) setTimeout(()=>{ try{ window.game.input.enabled = true; }catch(e){} }, 80); }catch(e){}
+}
 /* Moneda — el emoji 🪙 no renderiza en algunas fuentes (PC): usar estas alternativas. */
 function coinSpan(size=14){
   const s = size;

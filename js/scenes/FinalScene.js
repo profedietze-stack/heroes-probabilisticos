@@ -76,9 +76,9 @@ class FinalScene extends Phaser.Scene {
     panel.lineStyle(2, 0xD4AF37, 0.6); panel.strokeRoundedRect(8, 72, w-16, h-72-92, 12);
     this.add.text(w/2, 86, '🏅 Logros Desbloqueados', {fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'700', letterSpacing:2}).setOrigin(0.5);
 
-    const cw = Math.floor((w - 16 - 36) / 2), ch = 46;
+    const cw = Math.floor((w - 16 - 36) / 2), ch = 52;   // 52: la descripción de 2 líneas no toca el borde de la tarjeta
     logros.forEach((l, i) => {
-      const cx = 20 + (i % 2) * (cw + 8), cy = 102 + Math.floor(i / 2) * (ch + 4);
+      const cx = 20 + (i % 2) * (cw + 8), cy = 100 + Math.floor(i / 2) * (ch + 4);
       const bg = this.add.graphics();
       bg.fillStyle(0xD4AF37, 0.08); bg.fillRoundedRect(cx, cy, cw, ch, 6);
       bg.lineStyle(1, 0xD4AF37, 0.4); bg.strokeRoundedRect(cx, cy, cw, ch, 6);
@@ -426,7 +426,9 @@ class FinalScene extends Phaser.Scene {
     const t = this.add.text(0, 0, label, {
       fontFamily:'Poppins', fontSize: fsArg || '15px',
       color:`#${txtColor.toString(16).padStart(6,'0')}`,
-      fontStyle:'800', align:'center', stroke:'#000', strokeThickness:txtColor === 0xffffff ? 1 : 0
+      fontStyle:'800', align:'center', stroke:'#000',
+      // Teléfono (letra explícita): borde oscuro, porque el brillo del botón deja el texto claro sobre fondo claro.
+      strokeThickness: txtColor === 0xffffff ? 1 : (fsArg && txtColor !== 0x0A0A10 ? 3 : 0)
     }).setOrigin(0.5);
     container.add([shadow, base, fg, shine, border, t]);
     const glow = this.add.graphics();

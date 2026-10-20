@@ -125,3 +125,22 @@ test('la explicación dice los números con los que se hizo la cuenta', () => {
   assert.match(p.explain, new RegExp(`${p.pick.count}/${p.total}`));
   assert.match(p.explain, new RegExp(p.colorName));
 });
+
+test('el frasco dibuja una bola por cada bola del enunciado (antes topaba en 4 por color)', () => {
+  const fuente = leer('js/scenes/PuzzleUrna.js');
+  const m = fuente.match(/const cfgs = \{([\s\S]*?)\};/);
+  assert.ok(m, 'no se encontraron las urnas del juego');
+  const urnas = vm.runInContext('(' + '{' + m[1] + '})', contexto);
+  let revisadas = 0;
+  for (const lista of Object.values(urnas)) {
+    for (const cfg of lista) {
+      const dibujadas = vm.runInContext('bolasDeUrna(' + JSON.stringify(cfg) + ')', contexto);
+      for (const [k, n] of Object.entries(cfg)) {
+        assert.equal(dibujadas.filter((x) => x === k).length, n, 'urna ' + JSON.stringify(cfg) + ': color ' + k);
+      }
+      assert.equal(dibujadas.length, Object.values(cfg).reduce((a, b) => a + b, 0));
+      revisadas++;
+    }
+  }
+  assert.ok(revisadas >= 10);
+});
