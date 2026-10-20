@@ -52,7 +52,7 @@ test('el install deja el juego en la caché', async () => {
 test('sin red y sin caché, contesta algo en vez de romper la pantalla', async () => {
   const sw = montar({ sinRed: true });
   await sw.install().catch(() => {});
-  const res = await sw.fetch('https://juego.example/js/scenes/PuzzleTesoro.js?v=5')
+  const res = await sw.fetch(`https://juego.example/js/scenes/PuzzleTesoro.js?v=${sw.GAME_VERSION}`)
     .catch(() => 'RECHAZO');
   assert.notEqual(res, 'RECHAZO', 'la promesa de respondWith se rechazó');
   assert.notEqual(res, undefined, 'respondWith resolvió a undefined: el navegador lo toma como error de red');
@@ -61,9 +61,9 @@ test('sin red y sin caché, contesta algo en vez de romper la pantalla', async (
 test('con la copia guardada, sin red sigue sirviendo el juego', async () => {
   const sw = montar();
   await sw.install();
-  await sw.fetch('https://juego.example/js/core/state.js?v=5');
+  await sw.fetch(`https://juego.example/js/core/state.js?v=${sw.GAME_VERSION}`);
   sw.cortarRed();
-  const res = await sw.fetch('https://juego.example/js/core/state.js?v=5').catch(() => null);
+  const res = await sw.fetch(`https://juego.example/js/core/state.js?v=${sw.GAME_VERSION}`).catch(() => null);
   assert.ok(res && res.ok, 'sin red no devolvió la copia que ya tenía');
 });
 
@@ -113,7 +113,7 @@ test('después de UNA visita con red, el juego anda sin red (no hace falta una s
   const sw = montar();
   await sw.install();
   sw.cortarRed();
-  for (const ruta of ['js/scenes/BattleScene.js?v=5', 'js/core/save.js?v=5', 'css/modals.css', 'fonts/cinzel-600-latin.woff2', 'main.js?v=5']) {
+  for (const ruta of [`js/scenes/BattleScene.js?v=${sw.GAME_VERSION}`, `js/core/save.js?v=${sw.GAME_VERSION}`, 'css/modals.css', 'fonts/cinzel-600-latin.woff2', `main.js?v=${sw.GAME_VERSION}`]) {
     const res = await sw.fetch(sw.url(ruta));
     assert.ok(res && res.status === 200, `${ruta}: sin red no salió de la caché (${res && res.status})`);
   }
