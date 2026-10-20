@@ -50,6 +50,9 @@ class PuzzleMoneda extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: monedas y botón en una ventana a la izquierda; pregunta y respuestas, a la derecha.
+    const _w = this.scale.width;
+    const pz = pzCompactoInit(this, { x:_w/2 - 220, y:140, w:440, h:232 });
     const {w,h} = pzBg(this, 'mercader');
     pzHeader(this, 'Cara o Ceca', 'mercader', w);
     pzInfoButton(this, 'mercader', 'Cara o Ceca', [
@@ -72,6 +75,12 @@ class PuzzleMoneda extends Phaser.Scene {
     ]);
     const p = this._prob;
 
+    if (pz) {
+      pzPreguntaMovil(this, [
+        { txt:`Lanzas una moneda justa ${p.n} veces.`, color:'#a9b8c8' },
+        { txt:`¿Cuál es la probabilidad de obtener exactamente ${p.k} cara${p.k!==1?'s':''} (C)?`, fam:'Cinzel', color:'#D4AF37', estilo:'600', size:'15px' },
+      ]);
+    } else {
     pzPopIn(this, this.add.text(w/2, 96,
       `Lanzas una moneda justa ${p.n} veces.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center'
@@ -81,6 +90,7 @@ class PuzzleMoneda extends Phaser.Scene {
       fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'600',
       align:'center', wordWrap:{width:w*0.85}
     }).setOrigin(0.5), 160);
+    }
 
     /* ── Botón lanzar ── */
     pzActionBtn(this, w/2, 168, '⟳  ¡Lanzar las monedas!', 0xD4AF37, () => {
@@ -94,6 +104,7 @@ class PuzzleMoneda extends Phaser.Scene {
     pzButtons(this, p.opts, 448, (a)=>{
       pzResult(this, a.ok, p.explain, PUZZLE_CATALOG[1].recompensa.hp, 1);
     });
+    pzCompactoFin(this);
   }
 
   _drawCoins(cx, cy, n, k) {
@@ -104,7 +115,7 @@ class PuzzleMoneda extends Phaser.Scene {
     this._launching  = false;
 
     const resultTxt = this.add.text(cx, cy + 52, '', {
-      fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'700', align:'center'
+      fontFamily:'Cinzel', fontSize: this._pz ? '16px' : '14px', color:'#D4AF37', fontStyle:'700', align:'center'
     }).setOrigin(0.5).setAlpha(0).setDepth(4);
 
     for (let i = 0; i < total; i++) {
@@ -180,7 +191,7 @@ class PuzzleMoneda extends Phaser.Scene {
 
     /* Leyenda */
     pzPopIn(this, this.add.text(cx, cy + 74, `C(${n},${k}) = ${_binomial(n,k)} combinaciones con ${k} cara${k!==1?'s':''}`, {
-      fontFamily:'Poppins', fontSize:'11px', color:'#5a7080', align:'center'
+      fontFamily:'Poppins', fontSize: this._pz ? '13px' : '11px', color: this._pz ? '#8a9eb0' : '#5a7080', align:'center'
     }).setOrigin(0.5), 1200);
 
     return resultTxt;
@@ -227,3 +238,5 @@ class PuzzleMoneda extends Phaser.Scene {
     });
   }
 }
+
+PuzzleMoneda.DISENO_MOVIL = true;

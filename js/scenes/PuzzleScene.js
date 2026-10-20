@@ -37,6 +37,9 @@ class PuzzleScene extends Phaser.Scene {
 
   create() {
     const w = this.scale.width, h = this.scale.height;
+    // Teléfono apaisado (lienzo = pantalla real): NPC chico a la izquierda, diálogo y botones a la derecha,
+    // letras de 13-16 px y botones de 44 px o más.
+    const C = this._compacto = h < 500;
     if(typeof Music !== 'undefined') Music.play('puzzle');
     this.cameras.main.fadeIn(600, 0, 0, 0);
 
@@ -62,9 +65,11 @@ class PuzzleScene extends Phaser.Scene {
     }
 
     /* ── NPC DOM (mitad izquierda) ── */
-    const NPC_W = 400, NPC_H = 400;
+    const NPC_W = C ? 250 : 400, NPC_H = C ? 250 : 400;
+    const NPC_CX = C ? 140 : 220;
+    const NPC_CY = C ? h - 44 - NPC_H/2 : 375;      // el mostrador ocupa los últimos 44 px
     this._npcEl  = createNPCElement(this._npcKey, NPC_W, NPC_H);
-    this._npcDOM = this.add.dom(220, 375, this._npcEl);
+    this._npcDOM = this.add.dom(NPC_CX, NPC_CY, this._npcEl);
     this._npcDOM.setDepth(5);
     setNPCState(this._npcEl, 'idle');
 
@@ -76,7 +81,7 @@ class PuzzleScene extends Phaser.Scene {
     // borde ya oscurecida, y arrancar de nuevo en el tono claro deja una línea
     // horizontal marcada. Por eso se calcula en qué punto del degradado quedó
     // cortada la mesa y se continúa desde ese color exacto.
-    const cX0 = 220 - NPC_W/2, cX1 = 220 + NPC_W/2, cY0 = 375 + NPC_H/2;
+    const cX0 = NPC_CX - NPC_W/2, cX1 = NPC_CX + NPC_W/2, cY0 = NPC_CY + NPC_H/2;
     const TBL_TOP = 458, TBL_BOT = 576;          // rect de la mesa dentro del viewBox
     const VB_Y0 = (this._npcKey === 'oraculo') ? -6 : 66;  // origen y del viewBox por NPC
     const tCorte = Math.min(1, Math.max(0, ((VB_Y0 + 500) - TBL_TOP) / (TBL_BOT - TBL_TOP)));
@@ -89,8 +94,8 @@ class PuzzleScene extends Phaser.Scene {
     counterG.fillRect(cX0, cY0, cX1 - cX0, h - cY0);
 
     // Nombre del NPC bajo el personaje
-    this.add.text(220, 82, npcData.nombre.toUpperCase(), {
-      fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700',
+    this.add.text(NPC_CX, C ? 70 : 82, npcData.nombre.toUpperCase(), {
+      fontFamily:'Cinzel', fontSize: C ? '14px' : '12px', color:'#D4AF37', fontStyle:'700',
       letterSpacing:3, stroke:'#050408', strokeThickness:3,
       shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:12,fill:true}
     }).setOrigin(0.5);
@@ -98,17 +103,18 @@ class PuzzleScene extends Phaser.Scene {
     /* ── Separador vertical ── */
     const dvG = this.add.graphics();
     dvG.lineStyle(1, 0xD4AF37, 0.1);
-    dvG.lineBetween(444, 35, 444, h-35);
+    dvG.lineBetween(C ? 286 : 444, C ? 12 : 35, C ? 286 : 444, h - (C ? 12 : 35));
 
     /* ── Panel de contenido (mitad derecha) ──
        Alto dinámico según contenido real: con los fondos de imagen, dejar el
        panel a pantalla completa deja un bloque vacío debajo de los botones. */
-    const PX = 455, PY = 55, PW = w - PX - 18;
-    const DIALOG_H = 148;
+    const PX = C ? 296 : 455, PY = C ? 8 : 55, PW = w - PX - (C ? 8 : 18);
+    const DIALOG_H = C ? 90 : 148;
     const contentH = this._npcKey === 'mercader'
-      ? 160   // 2 botones de elección (34..90 y 104..160, relativo al inicio del panel)
-      : 22 + this._puzzleIds.length * 78; // header + N botones de enigma
-    const PH = Math.min(h - PY - 18, 50 + DIALOG_H + 14 + contentH + 46);
+      ? (C ? 150 : 160)   // 2 botones de elección (34..90 y 104..160, relativo al inicio del panel)
+      : (C ? 26 + this._puzzleIds.length * 74 : 22 + this._puzzleIds.length * 78); // header + N botones de enigma
+    const PH = C ? Math.min(h - 16, DIALOG_H + 10 + contentH + 12)
+                 : Math.min(h - PY - 18, 50 + DIALOG_H + 14 + contentH + 46);
     const panG = this.add.graphics();
     panG.fillStyle(0x0c0e1a, 0.88);
     panG.fillRoundedRect(PX, PY, PW, PH, 10);
@@ -117,16 +123,18 @@ class PuzzleScene extends Phaser.Scene {
     panG.lineStyle(1, 0xD4AF37, 0.06);
     panG.strokeRoundedRect(PX+3, PY+3, PW-6, PH-6, 8);
 
-    // Título del NPC en cabecera
-    this.add.text(PX + PW/2, PY+24, npcData.nombre.toUpperCase(), {
-      fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700', letterSpacing:3
-    }).setOrigin(0.5);
-    const hdG = this.add.graphics();
-    hdG.lineStyle(1, 0xD4AF37, 0.22);
-    hdG.lineBetween(PX+18, PY+42, PX+PW-18, PY+42);
+    // Título del NPC en cabecera (en el teléfono el nombre ya está bajo el personaje)
+    if (!C) {
+      this.add.text(PX + PW/2, PY+24, npcData.nombre.toUpperCase(), {
+        fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700', letterSpacing:3
+      }).setOrigin(0.5);
+      const hdG = this.add.graphics();
+      hdG.lineStyle(1, 0xD4AF37, 0.22);
+      hdG.lineBetween(PX+18, PY+42, PX+PW-18, PY+42);
+    }
 
     /* ── Caja de diálogo ── */
-    const DY = PY + 50, DH = 148;
+    const DY = C ? PY + 8 : PY + 50, DH = DIALOG_H - (C ? 8 : 0);
     const dlgG = this.add.graphics();
     dlgG.fillStyle(0x08090f, 0.92);
     dlgG.fillRoundedRect(PX+12, DY, PW-24, DH, 6);
@@ -138,13 +146,13 @@ class PuzzleScene extends Phaser.Scene {
       fontFamily:'Cinzel', fontSize:'11px', color:'#D4AF37', alpha:0.5
     });
 
-    this._dialogueTxt = this.add.text(PX+42, DY+10, '', {
-      fontFamily:'Poppins', fontSize:'12.5px', color:'#b0bcd0',
-      wordWrap:{width:PW-72}, lineSpacing:4
+    this._dialogueTxt = this.add.text(PX+42, DY+(C ? 8 : 10), '', {
+      fontFamily:'Poppins', fontSize: C ? '14px' : '12.5px', color: C ? '#c8d2e0' : '#b0bcd0',
+      wordWrap:{width:PW-72}, lineSpacing: C ? 3 : 4
     }).setDepth(2);
 
     this._contHint = this.add.text(PX+PW-22, DY+DH-10, '▼', {
-      fontFamily:'Arial', fontSize:'11px', color:'#D4AF37'
+      fontFamily:'Arial', fontSize: C ? '16px' : '11px', color:'#D4AF37'
     }).setOrigin(1,1).setAlpha(0).setDepth(2);
     this.tweens.add({targets:this._contHint,
       alpha:{from:0.3, to:1}, duration:600, yoyo:true, repeat:-1});
@@ -157,7 +165,7 @@ class PuzzleScene extends Phaser.Scene {
       .on('pointerup', ()=>this._skipDialogue());
 
     /* ── Panel de puzzles ── */
-    const PUZZ_Y = DY + DH + 14;
+    const PUZZ_Y = DY + DH + (C ? 10 : 14);
     this._buildPuzzlePanel(PX, PUZZ_Y, PW, h);
 
     /* ── Mercader: menú de elección (Jugar / Tienda) ── */
@@ -166,13 +174,14 @@ class PuzzleScene extends Phaser.Scene {
     }
 
     /* ── Botón volver ── */
-    const backBtn = this.add.text(PX + PW/2, PY + PH - 24, '← Volver al mapa', {
+    // En el teléfono va sobre el mostrador, bajo el personaje: 44 px de alto y letra de 14 px.
+    const backBtn = this.add.text(C ? NPC_CX : PX + PW/2, C ? h - 24 : PY + PH - 24, '← Volver al mapa', {
       // Era #2a3a4a (contraste 1,7:1 sobre el fondo) con un área táctil de ~100×14 px:
       // la única salida de la pantalla casi no se veía ni se podía tocar bien.
-      fontFamily:'Cinzel', fontSize:'12px', color:'#8fa6bd', padding:{x:16, y:14}
-    }).setOrigin(0.5).setInteractive({useHandCursor:true}).setDepth(2);
+      fontFamily:'Cinzel', fontSize: C ? '14px' : '12px', color: C ? '#b4c6d8' : '#8fa6bd', padding: C ? {x:18, y:16} : {x:16, y:14}
+    }).setOrigin(0.5).setInteractive({useHandCursor:true}).setDepth(6);
     backBtn.on('pointerover', ()=>backBtn.setColor('#D4AF37'));
-    backBtn.on('pointerout',  ()=>backBtn.setColor('#8fa6bd'));
+    backBtn.on('pointerout',  ()=>backBtn.setColor(C ? '#b4c6d8' : '#8fa6bd'));
     backBtn.on('pointerup',   ()=>this._confirmarSalida());
 
     /* ── Iniciar diálogo ── */
@@ -187,17 +196,18 @@ class PuzzleScene extends Phaser.Scene {
     this._panelObjs = [];
     this._btnData   = [];
 
-    const hdr = this.add.text(PX + PW/2, startY + 8, '— Elige tu enigma —', {
-      fontFamily:'Cinzel', fontSize:'11px', color:'#4a6070', letterSpacing:2
+    const C = this._compacto;
+    const hdr = this.add.text(PX + PW/2, startY + (C ? 9 : 8), '— Elige tu enigma —', {
+      fontFamily:'Cinzel', fontSize: C ? '13px' : '11px', color: C ? '#8fa6bd' : '#4a6070', letterSpacing:2
     }).setOrigin(0.5).setAlpha(0).setDepth(2);
     this._panelObjs.push(hdr);
 
-    const BH = 70, BW = PW - 26, BY0 = startY + 30;
+    const BH = C ? 68 : 70, BW = PW - 26, BY0 = startY + (C ? 26 : 30);
 
     this._puzzleIds.forEach((pId, i) => {
       const pz = PUZZLE_CATALOG[pId];
       if (!pz) return;
-      const bx = PX + 13, by = BY0 + i*(BH+8);
+      const bx = PX + 13, by = BY0 + i*(BH + (C ? 6 : 8));
 
       // Fondo botón
       const bgBtn = this.add.graphics().setAlpha(0).setDepth(2);
@@ -210,18 +220,19 @@ class PuzzleScene extends Phaser.Scene {
       };
       _drawBtn(false);
 
-      const titleTxt = this.add.text(bx+14, by+10, pz.nombre, {
-        fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'600'
+      const titleTxt = this.add.text(bx+14, by+(C ? 7 : 10), pz.nombre, {
+        fontFamily:'Cinzel', fontSize: C ? '15px' : '13px', color:'#D4AF37', fontStyle:'600'
       }).setAlpha(0).setDepth(3);
 
-      const descTxt = this.add.text(bx+14, by+30, pz.desc, {
-        fontFamily:'Poppins', fontSize:'10.5px', color:'#5a7888',
+      const descTxt = this.add.text(bx+14, by+(C ? 28 : 30), pz.desc, {
+        fontFamily:'Poppins', fontSize: C ? '13px' : '10.5px', color: C ? '#9ab4c4' : '#5a7888',
         wordWrap:{width:BW-28}, lineSpacing:2
       }).setAlpha(0).setDepth(3);
 
-      const rewTxt = this.add.text(bx+BW-12, by+BH-10, pz.recompensa.desc, {
-        fontFamily:'Cinzel', fontSize:'9px', color:'#8a6a20'
-      }).setOrigin(1,1).setAlpha(0).setDepth(3);
+      // En el teléfono la recompensa va arriba a la derecha (abajo no hay lugar).
+      const rewTxt = this.add.text(bx+BW-12, C ? by+9 : by+BH-10, pz.recompensa.desc, {
+        fontFamily:'Cinzel', fontSize: C ? '12px' : '9px', color: C ? '#c8a040' : '#8a6a20'
+      }).setOrigin(1, C ? 0 : 1).setAlpha(0).setDepth(3);
 
       const hit = this.add.rectangle(bx+BW/2, by+BH/2, BW, BH, 0, 0)
         .setDepth(4).setInteractive({useHandCursor:true});
@@ -318,14 +329,15 @@ class PuzzleScene extends Phaser.Scene {
   _buildMerchantChoice(PX, startY, PW) {
     this._choiceObjs = [];
 
-    const lbl = this.add.text(PX + PW/2, startY + 8,
+    const C = this._compacto;
+    const lbl = this.add.text(PX + PW/2, startY + (C ? 9 : 8),
       '¿Qué deseas hacer, héroe?', {
-      fontFamily:'Cinzel', fontSize:'11px', color:'#4a6070', letterSpacing:2
+      fontFamily:'Cinzel', fontSize: C ? '13px' : '11px', color: C ? '#8fa6bd' : '#4a6070', letterSpacing:2
     }).setOrigin(0.5).setAlpha(0).setDepth(3);
     this._choiceObjs.push(lbl);
 
     const mkBtn = (cy, label, sub, onUp) => {
-      const BW = PW - 60, BX = PX + 30, BH = 56;
+      const BW = PW - 60, BX = PX + 30, BH = C ? 58 : 56;
       const bg = this.add.graphics().setAlpha(0).setDepth(2);
       const draw = (hov) => {
         bg.clear();
@@ -335,11 +347,11 @@ class PuzzleScene extends Phaser.Scene {
         bg.strokeRoundedRect(BX, cy, BW, BH, 8);
       };
       draw(false);
-      const t1 = this.add.text(PX + PW/2, cy + 18, label, {
-        fontFamily:'Cinzel', fontSize:'15px', color:'#D4AF37', fontStyle:'700', letterSpacing:1
+      const t1 = this.add.text(PX + PW/2, cy + (C ? 19 : 18), label, {
+        fontFamily:'Cinzel', fontSize: C ? '16px' : '15px', color:'#D4AF37', fontStyle:'700', letterSpacing:1
       }).setOrigin(0.5).setAlpha(0).setDepth(3);
-      const t2 = this.add.text(PX + PW/2, cy + 39, sub, {
-        fontFamily:'Poppins', fontSize:'10px', color:'#5a7888'
+      const t2 = this.add.text(PX + PW/2, cy + (C ? 41 : 39), sub, {
+        fontFamily:'Poppins', fontSize: C ? '13px' : '10px', color: C ? '#9ab4c4' : '#5a7888'
       }).setOrigin(0.5).setAlpha(0).setDepth(3);
       const hit = this.add.rectangle(PX + PW/2, cy + BH/2, BW, BH, 0, 0)
         .setDepth(4).setInteractive({useHandCursor:true});
@@ -351,9 +363,9 @@ class PuzzleScene extends Phaser.Scene {
       this._choiceObjs.push(bg, t1, t2, hit);
     };
 
-    mkBtn(startY + 34, '🎲  Probar mi suerte',
+    mkBtn(startY + (C ? 28 : 34), '🎲  Probar mi suerte',
       'Enfrentá los juegos de probabilidad', ()=>this._onChooseMinijuegos());
-    mkBtn(startY + 104, '💰  Ver tienda',
+    mkBtn(startY + (C ? 94 : 104), '💰  Ver tienda',
       'Revisá la mercancía antes de avanzar', ()=>this._abrirTienda());
   }
 
@@ -383,6 +395,22 @@ class PuzzleScene extends Phaser.Scene {
     snd_item && snd_item();
     window.__confirmAdvance = ()=>{ closeItemModal(); this._confirmedAdvance = true; this._selectPuzzle(pId); };
     window.__cancelAdvance  = ()=>{ closeItemModal(); this._abrirTienda(); };
+    /* Teléfono apaisado: ícono al costado y botones de 44 px, para que todo entre sin scroll. */
+    if (this._compacto) {
+      const hc =
+        '<div style="display:flex;gap:16px;align-items:center;padding:2px 4px">' +
+        '<div style="font-size:44px;flex:0 0 56px;text-align:center;filter:drop-shadow(0 0 8px rgba(212,175,55,0.5))">⚠️</div>' +
+        '<div style="flex:1;min-width:0;font-family:Lora,serif;font-size:14px;line-height:1.5;color:#b0bcd0">' +
+        'Si entrás al minijuego y lo resolvés, <b style="color:#F5D97A">avanzarás a la siguiente zona</b> del mapa y ' +
+        '<b style="color:#E0A0A0">no podrás volver a esta tienda</b>.<br>' +
+        '<span style="color:#9aaabb">¿Seguro que no deseas comprar nada y avanzar?</span></div></div>' +
+        '<div class="btn-row" style="display:flex;gap:10px;justify-content:center;margin-top:12px">' +
+        '<button class="btn-action btn-secondary" style="min-height:44px;margin:0" onclick="window.__cancelAdvance()">' + coinSpan(13) + ' Volver a la tienda</button>' +
+        '<button class="btn-action" style="min-height:44px;margin:0" onclick="window.__confirmAdvance()">⚔ Continuar</button>' +
+        '</div>';
+      openItemModal(hc, 'Antes de continuar');
+      return;
+    }
     const html =
       '<div style="padding:12px;text-align:center;max-width:440px;margin:0 auto">' +
       '<div style="font-size:40px;margin-bottom:6px;filter:drop-shadow(0 0 8px rgba(212,175,55,0.5))">⚠️</div>' +
@@ -398,8 +426,16 @@ class PuzzleScene extends Phaser.Scene {
     openItemModal(html);
   }
 
+  /* ¿Hay un modal DOM (aviso, tienda) abierto? Phaser también recibe el "soltar" de un clic hecho SOBRE
+     el modal: si ese clic cae encima de un botón de esta escena, lo dispara y el modal se vuelve a armar
+     entre el "soltar" y el "click" del botón del modal, que se pierde (el aviso no dejaba continuar). */
+  _modalAbierto() {
+    const m = document.getElementById('itemModal');
+    return !!(m && m.classList.contains('active'));
+  }
+
   _selectPuzzle(pId) {
-    if (this._selecting) return;
+    if (this._selecting || this._modalAbierto()) return;
     /* Mercader: confirmar punto de no retorno antes de entrar */
     if (this._npcKey === 'mercader' && !this._confirmedAdvance) {
       this._confirmAdvance(pId);
@@ -462,6 +498,7 @@ class PuzzleScene extends Phaser.Scene {
 
   /* ─── TIENDA DEL MERCADER ─── */
   _abrirTienda() {
+    if (this._modalAbierto()) return;
     snd_item && snd_item();
     window.__buyShop = (id)=>this._comprar(id);
 
@@ -471,6 +508,28 @@ class PuzzleScene extends Phaser.Scene {
       const lleno = STATE.inventario.length >= (CFG.MAX_INVENTORY_SLOTS || 6);
       /* Catálogo por niveles: vendible si tiene precio y está desbloqueado */
       const VENTA = ITEMS.filter(it => it.precio && (it.minJefe||0) <= jefe).map(it => it.id);
+      /* Teléfono apaisado: una lista de filas (ícono, nombre y efecto, botón de 44 px) en vez de tarjetas altas. */
+      if (this._compacto) {
+        let hc = '<div style="padding:2px 4px">';
+        hc += `<p style="text-align:center;color:#F5D97A;font-family:'Cinzel',serif;font-size:15px;margin:0 0 8px">${coinSpan(15)} Tu oro: ${oro}</p>`;
+        if (lleno) hc += '<p style="text-align:center;color:#E05548;font-size:13px;margin:0 0 8px;font-family:Lora,serif">⚠ Bolsa llena (6/6): usá o liberá espacio para comprar.</p>';
+        VENTA.forEach(id=>{
+          const it = ITEMS[id-1];
+          const precio = precioItem(STATE.clase, it.precio);
+          const puede = oro >= precio && !lleno;
+          hc += `<div class="card" style="display:flex;align-items:center;gap:12px;padding:8px 12px;margin-bottom:8px;text-align:left">
+            <div style="font-size:28px;flex:0 0 38px;text-align:center">${it.emoji}</div>
+            <div style="flex:1;min-width:0"><div style="color:#D4AF37;font-family:'Cinzel',serif;font-size:14px">${it.nombre}</div>
+              <div style="color:#5fcf88;font-size:13px;font-family:'Lora',serif">${it.efecto}</div></div>
+            <button class="btn-action ${puede?'':'btn-secondary'}" style="flex:0 0 auto;min-width:96px;min-height:44px;margin:0;padding:8px 12px;${puede?'':'opacity:.5;cursor:not-allowed'}" ${puede?`onclick="window.__buyShop(${id})"`:''}>${coinSpan(13)} ${precio}</button>
+          </div>`;
+        });
+        hc += '<div class="btn-row" style="margin-top:8px"><button class="btn-action btn-secondary" style="min-height:44px" onclick="closeItemModal()">&#9665; Cerrar</button></div></div>';
+        openItemModal(hc, 'Mercancía del Mercader');
+        const caja = document.querySelector('#itemModal .modal');
+        if (caja) caja.style.maxWidth = '680px';
+        return;
+      }
       let html = '<div style="padding:8px;">';
       html += `<h3 style="color:#D4AF37;text-align:center;margin-bottom:4px;font-family:'Cinzel',serif;font-size:15px;letter-spacing:2px;text-transform:uppercase">Mercancía del Mercader</h3>`;
       html += `<p style="text-align:center;color:#F5D97A;font-family:'Cinzel',serif;font-size:14px;margin-bottom:12px">${coinSpan(15)} Tu oro: ${oro}</p>`;
@@ -519,3 +578,5 @@ class PuzzleScene extends Phaser.Scene {
     }
   }
 }
+
+PuzzleScene.DISENO_MOVIL = true;

@@ -62,6 +62,19 @@ class PuzzleDados extends Phaser.Scene {
   }
 
   _buildInfo(w, h) {
+    if (this._pz) {
+      _pzInfoMovil(this, 'oraculo', 'Los histogramas', [
+        '◆ ¿Qué son en general?',
+        'Un histograma es un gráfico de barras que muestra cuántas veces apareció cada resultado. Barra más alta = resultado más frecuente.',
+        '',
+        '◆ ¿Para qué sirven aquí?',
+        'Cada dado tiene su propio histograma con las 6 caras (1 a 6). Un dado justo reparte parejo las 6 barras. Un dado trucado hace que UNA cara salga mucho más → su barra sobresale.',
+        '',
+        '◆ ¿Cómo se leen?',
+        'La línea gris marca lo esperado en un dado JUSTO (1 de cada 6). En un dado justo las 6 barras quedan cerca de esa línea. El trucado tiene una barra que la supera claro (se pinta dorada). Cuantas más tiradas, más estable el patrón: tirá 30+ veces.',
+      ]);
+      return;
+    }
     /* Botón ? arriba a la derecha */
     const bx = w - 38, by = 40;
     const btn = this.add.graphics().setDepth(40);
@@ -137,6 +150,10 @@ class PuzzleDados extends Phaser.Scene {
   }
 
   create() {
+    // Teléfono: todo se dibuja directo en coordenadas de pantalla (la ventana de ilustración ocupa el ancho).
+    const _w = this.scale.width, _h = this.scale.height;
+    const pz = pzCompactoInit(this, { x:8, y:44, w:_w - 16, h:_h - 52 }, { ancho:true });
+    if (pz) pz.respFila = { y: 266 };
     const { w, h } = pzBg(this, 'oraculo');
     pzHeader(this, 'El Falsificador de Dados', 'oraculo', w);
     const p = this._prob;
@@ -147,6 +164,15 @@ class PuzzleDados extends Phaser.Scene {
     const facesStr = faces.length === 1
       ? `el número ${faces[0]}`
       : `los números ${faces.slice(0,-1).join(', ')} o ${faces[faces.length-1]}`;
+    if (pz) {
+      const t1 = this.add.text(w/2, 50, `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que salga casi siempre ${facesStr}.`, {
+        fontFamily:'Poppins', fontSize:'14px', color:'#a9b8c8', align:'center', wordWrap:{ width:w - 40 }
+      }).setOrigin(0.5, 0);
+      const t2 = this.add.text(w/2, t1.y + t1.height + 4, `Lanzalos varias veces y descubri ${pl ? 'cuales estan' : 'cual esta'} trucado${pl?'s':''}.`, {
+        fontFamily:'Cinzel', fontSize:'14px', color:'#70c8e0', fontStyle:'600', align:'center'
+      }).setOrigin(0.5, 0);
+      pzPopIn(this, t1, 80); pzPopIn(this, t2, 160);
+    } else {
     pzPopIn(this, this.add.text(w/2, 96,
       `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que salga casi siempre ${facesStr}.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center',
@@ -156,15 +182,16 @@ class PuzzleDados extends Phaser.Scene {
       `Lanzalos varias veces y descubri ${pl ? 'cuales estan' : 'cual esta'} trucado${pl?'s':''}.`, {
       fontFamily:'Cinzel', fontSize:'13px', color:'#70c8e0', fontStyle:'600', align:'center'
     }).setOrigin(0.5), 160);
+    }
 
     /* ── Botón info + overlay ── */
     this._buildInfo(w, h);
 
     /* ── Puntaje doble en este desafío ── */
     this._ptsMult = 2;
-    pzPopIn(this, this.add.text(70, 40, '★ Puntaje ×2', {
-      fontFamily:'Cinzel', fontSize:'12px', color:'#D4AF37', fontStyle:'700'
-    }).setOrigin(0.5), 200);
+    pzPopIn(this, this.add.text(pz ? 190 : 70, pz ? 22 : 40, '★ Puntaje ×2', {
+      fontFamily:'Cinzel', fontSize: pz ? '14px' : '12px', color:'#D4AF37', fontStyle:'700'
+    }).setOrigin(0.5).setScrollFactor(pz ? 0 : 1), 200);
 
     /* Contexto de puntaje */
     const _md      = this._data && this._data.modoArcade;
@@ -175,19 +202,21 @@ class PuzzleDados extends Phaser.Scene {
     let wrongPicks = 0;
 
     /* ── Layout ── */
-    const CY     = 232;
+    const CY     = pz ? 128 : 232;
     const SIZE   = 52;
-    const SP     = 76;
+    const SP     = pz ? Math.min(128, (w - 24) / 6) : 76;
     const X0     = w/2 - 2.5 * SP;
-    const HIST_Y = CY + SIZE/2 + 4;
-    const HIST_H = 32;
-    const FACE_LBL_Y = HIST_Y + HIST_H + 7;
-    const LBL_Y  = HIST_Y + HIST_H + 20;
-    const STAT_Y = LBL_Y + 18;
-    const ROLL_Y = STAT_Y + 36;
-    const AUX_Y  = ROLL_Y + 36;
-    const Q_Y    = AUX_Y + 44;
-    const OPTS_Y = Q_Y + 66;
+    const HIST_Y = CY + SIZE/2 + (pz ? 8 : 4);
+    const HIST_H = pz ? 36 : 32;
+    const FACE_LBL_Y = HIST_Y + HIST_H + (pz ? 9 : 7);
+    const LBL_Y  = HIST_Y + HIST_H + (pz ? 25 : 20);
+    const STAT_Y = LBL_Y + (pz ? 26 : 18);
+    const ROLL_Y = pz ? STAT_Y + 48 : STAT_Y + 36;
+    const AUX_Y  = pz ? ROLL_Y : ROLL_Y + 36;
+    const Q_Y    = pz ? STAT_Y + 4 : AUX_Y + 44;
+    const OPTS_Y = pz ? ROLL_Y - 23 : Q_Y + 66;
+    // Histograma: más ancho en el teléfono para poder rotular cada barra con 11 px.
+    const BARW = pz ? 12 : 7, STEP = pz ? 14 : 8, BX0 = pz ? -42 : -20, LX0 = pz ? -36 : -16.5, FLN = pz ? 46 : 22;
 
     const PIPS = {
       1:[[0,0]], 2:[[-1,-1],[1,1]], 3:[[-1,-1],[0,0],[1,1]],
@@ -236,20 +265,20 @@ class PuzzleDados extends Phaser.Scene {
       for (let f = 0; f < 6; f++) {
         const prop = counts[f] / n;
         const bh = Math.min(HIST_H, Math.round(prop * HIST_H * SCALE));
-        const bx = f * 8 - 20;
+        const bx = f * STEP + BX0;
         hg.fillStyle(0x141c28, 1);
-        hg.fillRect(bx, 0, 7, HIST_H);
+        hg.fillRect(bx, 0, BARW, HIST_H);
         if (counts[f]) {
           /* Barra notoriamente sobre lo esperado = dorada (pista visual) */
           const hot = prop > fairProp * 1.8;
           hg.fillStyle(hot ? 0xD4AF37 : 0x3a5070, hot ? 0.95 : 0.9);
-          hg.fillRect(bx, HIST_H - bh, 7, bh);
+          hg.fillRect(bx, HIST_H - bh, BARW, bh);
         }
       }
       /* Línea de referencia: frecuencia esperada de un dado JUSTO (1/6) */
       const fairY = HIST_H - Math.round(fairProp * HIST_H * SCALE);
       hg.lineStyle(1, 0x7a8a98, 0.5);
-      hg.beginPath(); hg.moveTo(-22, fairY); hg.lineTo(28, fairY); hg.strokePath();
+      hg.beginPath(); hg.moveTo(-FLN, fairY); hg.lineTo(FLN + (pz ? 0 : 6), fairY); hg.strokePath();
     };
 
     /* ── Build 6 dice ── */
@@ -272,18 +301,18 @@ class PuzzleDados extends Phaser.Scene {
 
       /* Etiqueta de cara (1-6) bajo cada barra */
       for (let f = 0; f < 6; f++) {
-        const lblX = dx + (f * 8 - 16.5);
+        const lblX = dx + (f * STEP + LX0);
         pzPopIn(this, this.add.text(lblX, FACE_LBL_Y, `${f+1}`, {
-          fontFamily:'Poppins', fontSize:'7px', color:'#4a5a6a'
+          fontFamily:'Poppins', fontSize: pz ? '11px' : '7px', color: pz ? '#8a9aaa' : '#4a5a6a'
         }).setOrigin(0.5), 950 + i*60);
       }
 
       pzPopIn(this, this.add.text(dx, LBL_Y, `Dado ${i+1}`, {
-        fontFamily:'Poppins', fontSize:'8px', color:'#3a4a5a'
+        fontFamily:'Poppins', fontSize: pz ? '12px' : '8px', color: pz ? '#9aaabb' : '#3a4a5a'
       }).setOrigin(0.5), 900 + i*60);
 
       /* Selección: dado clickeable en cualquier momento */
-      const selHit = this.add.rectangle(dx, CY, SIZE+8, SIZE+8, 0, 0)
+      const selHit = this.add.rectangle(dx, CY + (pz ? 18 : 0), SIZE+8, pz ? 112 : SIZE+8, 0, 0)
         .setDepth(4).setInteractive({ useHandCursor:true });
       selHits.push(selHit);
       selHit.on('pointerup', () => {
@@ -304,14 +333,15 @@ class PuzzleDados extends Phaser.Scene {
     /* ── Status text ── */
     const statTxt = this.add.text(w/2, STAT_Y,
       'Lanza las veces que quieras y toca el/los dado(s) que creas trucado(s).', {
-      fontFamily:'Poppins', fontSize:'11px', color:'#5a6878', align:'center'
+      fontFamily:'Poppins', fontSize: pz ? '14px' : '11px', color: pz ? '#9aaabb' : '#5a6878', align:'center',
+      wordWrap: pz ? { width: w - 40 } : undefined
     }).setOrigin(0.5);
 
     /* Premio/castigo inmediato (fase descubrimiento) */
     const awardImmediate = (delta) => {
       if (typeof ptsAdd === 'function') ptsAdd(delta, modeKey);
-      const ft = this.add.text(w/2 + 150, STAT_Y, `${delta>=0?'+':'-'}${Math.abs(delta)} pts`, {
-        fontFamily:'Cinzel', fontSize:'15px', fontStyle:'700',
+      const ft = this.add.text(w/2 + (pz ? 260 : 150), STAT_Y, `${delta>=0?'+':'-'}${Math.abs(delta)} pts`, {
+        fontFamily:'Cinzel', fontSize: pz ? '18px' : '15px', fontStyle:'700',
         color: delta>=0 ? '#50e890' : '#e06060'
       }).setOrigin(0.5).setDepth(30);
       this.tweens.add({ targets:ft, y:ft.y-26, alpha:0, duration:1200,
@@ -322,10 +352,14 @@ class PuzzleDados extends Phaser.Scene {
     const showQuestion = () => {
       const qTxt = this.add.text(w/2, Q_Y,
         `?Cual es la probabilidad de obtener la cara ${p.prim.face} con el dado trucado?`, {
-        fontFamily:'Cinzel', fontSize:'13px', color:'#70c8e0', fontStyle:'600',
-        align:'center', wordWrap:{ width:590 }
+        fontFamily:'Cinzel', fontSize: pz ? '15px' : '13px', color:'#70c8e0', fontStyle:'600',
+        align:'center', wordWrap:{ width: pz ? w - 40 : 590 }
       }).setOrigin(0.5).setAlpha(0);
       this.tweens.add({ targets:qTxt, alpha:1, duration:420 });
+      if (pz) {   // la fase 2 usa el lugar de los botones y del estado
+        statTxt.setVisible(false); confG.setVisible(false); confTxt.setVisible(false);
+        confHit.removeInteractive(); rollBtn.setVisible(false).disableInteractive();
+      }
       this.time.delayedCall(350, () => {
         pzButtons(this, p.opts, OPTS_Y, (a) => {
           pzResult(this, a.ok, p.explain, PUZZLE_CATALOG[4].recompensa.hp, 4);
@@ -371,17 +405,18 @@ class PuzzleDados extends Phaser.Scene {
 
     /* ── Confirm button ── */
     const confG   = this.add.graphics().setAlpha(0).setDepth(5);
-    const confTxt = this.add.text(w/2, AUX_Y, 'Certificar dado', {
-      fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'700'
+    const CX = pz ? w/2 + 120 : w/2, CH = pz ? 46 : 34;
+    const confTxt = this.add.text(CX, AUX_Y, 'Certificar dado', {
+      fontFamily:'Cinzel', fontSize: pz ? '15px' : '13px', color:'#D4AF37', fontStyle:'700'
     }).setOrigin(0.5).setAlpha(0).setDepth(5);
-    const confHit = this.add.rectangle(w/2, AUX_Y, 220, 34, 0, 0).setDepth(6);
+    const confHit = this.add.rectangle(CX, AUX_Y, 220, CH, 0, 0).setDepth(6);
 
     const drawConfBtn = (hov) => {
       confG.clear();
       confG.fillStyle(0x1a2810, hov ? 0.95 : 0.7);
-      confG.fillRoundedRect(w/2-110, AUX_Y-17, 220, 34, 8);
+      confG.fillRoundedRect(CX-110, AUX_Y-CH/2, 220, CH, 8);
       confG.lineStyle(2, 0xD4AF37, hov ? 1 : 0.6);
-      confG.strokeRoundedRect(w/2-110, AUX_Y-17, 220, 34, 8);
+      confG.strokeRoundedRect(CX-110, AUX_Y-CH/2, 220, CH, 8);
     };
     const showConf = (show) => {
       if (show) {
@@ -399,7 +434,7 @@ class PuzzleDados extends Phaser.Scene {
     showConf(true);   // botón siempre presente: jugador puede certificar cuando quiera
 
     /* ── Roll button ── */
-    pzActionBtn(this, w/2, ROLL_Y, 'Lanzar todos', 0x70c8e0, () => {
+    const rollBtn = pzActionBtn(this, pz ? w/2 - 120 : w/2, ROLL_Y, 'Lanzar todos', 0x70c8e0, () => {
       if (locked || busy) return;
       busy = true;
       rollCount++;
@@ -434,5 +469,8 @@ class PuzzleDados extends Phaser.Scene {
         });
       }
     });
+    pzCompactoFin(this);
   }
 }
+
+PuzzleDados.DISENO_MOVIL = true;

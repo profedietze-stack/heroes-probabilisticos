@@ -209,6 +209,7 @@
   .modal { max-height: 96dvh; max-height: 96vh; }
   .modal-header { padding: 6px 14px; }
   .modal-header h2 { font-size: 14px; letter-spacing: 2px; }
+  .tab-content { padding: 12px 20px; }
 }
 
 /* Safe area bottom para iPhone con home-indicator */
