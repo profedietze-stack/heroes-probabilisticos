@@ -21,6 +21,12 @@ function showToast(text, duration=4000){
   clearTimeout(t._to); t._to=setTimeout(()=>t.classList.remove('show'), duration);
 }
 
+/* Escapa texto antes de meterlo en un innerHTML. El nombre del héroe lo escribe
+   el alumno (o viene de un guardado editado) y se imprime en el certificado y en
+   el resumen final: sin escapar, un nombre con "<" se interpreta como HTML. */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
 function fmtTime(ms){
   const s=Math.floor(ms/1000);
   const m=Math.floor(s/60), r=s%60;

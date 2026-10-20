@@ -101,7 +101,7 @@ class FinalScene extends Phaser.Scene {
         <div style="font-size:24px;font-family:'Cinzel',serif;font-weight:800;color:#5a3a00;margin:8px 0 2px">CERTIFICADO DE FINALIZACIÓN</div>
         <div style="width:180px;height:1px;background:#8b6914;margin:10px auto"></div>
         <p style="font-size:13px;margin:12px 0 4px">Se certifica que</p>
-        <div style="font-size:28px;font-family:'Cinzel',serif;font-weight:700;color:#1a0e00">${STATE.nombre}</div>
+        <div style="font-size:28px;font-family:'Cinzel',serif;font-weight:700;color:#1a0e00">${escapeHtml(STATE.nombre)}</div>
         <p style="font-size:13px;line-height:1.6;margin:10px 20px">
           completó la campaña de <b>Héroes Probabilísticos</b> en dificultad <b>${dif}</b>,
           derrotó a los 10 Monstruos Matemáticos y restauró la Probabilidad de Laplace,
@@ -257,7 +257,7 @@ class FinalScene extends Phaser.Scene {
     const lucky = this.calcNumeroSuerte();
     let html = `<div>
       <h3 style="color:#D4AF37;font-family:Cinzel;text-align:center">📖 Informe Pedagógico</h3>
-      <p style="text-align:center;color:#ddd;font-style:italic">Resumen de conceptos practicados por <strong>${STATE.nombre}</strong></p>
+      <p style="text-align:center;color:#ddd;font-style:italic">Resumen de conceptos practicados por <strong>${escapeHtml(STATE.nombre)}</strong></p>
 
       <h4>🎯 Conceptos trabajados</h4>
       <ul>
