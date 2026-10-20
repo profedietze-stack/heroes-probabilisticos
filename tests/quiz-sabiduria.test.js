@@ -91,3 +91,23 @@ test('el código del quiz ya no usa el comparador tramposo', () => {
     '_showQuiz volvió a barajar con el comparador que reparte mal',
   );
 });
+
+test('la opción correcta no se delata por su largo', () => {
+  // Las respuestas correctas de un cuestionario tienden a ser las más largas y
+  // las más matizadas ("aproximadamente", "alrededor de") mientras las falsas
+  // son cortas y absolutas ("siempre", "nunca", "exactamente"). Era la más
+  // larga en 7 de las 8 preguntas de texto: se acierta sin saber probabilidad.
+  const detalle = [];
+  let masLarga = 0, masCorta = 0, total = 0;
+  QUIZZES.forEach((q, i) => {
+    if (q.ops.every((o) => /^\d+$/.test(o))) return;          // opciones numéricas: no hay largo que medir
+    total++;
+    const largos = q.ops.map((o) => o.length);
+    const c = largos[q.ok];
+    if (largos.every((l, j) => j === q.ok || l < c)) masLarga++;
+    if (largos.every((l, j) => j === q.ok || l > c)) masCorta++;
+    detalle.push(`${i + 1}: ${largos.join('/')} (correcta ${c})`);
+  });
+  assert.ok(masLarga / total <= 0.5, `la correcta es la más larga en ${masLarga} de ${total}: ${detalle.join(' | ')}`);
+  assert.ok(masCorta / total <= 0.6, `la correcta es la más corta en ${masCorta} de ${total}: ${detalle.join(' | ')}`);
+});
