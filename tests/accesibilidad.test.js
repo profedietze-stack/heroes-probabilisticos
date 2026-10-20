@@ -35,3 +35,12 @@ test('prefers-reduced-motion apaga animaciones CSS y las sacudidas/destellos de 
   assert.match(main, /Cam\.shake\s*=/);
   assert.match(main, /Cam\.flash\s*=/);
 });
+
+// D5: Phaser 3.60 ignora scale.max, así que el tope de 1024x700 tiene que estar en el CSS del contenedor.
+test('el contenedor del canvas no pasa de 1024x700 (sin upscale borroso en Full HD)', () => {
+  const v = leer('css/variables.css');
+  const m = v.match(/#phaserGame\s*\{([^}]*)\}/);
+  assert.ok(m, 'falta la regla #phaserGame');
+  assert.match(m[1], /max-width:\s*1024px/);
+  assert.match(m[1], /max-height:\s*700px/);
+});

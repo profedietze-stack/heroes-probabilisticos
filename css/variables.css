@@ -55,7 +55,8 @@ body::before{
   height:100dvh;
   display:flex;align-items:center;justify-content:center;
 }
-#phaserGame{box-shadow:0 0 60px rgba(212,175,55,0.07),0 0 120px rgba(0,0,0,0.8);border-radius:2px}
+/* D5: Phaser 3.60 ignora scale.max; el tope va en el contenedor. Nunca más de 1024x700 CSS = sin upscale (nítido). */
+#phaserGame{width:100%;height:100%;max-width:1024px;max-height:700px;box-shadow:0 0 60px rgba(212,175,55,0.07),0 0 120px rgba(0,0,0,0.8);border-radius:2px}
 /* Mejora 13 — touch + nitidez canvas */
 #phaserGame canvas{
   touch-action: none;
