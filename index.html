@@ -742,7 +742,7 @@ Mapa del Tesoro |              |            |</div>
   /* Version de release: SUBIR este numero al publicar cambios.
      Fuerza a los navegadores (y al service worker) a traer los scripts nuevos
      en vez de servir versiones viejas del cache HTTP heuristico. */
-  var GAME_VERSION = '9';
+  var GAME_VERSION = '10';
   window.GAME_VERSION = GAME_VERSION;
 
   /* Los scripts se piden TODOS A LA VEZ y se ejecutan EN ORDEN: un <script>
@@ -905,14 +905,16 @@ Mapa del Tesoro |              |            |</div>
 <!-- ══════════════════════════════════════
      ORIENTACIÓN: aviso portrait en móviles
 ══════════════════════════════════════ -->
-<div id="orientWarn" aria-hidden="true">
+<div id="orientWarn" role="dialog" aria-label="Girá el teléfono">
   <div class="ow-inner">
-    <div class="ow-icon">📱</div>
-    <p class="ow-title">Gira tu dispositivo</p>
-    <p class="ow-sub">El juego se ve mejor en horizontal</p>
-    <div class="ow-arrow">↻</div>
+    <div class="ow-icon" aria-hidden="true">📱</div>
+    <p class="ow-title">Girá el teléfono</p>
+    <p class="ow-sub">Se juega acostado: así los botones y las letras se ven más grandes</p>
+    <div class="ow-arrow" aria-hidden="true">↻</div>
+    <button type="button" class="ow-seguir" onclick="document.documentElement.classList.add('sin-aviso-girar');try{sessionStorage.setItem('hpSinAvisoGirar','1')}catch(e){}">Jugar así igual</button>
   </div>
 </div>
+<script>try{if(sessionStorage.getItem('hpSinAvisoGirar')==='1')document.documentElement.classList.add('sin-aviso-girar')}catch(e){}</script>
 
 <style>
 /* Sólo visible en portrait con pantalla pequeña (phone) */
@@ -928,7 +930,12 @@ Mapa del Tesoro |              |            |</div>
 .ow-inner{text-align:center;color:#D4AF37}
 .ow-icon{font-size:52px;margin-bottom:16px;display:block}
 .ow-title{font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
-.ow-sub{font-size:12px;color:#4a6080;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.ow-sub{font-size:14px;color:#8a9ab0;letter-spacing:1px;line-height:1.5;max-width:300px;margin:0 auto 24px}
+.ow-seguir{
+  display:block;margin:24px auto 0;min-height:44px;padding:10px 22px;cursor:pointer;
+  background:transparent;color:#8a9ab0;border:1px solid #3a4a5e;border-radius:2px;
+  font-family:'Cinzel',Georgia,serif;font-size:14px;letter-spacing:1px;
+}
 .ow-arrow{
   font-size:48px;color:#D4AF37;opacity:.6;
   animation:ow-spin 2s ease-in-out infinite;
@@ -940,7 +947,7 @@ Mapa del Tesoro |              |            |</div>
 }
 /* Mostrar sólo en portrait phones (ancho < 600px, modo portrait) */
 @media (max-width:600px) and (orientation:portrait){
-  #orientWarn{display:flex;}
+  html:not(.sin-aviso-girar) #orientWarn{display:flex;}
 }
 </style>
 

@@ -44,3 +44,13 @@ test('el contenedor del canvas no pasa de 1024x700 (sin upscale borroso en Full 
   assert.match(m[1], /max-width:\s*1024px/);
   assert.match(m[1], /max-height:\s*700px/);
 });
+
+// Móvil, etapa 1: en vertical se pide girar el teléfono, con salida para quien no pueda.
+test('el aviso de girar el teléfono tiene botón para seguir y recuerda la elección', () => {
+  const html = leer('index.html');
+  assert.match(html, /id="orientWarn"/);
+  assert.match(html, /Jugar así igual/);
+  assert.match(html, /html:not\(\.sin-aviso-girar\) #orientWarn\{display:flex/, 'sin la clase de descarte el aviso no se puede cerrar');
+  assert.match(html, /\.ow-seguir\{[^}]*min-height:44px/);
+  assert.match(html, /sessionStorage\.getItem\('hpSinAvisoGirar'\)/);
+});
