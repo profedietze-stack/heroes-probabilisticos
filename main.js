@@ -21,6 +21,7 @@ const config = {
   dom: { createContainer: true },
   plugins: { scene: [
     { key: 'FsButtonPlugin', plugin: FsButtonPlugin, mapping: 'fsBtn', start: true },
+    { key: 'LienzoMovilPlugin', plugin: LienzoMovilPlugin, mapping: 'lienzoMovil', start: true },
     // Plugin de testing (guard multi-escena + ?fast). Solo si se cargó dev-plugin.js.
     ...(window.DevScenePlugin ? [{ key: 'DevScenePlugin', plugin: window.DevScenePlugin, mapping: 'devPlugin', start: true }] : [])
   ] },
@@ -43,6 +44,7 @@ try {
 
 if (!window.game) {
   window.game = new Phaser.Game(config);
+  vigilarGiro(window.game);
 }
 
 // Desbloquear AudioContext en iOS/Safari: requiere gesto del usuario en 'touchstart' o 'click'
