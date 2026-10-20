@@ -27,3 +27,7 @@ npm-debug.log*
 *.key
 *.p12
 secrets.json
+
+# Copias y borradores locales (no son parte del juego)
+_backup/
+.superpowers/
