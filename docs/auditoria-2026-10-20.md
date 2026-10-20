@@ -368,3 +368,8 @@ sin saltar. Un Guardián 1 dura ≈ 25-30 s; uno como el jefe 5, ≈ 2,5 min.
 - **D6 / M10 · Predicción:** el pago ahora sigue a la probabilidad (≈ 1/p). Con 3 rangos, "bajo" y "alto" (25 %) pagan el doble que "medio" (50 %): R2 12/6/12 y R3 24/12/24, o sea el mismo pago esperado en las tres. Con 2 rangos, "bajo" (45,8 %) paga 8 y "alto" (54,2 %) paga 7. Los botones muestran probabilidad y pago. Guarda: `tests/prediccion-justa.test.js` (ninguna apuesta rinde más del 15 % que otra).
 - **D8 / M13 · Accesibilidad:** `prefers-reduced-motion` apaga las animaciones CSS y las sacudidas/destellos de cámara (`main.js`). En pantallas táctiles (`pointer: coarse`) el cierre y las pestañas de los modales miden 44 px. Las pestañas y el cierre pasaron de ~2,2:1 a ≥ 4,5:1. Guarda: `tests/accesibilidad.test.js`.
 - **Sigue abierto:** los botones dibujados dentro del canvas (Phaser) siguen midiendo ~34 px de alto en juego; en un teléfono vertical quedan bajo 44 px CSS. Agrandar su zona táctil pisaría botones vecinos (separados menos de 48 px), así que requiere rediseñar esas filas. Mientras tanto, apaisado rinde bien. Tampoco se repasó el resto de la paleta de grises dentro del canvas.
+
+## Addendum 3 — D5 y D9 resueltos (versión 9 / `heroesprob-v11`)
+
+- **D5:** medido en Chromium a 1920×1080, el canvas salía 1580×1080 (×1,54): Phaser 3.60 ignora `scale.max`. Ahora `#phaserGame` tiene `max-width:1024px; max-height:700px` en `css/variables.css`: a 1920×1080 el canvas mide 1024×700 centrado, escala 1:1; en un teléfono (375 de ancho) sigue ajustando al ancho. Guarda: `tests/accesibilidad.test.js`.
+- **D9:** `_backup/` y `.superpowers/` salieron del índice y quedaron ignorados (siguen en disco).
