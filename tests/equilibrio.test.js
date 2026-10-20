@@ -59,3 +59,16 @@ test('la campaña es progresiva: se muere más en los últimos jefes que en los 
     assert.ok(ultimos >= primeros, `${k}: no hay más dificultad al final`);
   }
 });
+
+test('la dificultad sube de verdad: Normal < Héroe < Legendario (y Legendario sigue siendo difícil)', () => {
+  const media = (dif) => {
+    const t = tabla(dif);
+    const f = C.CLASES_ORDEN.map((k) => t.control[k]);
+    return { muertes: f.reduce((a, x) => a + x.muertes, 0) / f.length, fin: f.reduce((a, x) => a + x.fin, 0) / f.length };
+  };
+  const n = media('normal'), h = media('heroe'), l = media('legendario');
+  assert.ok(h.muertes > n.muertes * 1.2, `Héroe (${h.muertes.toFixed(1)}) tiene que ser más duro que Normal (${n.muertes.toFixed(1)})`);
+  assert.ok(l.muertes > h.muertes * 2, `Legendario (${l.muertes.toFixed(1)}) tiene que ser mucho más duro que Héroe (${h.muertes.toFixed(1)})`);
+  assert.ok(h.fin >= 0.85, `Héroe se tiene que poder terminar (termina el ${(h.fin * 100).toFixed(0)} %)`);
+  assert.ok(l.fin <= 0.5, `Legendario tiene que seguir siendo difícil (termina el ${(l.fin * 100).toFixed(0)} %)`);
+});

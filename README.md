@@ -100,7 +100,7 @@ El inventario tiene hasta 6 slots. Los objetos tienen nombres y efectos inspirad
 
 **Resiliencia:** en todas las dificultades, cada derrota suma +1 a las tiradas futuras (hasta +3); Fácil además arranca con +1. El jugador aprende del fracaso sin ser castigado permanentemente.
 
-**Crecimiento de la campaña:** el héroe gana ataque con cada jefe derrotado (+1, +2,5, +3,5 o +5,5 por jefe según la dificultad) y al morir revive con la mitad de su HP.
+**Crecimiento de la campaña:** el héroe gana ataque con cada jefe derrotado (+1, +2,5, +4,5 o +5,5 por jefe según la dificultad) y al morir revive con la mitad de su HP.
 
 ### Clases (cada una con una ventaja y un costo)
 
