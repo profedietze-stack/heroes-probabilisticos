@@ -90,6 +90,7 @@ class FinalScene extends Phaser.Scene {
     const media  = total > 0 ? (STATE.stats.tiradas.reduce((s,t)=>s+t.valor,0)/total).toFixed(2) : '—';
     const tiempo = fmtTime(Date.now() - STATE.stats.tiempoInicio);
     const titulo = (typeof getTituloActual === 'function') ? getTituloActual() : { emoji:'👑', titulo:'Héroe de la Probabilidad' };
+    const tituloClase = (typeof getTituloClase === 'function') ? getTituloClase(STATE.clase) : null;
     const fecha  = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
     const dif    = (STATE.dificultad||'normal').toUpperCase();
 
@@ -108,6 +109,7 @@ class FinalScene extends Phaser.Scene {
           alcanzando el título de
         </p>
         <div style="font-size:19px;font-family:'Cinzel',serif;font-weight:700;color:#7a4a00;margin:4px 0 14px">${titulo.emoji} ${titulo.titulo}</div>
+        ${tituloClase ? `<div style="font-size:13px;font-family:'Cinzel',serif;color:#7a4a00;margin:-8px 0 12px">${claseDe(STATE.clase).emoji} ${tituloClase}</div>` : ''}
         <div style="display:flex;justify-content:center;gap:26px;font-size:11.5px;color:#5a3a10;margin-bottom:14px">
           <span>🎲 ${total} tiradas</span>
           <span>x̄ = ${media} (μ = 13)</span>

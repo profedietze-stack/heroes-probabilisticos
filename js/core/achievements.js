@@ -56,6 +56,25 @@ const LOGROS_DEF = [
     desc:'Jugá 30 minutos en total (acumulado en todas las sesiones).' },
   { id:'una_hora',         emoji:'⌛',  nombre:'Estudioso Comprometido', cat:'Dedicación',
     desc:'Jugá 1 hora en total (acumulado en todas las sesiones).' },
+  // — CLASES — (los nombres de los títulos salen de js/core/clases.js)
+  { id:'clase_guerrero',   emoji:'⚔',   nombre:'Bautismo de Bernoulli',   cat:'Clases',
+    desc:'Derrotá a un monstruo con el Guerrero. Título: «Escudo de la Frecuencia».' },
+  { id:'clase_hechicero',  emoji:'🔮',  nombre:'Primer Conjuro',          cat:'Clases',
+    desc:'Derrotá a un monstruo con el Hechicero. Título: «Voz de la Distribución».' },
+  { id:'clase_arquero',    emoji:'🏹',  nombre:'Primera Flecha de Laplace', cat:'Clases',
+    desc:'Derrotá a un monstruo con el Arquero. Título: «Ojo de Laplace».' },
+  { id:'clase_alquimista', emoji:'⚗',   nombre:'Primer Experimento',      cat:'Clases',
+    desc:'Derrotá a un monstruo con el Alquimista. Título: «Maestro del Experimento».' },
+  { id:'campana_guerrero',   emoji:'🛡', nombre:'Campeón de la Frecuencia',  cat:'Clases',
+    desc:'Completá la campaña (derrotá al Demiurgo) con el Guerrero.' },
+  { id:'campana_hechicero',  emoji:'🌌', nombre:'Archimago de la Distribución', cat:'Clases',
+    desc:'Completá la campaña (derrotá al Demiurgo) con el Hechicero.' },
+  { id:'campana_arquero',    emoji:'🎯', nombre:'Cazador de Probabilidades', cat:'Clases',
+    desc:'Completá la campaña (derrotá al Demiurgo) con el Arquero.' },
+  { id:'campana_alquimista', emoji:'🧪', nombre:'Gran Alquimista de Arithmos', cat:'Clases',
+    desc:'Completá la campaña (derrotá al Demiurgo) con el Alquimista.' },
+  { id:'todas_clases',     emoji:'🏅',  nombre:'Maestro de las Cuatro Vías', cat:'Clases',
+    desc:'Completá la campaña con las cuatro clases.' },
   // — CONCEPTOS —
   { id:'buho_perfecto',    emoji:'🦉',  nombre:'Sabiduría del Búho',     cat:'Conceptos',
     desc:'Respondé correctamente las 10 preguntas de sabiduría del mapa.' },
@@ -84,6 +103,7 @@ function _logrosDefault(){
       maxVictoriasSeguidas:0,
       mejorDificultad:     'normal',
       quizCorrectas:       {},
+      campañasPorClase:    {},
     }
   };
 }
@@ -194,6 +214,20 @@ function logrosEvent(type, data){
     s.maxVictoriasSeguidas = Math.max(s.maxVictoriasSeguidas||0, s.victoriasSeguidas);
     if(typeof data.jefe === 'number')
       s.maxJefeDerrotado = Math.max(s.maxJefeDerrotado||-1, data.jefe);
+    // Clases: primera victoria con cada una (desbloquea su logro y su título) y campaña completa.
+    try {
+      const clave = (typeof claseDe === 'function' && typeof STATE !== 'undefined') ? claseDe(STATE.clase).key : null;
+      if(clave){
+        if(!d['clase_'+clave]) unlockLogro('clase_'+clave);
+        if(data.esFinal){
+          s.campañasPorClase = s.campañasPorClase || {};
+          s.campañasPorClase[clave] = (s.campañasPorClase[clave]||0) + 1;
+          if(!d['campana_'+clave]) unlockLogro('campana_'+clave);
+          const todas = ['guerrero','hechicero','arquero','alquimista'].every(function(k){ return s.campañasPorClase[k] > 0; });
+          if(todas && !d.todas_clases) unlockLogro('todas_clases');
+        }
+      }
+    } catch(e){}
     if(data.esFinal){
       s.campañasCompletadas = (s.campañasCompletadas||0) + 1;
       try {
@@ -275,6 +309,15 @@ function logrosEvent(type, data){
     if(ms >= 60*60*1000 && !d.una_hora)  unlockLogro('una_hora');
     logrosSave();
   }
+}
+
+/* Título de clase: se gana con la primera victoria de esa clase (logro `clase_<clave>`).
+   Devuelve el nombre del título, o null si todavía no se ganó. */
+function getTituloClase(clave){
+  if(typeof claseDe !== 'function') return null;
+  const c = claseDe(clave);
+  if(!_logros) logrosLoad();
+  return _logros.desbloqueados['clase_'+c.key] ? c.titulo : null;
 }
 
 /* ── Puntaje 0-1000 ──────────────────────────────────────────── */
