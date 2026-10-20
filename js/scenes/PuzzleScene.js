@@ -15,6 +15,20 @@ class PuzzleScene extends Phaser.Scene {
     this._npcDOM    = null;
     this._puzzleShown = false;
     this._selecting   = false;
+    /* Phaser reutiliza la instancia de la escena: lo que no se reinicia acá se
+       hereda de la visita anterior. `_choiceShown` quedaba en true tras el primer
+       Mercader, así que desde el segundo en adelante _nextDialogue saltaba el
+       menú "Probar mi suerte / Ver tienda" y mostraba directo la lista de
+       enigmas: la tienda sólo se podía abrir en el primer Mercader de cada
+       carga de la página. `_confirmedAdvance` heredado también salteaba el
+       aviso de punto de no retorno, y `_choiceHits` acumulaba botones ya
+       destruidos de las visitas anteriores. */
+    this._choiceShown      = false;
+    this._choiceObjs       = [];
+    this._choiceHits       = [];
+    this._confirmedAdvance = false;
+    this._typeEv           = null;
+    this._dlgTimer         = null;
   }
 
   preload() {
@@ -135,6 +149,13 @@ class PuzzleScene extends Phaser.Scene {
     this.tweens.add({targets:this._contHint,
       alpha:{from:0.3, to:1}, duration:600, yoyo:true, repeat:-1});
 
+    /* Tocar la caja salta la presentación del NPC. Sin esto había que esperar
+       ~10 s (tres líneas que se escriben solas) en CADA nodo de enigma, y el
+       "▼" prometía un toque que no hacía nada. */
+    this.add.rectangle(PX + PW/2, DY + DH/2, PW - 24, DH, 0, 0)
+      .setDepth(5).setInteractive({useHandCursor:true})
+      .on('pointerup', ()=>this._skipDialogue());
+
     /* ── Panel de puzzles ── */
     const PUZZ_Y = DY + DH + 14;
     this._buildPuzzlePanel(PX, PUZZ_Y, PW, h);
@@ -146,17 +167,19 @@ class PuzzleScene extends Phaser.Scene {
 
     /* ── Botón volver ── */
     const backBtn = this.add.text(PX + PW/2, PY + PH - 24, '← Volver al mapa', {
-      fontFamily:'Cinzel', fontSize:'11px', color:'#2a3a4a'
+      // Era #2a3a4a (contraste 1,7:1 sobre el fondo) con un área táctil de ~100×14 px:
+      // la única salida de la pantalla casi no se veía ni se podía tocar bien.
+      fontFamily:'Cinzel', fontSize:'12px', color:'#8fa6bd', padding:{x:16, y:14}
     }).setOrigin(0.5).setInteractive({useHandCursor:true}).setDepth(2);
-    backBtn.on('pointerover', ()=>backBtn.setColor('#6a8098'));
-    backBtn.on('pointerout',  ()=>backBtn.setColor('#2a3a4a'));
+    backBtn.on('pointerover', ()=>backBtn.setColor('#D4AF37'));
+    backBtn.on('pointerout',  ()=>backBtn.setColor('#8fa6bd'));
     backBtn.on('pointerup',   ()=>this._exitToMap());
 
     /* ── Iniciar diálogo ── */
     this._dlgQueue = npcData.dialogos.intro.slice();
     this._dlgIdx   = 0;
     this._typing   = false;
-    this.time.delayedCall(800, ()=>this._nextDialogue());
+    this._dlgTimer = this.time.delayedCall(800, ()=>this._nextDialogue());
   }
 
   /* ─── PANELES DE ENIGMAS ─── */
@@ -224,6 +247,10 @@ class PuzzleScene extends Phaser.Scene {
 
   /* ─── DIÁLOGO ─── */
   _nextDialogue() {
+    /* Una llamada tardía (el temporizador de arranque o el de espera que quedó
+       vivo tras saltar la presentación) no puede abrir los enigmas encima del
+       menú del Mercader. */
+    if (this._puzzleShown || this._choiceShown) return;
     if (this._dlgIdx >= this._dlgQueue.length) {
       setNPCState(this._npcEl, 'idle');
       if (!this._puzzleShown) {
@@ -237,18 +264,35 @@ class PuzzleScene extends Phaser.Scene {
     this._typeText(line, ()=>{
       this._contHint.setAlpha(1);
       setNPCState(this._npcEl, 'idle');
-      this.time.delayedCall(1800, ()=>{
+      this._dlgTimer = this.time.delayedCall(1800, ()=>{
         this._contHint.setAlpha(0);
         this._nextDialogue();
       });
     });
   }
 
+  /* Salta lo que falte de la presentación y muestra el menú. Cancela el
+     tipeo y la espera pendientes: si quedara el temporizador de 1800 ms vivo,
+     volvería a llamar a _nextDialogue y el Mercader abriría la lista de
+     enigmas encima de su menú de elección. */
+  _skipDialogue() {
+    if (this._puzzleShown || this._choiceShown) return;
+    if (this._typeEv)   this._typeEv.remove(false);
+    if (this._dlgTimer) this._dlgTimer.remove(false);
+    this._typing = false;
+    const q = this._dlgQueue || [];
+    if (q.length) this._dialogueTxt.setText(q[q.length - 1]);
+    this._dlgIdx = q.length;
+    this._contHint.setAlpha(0);
+    snd_item && snd_item();
+    this._nextDialogue();
+  }
+
   _typeText(str, onDone) {
     this._dialogueTxt.setText('');
     this._typing = true;
     let i = 0;
-    this.time.addEvent({
+    this._typeEv = this.time.addEvent({
       delay: 26,
       repeat: str.length - 1,
       callback: ()=>{
