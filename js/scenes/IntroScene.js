@@ -187,31 +187,25 @@ class IntroScene extends Phaser.Scene {
 
     this.add.rectangle(0, 0, w, h, 0x0D0D14).setOrigin(0).setDepth(30);
 
-    this.add.text(w/2, 45, 'Elige tu clase de héroe', {
-      fontFamily:'Cinzel', fontSize:'30px', color:'#D4AF37', fontStyle:'700',
+    this.add.text(w/2, 36, 'Elige tu clase de héroe', {
+      fontFamily:'Cinzel', fontSize:'28px', color:'#D4AF37', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0.5).setDepth(31);
 
-    this.add.text(w/2, 82, 'Cada clase enfrenta el azar a su manera', {
+    this.add.text(w/2, 74, 'Cada clase juega distinto: mirá lo que ganás y lo que pagás', {
       fontFamily:'Poppins', fontSize:'14px', color:'#7a8898', fontStyle:'italic'
     }).setOrigin(0.5).setDepth(31);
 
-    const clases = [
-      { key:'guerrero', label:'⚔ Guerrero', col:0xc0392b,
-        desc:'Cada golpe es un ensayo de Bernoulli: acierto o fallo, sin términos medios. Confía en la frecuencia, no en la suerte de un solo tiro.' },
-      { key:'hechicero', label:'🔮 Hechicero', col:0x8e44ad,
-        desc:'La magia arcana es una distribución de probabilidad hecha visible: el mismo hechizo nunca golpea igual dos veces.' },
-      { key:'arquero', label:'🏹 Arquero', col:0x27ae60,
-        desc:'Cada flecha es una variable aleatoria independiente: ni el ángulo ni el punto de impacto se repiten, pero la probabilidad de acierto es la misma siempre.' },
-      { key:'alquimista', label:'⚗ Alquimista', col:0xf39c12,
-        desc:'Cada poción es un experimento: mismo procedimiento, resultado distinto. La varianza es el ingrediente secreto.' }
-    ];
+    /* Los datos de cada clase (ventajas, costos, números) viven en js/core/clases.js:
+       lo que esta pantalla promete es lo que el motor hace. */
+    const clases = CLASES_ORDEN.map(k => CLASES[k]);
 
-    const startY = 120, bh = 100, gap = 10;
-    const bw = w - 100;
+    const startY = 98, bh = 134, gap = 4;
+    const bw = w - 60;
 
     clases.forEach((c, i)=>{
-      const col = c.col;
+      const col = c.color;
+      const hex = '#'+col.toString(16).padStart(6,'0');
       const by = startY + i*(bh+gap);
       const cx = w/2;
 
@@ -222,15 +216,24 @@ class IntroScene extends Phaser.Scene {
       bg.fillStyle(0x0D0D14, 0.92); bg.fillRoundedRect(-bw/2, -bh/2, bw, bh, 8);
       bg.lineStyle(2, col, 0.7); bg.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 8);
 
-      const label = this.add.text(0, -30, c.label, {
-        fontFamily:'Cinzel', fontSize:'20px', color:'#'+col.toString(16).padStart(6,'0'), fontStyle:'700'
-      }).setOrigin(0.5);
+      const L = -bw/2 + 22;
+      const label = this.add.text(L, -bh/2 + 10, `${c.emoji} ${c.nombre}`, {
+        fontFamily:'Cinzel', fontSize:'20px', color:hex, fontStyle:'700'
+      }).setOrigin(0, 0);
 
-      const desc = this.add.text(0, 8, c.desc, {
-        fontFamily:'Poppins', fontSize:'12.5px', color:'#C0C8D0', wordWrap:{width:bw-50}, align:'center', lineSpacing:3
-      }).setOrigin(0.5);
+      const idea = this.add.text(L, -bh/2 + 38, c.idea, {
+        fontFamily:'Poppins', fontSize:'11.5px', color:'#8a98aa', fontStyle:'italic', wordWrap:{width:bw-44}
+      }).setOrigin(0, 0);
 
-      container.add([bg, label, desc]);
+      // Ventajas en verde con ＋ y costos en rojo con －: la diferencia no depende sólo del color.
+      const pros = this.add.text(L, -bh/2 + 58, c.ventajas.map(v=>'＋ '+v).join('\n'), {
+        fontFamily:'Poppins', fontSize:'12.5px', color:'#7fe3a0', lineSpacing:2, wordWrap:{width:bw-44}
+      }).setOrigin(0, 0);
+      const contras = this.add.text(L, -bh/2 + 58 + pros.height + 3, c.costos.map(v=>'－ '+v).join('\n'), {
+        fontFamily:'Poppins', fontSize:'12.5px', color:'#f29a9a', lineSpacing:2, wordWrap:{width:bw-44}
+      }).setOrigin(0, 0);
+
+      container.add([bg, label, idea, pros, contras]);
 
       const hit = this.add.rectangle(cx, by + bh/2, bw, bh, 0, 0).setDepth(33).setInteractive({useHandCursor:true});
       hit.on('pointerover', ()=>{
@@ -247,8 +250,8 @@ class IntroScene extends Phaser.Scene {
       });
       hit.on('pointerdown', ()=>this.tweens.add({targets:container, scale:0.97, duration:80, yoyo:true}));
       hit.on('pointerup', ()=>{
-        STATE.clase = c.key;
-        showToast(`${c.label} elegido — ¡que comience la aventura!`);
+        aplicarClaseInicial(STATE, c.key);   // hornea HP, MP, ataque y defensa base de la clase
+        showToast(`${c.emoji} ${c.nombre} elegido — ¡que comience la aventura!`);
         snd_buff();
         saveGame();
         this.time.delayedCall(700, ()=>{

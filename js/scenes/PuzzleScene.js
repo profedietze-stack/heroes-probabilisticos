@@ -467,12 +467,12 @@ class PuzzleScene extends Phaser.Scene {
       html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">';
       VENTA.forEach(id=>{
         const it = ITEMS[id-1];
-        const puede = oro >= it.precio && !lleno;
+        const puede = oro >= precioItem(STATE.clase, it.precio) && !lleno;
         html += `<div class="card" style="text-align:center;padding:12px">
           <div style="font-size:34px;filter:drop-shadow(0 0 8px rgba(212,175,55,0.5))">${it.emoji}</div>
           <div style="color:#D4AF37;font-family:'Cinzel',serif;font-size:12px;letter-spacing:1px;margin-top:6px">${it.nombre}</div>
           <div style="color:#5fcf88;font-size:11px;margin-top:4px;font-family:'Lora',serif">${it.efecto}</div>
-          <button class="btn-action ${puede?'':'btn-secondary'}" style="margin-top:8px;width:100%;${puede?'':'opacity:.5;cursor:not-allowed'}" ${puede?`onclick="window.__buyShop(${id})"`:''}>${coinSpan(13)} ${it.precio}</button>
+          <button class="btn-action ${puede?'':'btn-secondary'}" style="margin-top:8px;width:100%;${puede?'':'opacity:.5;cursor:not-allowed'}" ${puede?`onclick="window.__buyShop(${id})"`:''}>${coinSpan(13)} ${precioItem(STATE.clase, it.precio)}</button>
         </div>`;
       });
       html += '</div>';
@@ -488,16 +488,16 @@ class PuzzleScene extends Phaser.Scene {
     const it = ITEMS[id-1];
     if (!it) return;
     const oro = STATE.oro || 0;
-    if (oro < it.precio) { showToast('💰 Oro insuficiente'); return; }
+    if (oro < precioItem(STATE.clase, it.precio)) { showToast('💰 Oro insuficiente'); return; }
     if (STATE.inventario.length >= (CFG.MAX_INVENTORY_SLOTS || 6) &&
         !STATE.inventario.find(s=>s.id===id)) {
       showToast('⚠ Bolsa llena'); return;
     }
     if (!addItemToInventory(id)) { showToast('⚠ Bolsa llena'); return; }
-    STATE.oro = oro - it.precio;
+    STATE.oro = oro - precioItem(STATE.clase, it.precio);
     snd_buff && snd_buff();
     if (typeof saveGame === 'function') saveGame();
-    showToast(`${it.emoji} ${it.nombre} comprado · −${it.precio} 💰`);
+    showToast(`${it.emoji} ${it.nombre} comprado · −${precioItem(STATE.clase, it.precio)} 💰`);
     if (window.__renderShop) window.__renderShop();
   }
 

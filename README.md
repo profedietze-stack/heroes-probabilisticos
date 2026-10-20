@@ -100,6 +100,19 @@ El inventario tiene hasta 6 slots. Los objetos tienen nombres y efectos inspirad
 
 **Resiliencia:** en todas las dificultades, cada derrota suma +1 a las tiradas futuras (hasta +3); Fácil además arranca con +1. El jugador aprende del fracaso sin ser castigado permanentemente.
 
+**Crecimiento de la campaña:** el héroe gana ataque con cada jefe derrotado (+1, +2, +3,25 o +5 por jefe según la dificultad) y al morir revive con la mitad de su HP.
+
+### Clases (cada una con una ventaja y un costo)
+
+| Clase | Ventaja | Costo |
+|---|---|---|
+| ⚔ Guerrero | +25 HP máx. y **Racha**: cada impacto seguido suma +1 de daño (hasta +4) | Sin bonus a la tirada, a los poderes ni a los ítems |
+| 🔮 Hechicero | +3 MP máx. (empieza con 7) y el primer poder de cada batalla cuesta 1 MP menos | −15 HP máx. |
+| 🏹 Arquero | +1 a la suma de cada tirada (más probabilidad de impacto) | −25 HP máx. |
+| ⚗ Alquimista | Pociones y buffs +50 %, 1 objeto extra al empezar y precios −10 % | −1 de defensa |
+
+Cada clase desbloquea un logro y un título con su primera victoria, y otro logro al terminar la campaña con ella; terminar con las cuatro da el logro final. Los números viven en `js/core/clases.js` y se equilibran con `node tools/simular.js` (el test `tests/equilibrio.test.js` los vigila).
+
 ---
 
 ## Características técnicas

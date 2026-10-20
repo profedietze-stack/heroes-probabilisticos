@@ -17,6 +17,16 @@ const TITULOS_HEROE = [
   { min:10, emoji:'👑', titulo:'Héroe de la Probabilidad',   desc:'¡Arithmos ha sido restaurado!' },
 ];
 
+/* Título de clase (se gana con la primera victoria de esa clase). */
+function _tituloClaseHTML() {
+  const c = claseDe(STATE.clase);
+  const t = (typeof getTituloClase === 'function') ? getTituloClase(c.key) : null;
+  return `<div style="margin-top:6px;padding:4px 6px;border-top:1px solid rgba(100,65,10,.3);font-family:'Cinzel',serif;font-size:9.5px;color:${t ? '#5a3200' : '#8a6a40'}">
+    <span style="font-size:13px">${t ? c.emoji : '🔒'}</span>
+    ${t ? `Título de clase: <b>${t}</b>` : `Título de clase: ganá un combate como ${c.nombre} para obtenerlo`}
+  </div>`;
+}
+
 function getTituloActual() {
   const n = STATE.jefeActual || 0;
   let t = TITULOS_HEROE[0];
@@ -109,7 +119,7 @@ function _introPage() {
                 border-radius:5px;padding:8px 8px 6px;margin-bottom:0">
       <div style="font-family:'Cinzel',serif;font-size:8px;color:#5a3200;letter-spacing:2px;
                   margin-bottom:6px;text-align:center">TÍTULOS DEL HÉROE</div>
-      ${titulosHTML}
+      ${titulosHTML}${_tituloClaseHTML()}
     </div>`;
 }
 

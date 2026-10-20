@@ -21,7 +21,7 @@ const SKILL_TREE = [
     ranks:[{dados:1,bonus:0,cooldown:8},{dados:2,bonus:0,cooldown:5},{dados:2,bonus:2,cooldown:3}] },
 
   // 🗡 Sabotaje (manipula dados del MONSTRUO, nunca los propios)
-  { id:'escarcha',     rama:'sabotaje',  nombre:'Escarcha',         tipo:'activo',  mp:[2,1,1], xpCost:_XP,
+  { id:'escarcha',     rama:'sabotaje',  nombre:'Escarcha',         tipo:'activo',  mp:[2,2,2], xpCost:_XP,
     desc:'El monstruo no tira este turno.',
     ranks:[{freeze:true},{freeze:true},{freeze:true,quitaBuff:true}] },
   { id:'reflejo',      rama:'sabotaje',  nombre:'Reflejo',          tipo:'reactivo',mp:[2,2,3], xpCost:_XP,
@@ -30,7 +30,7 @@ const SKILL_TREE = [
   { id:'sanguijuela',  rama:'sabotaje',  nombre:'Sanguijuela',      tipo:'reactivo',mp:[2,2,3], xpCost:_XP,
     desc:'Parte del daño enemigo se convierte en HP tuyo (commit antes del reveal).',
     ranks:[0.30,0.50,0.70] },
-  { id:'maldicionDado',rama:'sabotaje',  nombre:'Maldición de un dado', tipo:'activo', mp:[2,1,1], xpCost:_XP,
+  { id:'maldicionDado',rama:'sabotaje',  nombre:'Maldición de un dado', tipo:'activo', mp:[2,2,2], xpCost:_XP,
     desc:'El monstruo tira un solo dado este turno.',
     ranks:[{dados:1,caras:12},{dados:1,caras:12},{dados:1,caras:6}] },
 
