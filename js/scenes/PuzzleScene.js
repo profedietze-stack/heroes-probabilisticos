@@ -173,7 +173,7 @@ class PuzzleScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({useHandCursor:true}).setDepth(2);
     backBtn.on('pointerover', ()=>backBtn.setColor('#D4AF37'));
     backBtn.on('pointerout',  ()=>backBtn.setColor('#8fa6bd'));
-    backBtn.on('pointerup',   ()=>this._exitToMap());
+    backBtn.on('pointerup',   ()=>this._confirmarSalida());
 
     /* ── Iniciar diálogo ── */
     this._dlgQueue = npcData.dialogos.intro.slice();
@@ -438,6 +438,17 @@ class PuzzleScene extends Phaser.Scene {
     if (typeof saveGameLegend === 'function') saveGameLegend();
     else if (typeof saveGame === 'function') saveGame();
     this.scene.start('MapScene');
+  }
+
+  /* Salir sin jugar avanza el nodo y pierde la recompensa: se pide confirmación para que
+     no sea un toque accidental sobre el botón (que además es chico en el celular). */
+  _confirmarSalida() {
+    snd_item && snd_item();
+    showConfirm(
+      'Si salís sin resolver el enigma avanzás de zona sin su recompensa (HP, oro y XP) y no podés volver.',
+      () => this._exitToMap(),
+      { title:'¿Salir sin jugar?', okLabel:'Salir igual' }
+    );
   }
 
   _exitToMap() {

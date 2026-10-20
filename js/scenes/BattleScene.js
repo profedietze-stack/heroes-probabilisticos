@@ -1596,6 +1596,12 @@ class BattleScene extends Phaser.Scene {
   fase2(sumaFinal, sumaOriginal, d1, d2){
     const umbralEf = this.getUmbralEfectivo();
     const impacto = sumaFinal >= umbralEf;
+    /* La Estrella de Varianza vale para UNA tirada ("próxima tirada"). El motor no
+       apagaba la bandera: el -2 duraba toda la batalla y solo desaparecía el ícono. */
+    if(STATE.flagStar){
+      STATE.flagStar = false;
+      STATE.buffs = STATE.buffs.filter(b => b.tipo !== 'star');
+    }
     const _logEntry = { d1, d2, suma: sumaOriginal, sumaFinal, umbral: umbralEf, impacto, dmg: 0 };
     this._battleLog.jugador.push(_logEntry);
 

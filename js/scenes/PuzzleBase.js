@@ -797,7 +797,9 @@ function pzComplete(scene, hp, puzId, correct) {
     STATE.nodeActual = (STATE.nodeActual||0) + 1;
     const _oroMult = ({facil:1, normal:1.2, heroe:1.5, legendario:2})[dif] || 1.2;
     STATE.oro = (STATE.oro||0) + Math.round((correct ? 8 : 3) * _oroMult);
-    const _puzXp = xpForPuzzle(dif);
+    // La XP completa es para quien acierta; quien falla se lleva un tercio (igual que el HP).
+    // Antes fallar daba los mismos 40 XP: se llegaba a casi toda la XP de la partida adivinando.
+    const _puzXp = correct ? xpForPuzzle(dif) : Math.round(xpForPuzzle(dif) / 3);
     STATE.xp      = (STATE.xp      || 0) + _puzXp;
     STATE.xpTotal = (STATE.xpTotal || 0) + _puzXp;
     if (typeof saveGameLegend === 'function') saveGameLegend();

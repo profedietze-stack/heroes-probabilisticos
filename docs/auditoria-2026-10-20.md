@@ -352,3 +352,13 @@ sin saltar. Un Guardián 1 dura ≈ 25-30 s; uno como el jefe 5, ≈ 2,5 min.
   táctiles, offline, carga con throttling, simulación de balance) fueron scripts de
   Playwright y de node que **no quedaron en el repo** (usan el Playwright de otro juego de
   la carpeta). Puedo agregarlos a `tests/e2e/` si querés que queden.
+
+---
+
+## Addendum (decisiones resueltas después de la auditoría)
+
+- **D1 y D2:** Escarcha y Maldición de un dado cuestan 2 MP; el héroe gana ataque por jefe y revive con la mitad del HP. Ver `js/core/config.js` y `tools/simular.js`.
+- **D4:** las clases dejaron de ser cosméticas (`js/core/clases.js`), con logros y títulos por clase.
+- **D3:** la Estrella de Varianza vale **una** tirada (se apaga tras `fase2`), cuesta 30 de oro y su texto lo dice. Verificado en el motor: umbral 13 → 11 → 13 tras la primera tirada. Con la Estrella ya no cierta como "permanente", el ataque por jefe de Normal subió de 2 a 2,5 (Héroe 3,5; Legendario 5,5) para conservar la dificultad de Normal: control 1,9-3,2 muertes y daño 4,2-6,3 por corrida.
+- **D7:** fallar un enigma da un tercio de la XP (antes la misma) y "← Volver al mapa" pide confirmación ("¿Salir sin jugar?"). Verificado en el motor: al cancelar no avanza el nodo; al confirmar, sí.
+- Héroe y Legendario quedan notablemente más duros que Normal (con la build simple de la simulación: Héroe termina entre 30 % y 83 % según la clase; Legendario, "solo para maestros"). Son modos opcionales; si se quieren más suaves, es un número en `config.js`.

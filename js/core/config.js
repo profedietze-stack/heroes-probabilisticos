@@ -5,11 +5,11 @@
 const DIFICULTADES = {
   facil:     { label:'⭐ Fácil',       hpHero:200, atkBase:10, defBase:6, monsterHpMult:0.75, monsterAtkMult:0.75, itemsIniciales:3, resBonus:1, atkPorJefe:1,
                desc:'Más HP, monstruos más débiles, 3 objetos iniciales + resiliencia.' },
-  normal:    { label:'⚔ Normal',      hpHero:150, atkBase:8,  defBase:5, monsterHpMult:1.0,  monsterAtkMult:1.0,  itemsIniciales:2, resBonus:0, atkPorJefe:2,
+  normal:    { label:'⚔ Normal',      hpHero:150, atkBase:8,  defBase:5, monsterHpMult:1.0,  monsterAtkMult:1.0,  itemsIniciales:2, resBonus:0, atkPorJefe:2.5,
                desc:'Experiencia estándar balanceada.' },
-  heroe:     { label:'🗡 Héroe',       hpHero:120, atkBase:7,  defBase:4, monsterHpMult:1.25, monsterAtkMult:1.25, itemsIniciales:1, resBonus:0, atkPorJefe:3.25,
+  heroe:     { label:'🗡 Héroe',       hpHero:120, atkBase:7,  defBase:4, monsterHpMult:1.25, monsterAtkMult:1.25, itemsIniciales:1, resBonus:0, atkPorJefe:3.5,
                desc:'Menos HP, monstruos más fuertes, solo 1 objeto inicial.' },
-  legendario:{ label:'💀 Legendario',  hpHero:90,  atkBase:6,  defBase:3, monsterHpMult:1.5,  monsterAtkMult:1.5,  itemsIniciales:0, resBonus:0, atkPorJefe:5,
+  legendario:{ label:'💀 Legendario',  hpHero:90,  atkBase:6,  defBase:3, monsterHpMult:1.5,  monsterAtkMult:1.5,  itemsIniciales:0, resBonus:0, atkPorJefe:5.5,
                desc:'Sin objetos, monstruos al 150%. Solo para maestros.' },
 };
 
