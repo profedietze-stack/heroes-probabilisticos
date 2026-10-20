@@ -21,6 +21,8 @@ class LibreScene extends Phaser.Scene {
     Music.play('menu');
     this.cameras.main.fadeIn(300, 0, 0, 0);
     const w = this.scale.width, h = this.scale.height;
+    // Teléfono apaisado (lienzo = pantalla real): letras de 13 px o más y botones/tarjetas de 44 px o más.
+    const C = this._compacto = h < 500;
 
     /* Fondo */
     const bg = this.add.graphics();
@@ -35,14 +37,14 @@ class LibreScene extends Phaser.Scene {
     }
 
     /* Encabezado */
-    this.add.text(w/2, 38, 'MODO LIBRE', {
-      fontFamily:'Cinzel', fontSize:'26px', fontStyle:'700',
+    this.add.text(w/2, C ? 22 : 38, 'MODO LIBRE', {
+      fontFamily:'Cinzel', fontSize: C ? '22px' : '26px', fontStyle:'700',
       color:'#4080d0', stroke:'#050408', strokeThickness:2,
       shadow:{offsetX:0, offsetY:0, color:'#4080d0', blur:16, fill:true}
     }).setOrigin(0.5);
 
     /* Selector de dificultad compacto */
-    this._buildDifSelector(w, 82);
+    this._buildDifSelector(w, C ? 78 : 82);
 
     /* Grilla de minijuegos */
     this._buildGrid(w, h);
@@ -57,16 +59,18 @@ class LibreScene extends Phaser.Scene {
 
     /* Botón volver */
     const _lbg = this.add.graphics();
+    const LBW = C ? 190 : 156, LBH = C ? 44 : 30, LBY = C ? h - 50 : h - 42;
     const _drawLB = (hov) => {
       _lbg.clear();
       _lbg.fillStyle(0x0a1828, hov ? 0.92 : 0.75);
-      _lbg.fillRoundedRect(w/2 - 78, h - 42, 156, 30, 6);
+      _lbg.fillRoundedRect(w/2 - LBW/2, LBY, LBW, LBH, 6);
       _lbg.lineStyle(1.5, hov ? 0x6090c8 : 0x2a5070, hov ? 0.9 : 0.6);
-      _lbg.strokeRoundedRect(w/2 - 78, h - 42, 156, 30, 6);
+      _lbg.strokeRoundedRect(w/2 - LBW/2, LBY, LBW, LBH, 6);
     };
     _drawLB(false);
-    const back = this.add.text(w/2, h - 27, '← Volver al Hub', {
-      fontFamily:'Poppins', fontSize:'12px', color:'#7aabcc', fontStyle:'600'
+    const back = this.add.text(w/2, LBY + LBH/2, '← Volver al Hub', {
+      fontFamily:'Poppins', fontSize: C ? '14px' : '12px', color: C ? '#9cc4e0' : '#7aabcc', fontStyle:'600',
+      padding: C ? {x:24, y:14} : {x:0, y:0}
     }).setOrigin(0.5).setInteractive({useHandCursor:true});
     back.on('pointerover', () => { _drawLB(true); back.setColor('#aaddf8'); });
     back.on('pointerout',  () => { _drawLB(false); back.setColor('#7aabcc'); });
@@ -81,7 +85,9 @@ class LibreScene extends Phaser.Scene {
       { key:'heroe',      label:'Héroe',      color:'#c05030', sel:0x6a2010 },
       { key:'legendario', label:'Legendario', color:'#9030a0', sel:0x3a0a3a },
     ];
-    const btnW = 160, gap = 14;
+    const C = this._compacto;
+    const gap = C ? 8 : 14;
+    const btnW = C ? Math.floor((w - 24 - 3*gap) / 4) : 160, BTH = C ? 44 : 32;
     const totalW = difs.length * btnW + (difs.length-1) * gap;
     const startX = w/2 - totalW/2;
 
@@ -92,17 +98,17 @@ class LibreScene extends Phaser.Scene {
       const draw = (hov) => {
         bg2.clear();
         bg2.fillStyle(sel ? d.sel : 0x0c1020, hov ? 0.9 : sel ? 0.7 : 0.5);
-        bg2.fillRoundedRect(bx, cy-16, btnW, 32, 5);
+        bg2.fillRoundedRect(bx, cy-BTH/2, btnW, BTH, 5);
         bg2.lineStyle(1.5,
           Phaser.Display.Color.HexStringToColor(d.color).color,
-          hov || sel ? 0.9 : 0.25);
-        bg2.strokeRoundedRect(bx, cy-16, btnW, 32, 5);
+          hov || sel ? 0.9 : (C ? 0.5 : 0.25));
+        bg2.strokeRoundedRect(bx, cy-BTH/2, btnW, BTH, 5);
       };
       draw(false);
       const txt = this.add.text(bx + btnW/2, cy, d.label, {
-        fontFamily:'Poppins', fontSize:'12px', color: sel ? d.color : '#3a4a58', fontStyle: sel ? '700' : '400'
+        fontFamily:'Poppins', fontSize: C ? '15px' : '12px', color: sel ? d.color : (C ? '#8aa0b8' : '#3a4a58'), fontStyle: sel ? '700' : '400'
       }).setOrigin(0.5).setDepth(2);
-      const hit = this.add.rectangle(bx + btnW/2, cy, btnW, 32, 0, 0)
+      const hit = this.add.rectangle(bx + btnW/2, cy, btnW, BTH, 0, 0)
         .setInteractive({useHandCursor:true}).setDepth(3);
       hit.on('pointerover', () => { draw(true); snd_item&&snd_item(); });
       hit.on('pointerout',  () => draw(false));
@@ -117,11 +123,14 @@ class LibreScene extends Phaser.Scene {
 
   /* ── Grilla de minijuegos ─────────────────────────────────── */
   _buildGrid(w, h){
+    const C = this._compacto;
     const cols = 4, rows = 2;
-    const cardW = 210, cardH = 168, gapX = 18, gapY = 16;
+    const gapX = C ? 8 : 18, gapY = C ? 8 : 16;
+    const cardW = C ? Math.floor((w - 24 - 3*gapX) / 4) : 210;
+    const cardH = C ? Math.floor((h - 50 - 8 - 106 - gapY) / 2) : 168;
     const gridW = cols * cardW + (cols-1) * gapX;
     const startX = w/2 - gridW/2;
-    const startY = 128;
+    const startY = C ? 106 : 128;
 
     /* 7 cards (última fila tiene 3, centradas) */
     ARCADE_PUZZLES.forEach((puz, i) => {
@@ -144,6 +153,7 @@ class LibreScene extends Phaser.Scene {
   }
 
   _buildCard(cx, cy, bw, bh, puz, idx){
+    const C = this._compacto;
     const bx = cx - bw/2, by = cy - bh/2;
     const isOraculo = puz.npc === 'oraculo';
     const accent = isOraculo ? 0x2870a0 : 0x8a5010;
@@ -162,6 +172,19 @@ class LibreScene extends Phaser.Scene {
     };
     draw(false);
 
+    if (C) {
+      // Teléfono: toda la tarjeta es el botón (≥ 44 px); icono + NPC arriba, nombre al medio y resultados abajo.
+      this.add.text(cx, by + 15, `${isOraculo ? '🔮' : '📜'} ${isOraculo ? 'Oráculo' : 'Mercader'}`, {
+        fontFamily:'Poppins', fontSize:'13px', color:'#8aa0b8'
+      }).setOrigin(0.5);
+      this.add.text(cx, by + 52, puz.name, {
+        fontFamily:'Cinzel', fontSize:'14px', color: accentHex, fontStyle:'700',
+        wordWrap:{width: bw - 16}, align:'center'
+      }).setOrigin(0.5);
+      this.add.text(cx, by + bh - 17, st.played > 0 ? `${st.played} jugadas · ${Math.round(st.correct / st.played * 100)}%` : 'Sin jugar', {
+        fontFamily:'Poppins', fontSize:'13px', color: st.played > 0 ? '#c0cedc' : '#7890a8'
+      }).setOrigin(0.5);
+    } else {
     /* Icono NPC */
     this.add.text(cx, by + 26, isOraculo ? '🔮' : '📜', {
       fontFamily:'Poppins', fontSize:'22px'
@@ -182,8 +205,9 @@ class LibreScene extends Phaser.Scene {
     const sep = this.add.graphics();
     sep.lineStyle(1, accent, 0.15);
     sep.lineBetween(bx+14, by+96, bx+bw-14, by+96);
+    }
 
-    if (st.played > 0) {
+    if (!C && st.played > 0) {
       const pct = Math.round(st.correct / st.played * 100);
       this.add.text(cx - 30, by + 112, `${st.played}`, {
         fontFamily:'Cinzel', fontSize:'16px', color:'#9ab0c8', fontStyle:'700'
@@ -198,7 +222,7 @@ class LibreScene extends Phaser.Scene {
       this.add.text(cx + 30, by + 128, 'aciertos', {
         fontFamily:'Poppins', fontSize:'8px', color:'#3a4a58'
       }).setOrigin(0.5);
-    } else {
+    } else if (!C) {
       this.add.text(cx, by + 118, 'Sin jugar', {
         fontFamily:'Poppins', fontSize:'10px', color:'#2a3040'
       }).setOrigin(0.5);
@@ -230,11 +254,12 @@ class LibreScene extends Phaser.Scene {
     const btnBg = this.add.graphics();
     const drawBtn = (hov) => {
       btnBg.clear();
+      if (C) { btnBg.fillStyle(accent, hov ? 0.22 : 0); btnBg.fillRoundedRect(bx+2, by+2, bw-4, bh-4, 7); return; }
       btnBg.fillStyle(accent, hov ? 0.3 : 0.12);
       btnBg.fillRoundedRect(bx+10, btnY-12, bw-20, 24, 4);
     };
     drawBtn(false);
-    const btnTxt = this.add.text(cx, btnY, 'JUGAR →', {
+    if (!C) this.add.text(cx, btnY, 'JUGAR →', {
       fontFamily:'Cinzel', fontSize:'10px', color: accentHex, fontStyle:'700', letterSpacing:1
     }).setOrigin(0.5).setDepth(2);
 
@@ -262,3 +287,5 @@ class LibreScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start(scene, data));
   }
 }
+
+LibreScene.DISENO_MOVIL = true;

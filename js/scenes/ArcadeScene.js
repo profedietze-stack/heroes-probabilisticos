@@ -35,6 +35,8 @@ class ArcadeScene extends Phaser.Scene {
     Music.play('menu');
     this.cameras.main.fadeIn(350, 0, 0, 0);
     const w = this.scale.width, h = this.scale.height;
+    // Teléfono apaisado (lienzo = pantalla real): dificultades 2×2, letras de 13-22 px y botones de 44 px o más.
+    this._compacto = h < 500;
 
     /* Fondo */
     const bg = this.add.graphics();
@@ -63,18 +65,19 @@ class ArcadeScene extends Phaser.Scene {
     ARCADE.aciertos = 0;
     ARCADE.activo = true;
 
-    this.add.text(w/2, 60, 'MODO PRÁCTICA', {
-      fontFamily:'Cinzel', fontSize:'34px', fontStyle:'700',
+    const C = this._compacto;
+    this.add.text(w/2, C ? 24 : 60, 'MODO PRÁCTICA', {
+      fontFamily:'Cinzel', fontSize: C ? '24px' : '34px', fontStyle:'700',
       color:'#D4AF37', stroke:'#050408', strokeThickness:3,
-      shadow:{offsetX:0, offsetY:0, color:'#D4AF37', blur:20, fill:true}
+      shadow:{offsetX:0, offsetY:0, color:'#D4AF37', blur: C ? 12 : 20, fill:true}
     }).setOrigin(0.5);
 
-    this.add.text(w/2, 105, '7 rondas · sin combate · solo probabilidad', {
-      fontFamily:'Poppins', fontSize:'13px', color:'#4a6080', letterSpacing:2
+    this.add.text(w/2, C ? 52 : 105, '7 rondas · sin combate · solo probabilidad', {
+      fontFamily:'Poppins', fontSize: C ? '14px' : '13px', color: C ? '#8aa4c0' : '#4a6080', letterSpacing: C ? 1 : 2
     }).setOrigin(0.5);
 
-    this.add.text(w/2, h*0.28, 'Elige tu dificultad:', {
-      fontFamily:'Cinzel', fontSize:'20px', color:'#9ab0c8'
+    this.add.text(w/2, C ? 80 : h*0.28, 'Elige tu dificultad:', {
+      fontFamily:'Cinzel', fontSize: C ? '16px' : '20px', color:'#9ab0c8'
     }).setOrigin(0.5);
 
     const difs = [
@@ -84,32 +87,35 @@ class ArcadeScene extends Phaser.Scene {
       { key:'legendario', label:'☠  Legendario',   desc:'Solo para expertos en probabilidad',      color:0x3a0a3a, tcolor:'#9030a0' },
     ];
 
-    const startY = h * 0.37, gap = 90;
+    const startY = C ? 132 : h * 0.37, gap = C ? 72 : 90;
     difs.forEach((d, i) => {
-      const y = startY + i * gap;
+      const y = C ? startY + Math.floor(i/2) * gap : startY + i * gap;
+      const cx = C ? w/2 + (i%2 === 0 ? -(Math.floor((w-48)/2)/2 + 8) : (Math.floor((w-48)/2)/2 + 8)) : w/2;
       const isSelected = ARCADE.dificultad === d.key;
-      this._difBtn(w/2, y, d, isSelected);
+      this._difBtn(cx, y, d, isSelected);
     });
 
     /* Botón Iniciar */
-    this._bigBtn(w/2, h - 90, '▶  Iniciar Práctica', '#D4AF37', 0x2A2010, 0xD4AF37, () => {
+    this._bigBtn(C ? w/2 - 110 : w/2, C ? h - 36 : h - 90, '▶  Iniciar Práctica', '#D4AF37', 0x2A2010, 0xD4AF37, () => {
       ARCADE.ronda = 0;
       ARCADE.aciertos = 0;
       this._fadeGo('ArcadeScene', { mode:'playing' });
-    });
+    }, C ? 280 : 200);
 
-    /* Botón Volver */
+    /* Botón Volver (en el teléfono: 46 px de alto, al lado de "Iniciar") */
     const _abg = this.add.graphics();
+    const ABW = C ? 190 : 168, ABH = C ? 46 : 32, ABX = C ? w/2 + 160 : w/2, ABY = C ? h - 36 - ABH/2 : h - 56;
     const _drawAB = (hov) => {
       _abg.clear();
       _abg.fillStyle(0x0a1828, hov ? 0.92 : 0.75);
-      _abg.fillRoundedRect(w/2 - 84, h - 56, 168, 32, 6);
+      _abg.fillRoundedRect(ABX - ABW/2, ABY, ABW, ABH, 6);
       _abg.lineStyle(1.5, hov ? 0x6090c8 : 0x2a5070, hov ? 0.9 : 0.6);
-      _abg.strokeRoundedRect(w/2 - 84, h - 56, 168, 32, 6);
+      _abg.strokeRoundedRect(ABX - ABW/2, ABY, ABW, ABH, 6);
     };
     _drawAB(false);
-    const _aback = this.add.text(w/2, h - 40, '← Volver al Menú', {
-      fontFamily:'Poppins', fontSize:'12px', color:'#7aabcc', fontStyle:'600'
+    const _aback = this.add.text(ABX, ABY + ABH/2, '← Volver al Menú', {
+      fontFamily:'Poppins', fontSize: C ? '14px' : '12px', color: C ? '#9cc4e0' : '#7aabcc', fontStyle:'600',
+      padding: C ? {x:20, y:15} : {x:0, y:0}
     }).setOrigin(0.5).setInteractive({useHandCursor:true});
     _aback.on('pointerover', () => { _drawAB(true); _aback.setColor('#aaddf8'); });
     _aback.on('pointerout',  () => { _drawAB(false); _aback.setColor('#7aabcc'); });
@@ -117,7 +123,8 @@ class ArcadeScene extends Phaser.Scene {
   }
 
   _difBtn(cx, cy, d, selected){
-    const bw = 460, bh = 70;
+    const C = this._compacto;
+    const bw = C ? Math.floor((this.scale.width - 48) / 2) : 460, bh = C ? 64 : 70;
     const bg = this.add.graphics();
     const drawBg = (hov) => {
       bg.clear();
@@ -128,11 +135,12 @@ class ArcadeScene extends Phaser.Scene {
       bg.strokeRoundedRect(cx - bw/2, cy - bh/2, bw, bh, 8);
     };
     drawBg(false);
-    this.add.text(cx - bw/2 + 22, cy - 10, d.label, {
-      fontFamily:'Cinzel', fontSize:'17px', color: d.tcolor, fontStyle:'700'
+    this.add.text(cx - bw/2 + 22, cy - (C ? 12 : 10), d.label, {
+      fontFamily:'Cinzel', fontSize: C ? '18px' : '17px', color: d.tcolor, fontStyle:'700'
     }).setOrigin(0, 0.5);
-    this.add.text(cx - bw/2 + 22, cy + 14, d.desc, {
-      fontFamily:'Poppins', fontSize:'11px', color:'#6a8098'
+    this.add.text(cx - bw/2 + 22, cy + (C ? 14 : 14), d.desc, {
+      fontFamily:'Poppins', fontSize: C ? '13px' : '11px', color: C ? '#9ab2c8' : '#6a8098',
+      wordWrap: C ? { width: bw - 60 } : undefined
     }).setOrigin(0, 0.5);
     if (selected) {
       this.add.text(cx + bw/2 - 16, cy, '✓', {
@@ -162,18 +170,19 @@ class ArcadeScene extends Phaser.Scene {
     const puz = ARCADE_PUZZLES[ARCADE.ronda];
 
     /* Pantalla de transición "Ronda X" */
+    const C = this._compacto;
     this.add.text(w/2, h*0.3, `RONDA  ${ARCADE.ronda + 1} / 7`, {
-      fontFamily:'Cinzel', fontSize:'38px', fontStyle:'700',
+      fontFamily:'Cinzel', fontSize: C ? '30px' : '38px', fontStyle:'700',
       color:'#D4AF37', stroke:'#050408', strokeThickness:3
     }).setOrigin(0.5);
 
     this.add.text(w/2, h*0.44, puz.name, {
-      fontFamily:'Poppins', fontSize:'22px', color:'#9ab0c8'
+      fontFamily:'Poppins', fontSize: C ? '19px' : '22px', color:'#9ab0c8'
     }).setOrigin(0.5);
 
     const npcLabel = puz.npc === 'oraculo' ? 'Oráculo de Laplace' : 'Mercader del Azar';
     this.add.text(w/2, h*0.54, npcLabel, {
-      fontFamily:'Poppins', fontSize:'13px', color:'#3a4a58', letterSpacing:2
+      fontFamily:'Poppins', fontSize: C ? '14px' : '13px', color: C ? '#8aa0b8' : '#3a4a58', letterSpacing:2
     }).setOrigin(0.5);
 
     /* Barra de progreso de rondas */
@@ -234,7 +243,7 @@ class ArcadeScene extends Phaser.Scene {
     }
 
     const label = this.add.text(w/2, by + 30, `${ARCADE.ronda} / 7 completadas`, {
-      fontFamily:'Poppins', fontSize:'11px', color:'#3a5070'
+      fontFamily:'Poppins', fontSize: this._compacto ? '14px' : '11px', color: this._compacto ? '#8aa4c0' : '#3a5070'
     }).setOrigin(0.5).setAlpha(0);
     this.tweens.add({ targets:label, alpha:1, duration:400, delay:500 });
   }
@@ -251,7 +260,8 @@ class ArcadeScene extends Phaser.Scene {
     const rGlow   = { ORO:0xD4AF37,  PLATA:0xC0C0C0,  BRONCE:0xc87818,  INTENTO:0x404858 };
 
     /* Panel — aparece con fade + scale */
-    const pw = 520, ph = 380, px = w/2 - pw/2, py = h/2 - ph/2;
+    const C = this._compacto;
+    const pw = 520, ph = C ? Math.min(h - 20, 340) : 380, px = w/2 - pw/2, py = h/2 - ph/2;
     const panelCont = this.add.container(w/2, h/2).setScale(0.82).setAlpha(0);
     const panel = this.add.graphics();
     panel.fillStyle(0x080C18, 0.97);
@@ -262,8 +272,8 @@ class ArcadeScene extends Phaser.Scene {
     this.tweens.add({ targets:panelCont, scale:1, alpha:1, duration:380, ease:'Back.easeOut' });
 
     /* Rango — scale bounce después de que aparece el panel */
-    const rankTxt = this.add.text(w/2, py + 50, rank, {
-      fontFamily:'Cinzel', fontSize:'52px', fontStyle:'700',
+    const rankTxt = this.add.text(w/2, py + (C ? 42 : 50), rank, {
+      fontFamily:'Cinzel', fontSize: C ? '42px' : '52px', fontStyle:'700',
       color: rColors[rank], stroke:'#050408', strokeThickness:4,
       shadow:{offsetX:0, offsetY:0, color:rColors[rank], blur:30, fill:true}
     }).setOrigin(0.5).setScale(0).setAlpha(0);
@@ -281,8 +291,8 @@ class ArcadeScene extends Phaser.Scene {
     });
 
     /* Puntaje — contador animado */
-    const scoreTxt = this.add.text(w/2, py + 110, `0 / ${total} correctas`, {
-      fontFamily:'Cinzel', fontSize:'22px', color:'#9ab0c8'
+    const scoreTxt = this.add.text(w/2, py + (C ? 92 : 110), `0 / ${total} correctas`, {
+      fontFamily:'Cinzel', fontSize: C ? '19px' : '22px', color:'#9ab0c8'
     }).setOrigin(0.5).setAlpha(0);
     this.tweens.add({ targets:scoreTxt, alpha:1, duration:300, delay:600 });
     this.time.delayedCall(700, () => {
@@ -294,7 +304,7 @@ class ArcadeScene extends Phaser.Scene {
     });
 
     /* Estrellas individuales con stagger */
-    const starY = py + 155, starStartX = w/2 - (total-1)*20;
+    const starY = py + (C ? 130 : 155), starStartX = w/2 - (total-1)*20;
     for (let i = 0; i < total; i++) {
       const filled = i < score;
       const star = this.add.text(starStartX + i*40, starY,
@@ -349,29 +359,29 @@ class ArcadeScene extends Phaser.Scene {
       INTENTO:'La probabilidad te espera. ¡No te rindas!'
     };
     const msgDelay = 850 + total * 100 + 200;
-    const msg = this.add.text(w/2, py + 205, msgs[rank], {
-      fontFamily:'Poppins', fontSize:'14px', color:'#6a8098', fontStyle:'italic'
+    const msg = this.add.text(w/2, py + (C ? 172 : 205), msgs[rank], {
+      fontFamily:'Poppins', fontSize: C ? '15px' : '14px', color: C ? '#9ab2c8' : '#6a8098', fontStyle:'italic'
     }).setOrigin(0.5).setAlpha(0);
-    const difTxt = this.add.text(w/2, py + 232, `Dificultad: ${ARCADE.dificultad.toUpperCase()}`, {
-      fontFamily:'Poppins', fontSize:'12px', color:'#3a4a58', letterSpacing:2
+    const difTxt = this.add.text(w/2, py + (C ? 198 : 232), `Dificultad: ${ARCADE.dificultad.toUpperCase()}`, {
+      fontFamily:'Poppins', fontSize: C ? '13px' : '12px', color: C ? '#8aa0b8' : '#3a4a58', letterSpacing:2
     }).setOrigin(0.5).setAlpha(0);
     this.tweens.add({ targets:[msg, difTxt], alpha:1, duration:400, delay:msgDelay });
 
     /* Botones — aparecen al final */
     const btnDelay = msgDelay + 200;
     this.time.delayedCall(btnDelay, () => {
-      this._bigBtn(w/2 - 120, py + ph - 55, '↺  Repetir', '#9ab0c8', 0x0c1a28, 0x2a4a68, () => {
+      this._bigBtn(w/2 - 120, py + ph - (C ? 38 : 55), '↺  Repetir', '#9ab0c8', 0x0c1a28, 0x2a4a68, () => {
         this._fadeGo('ArcadeScene', { mode:'select' });
       });
-      this._bigBtn(w/2 + 120, py + ph - 55, '⌂  Hub', '#D4AF37', 0x1A1408, 0xD4AF37, () => {
+      this._bigBtn(w/2 + 120, py + ph - (C ? 38 : 55), '⌂  Hub', '#D4AF37', 0x1A1408, 0xD4AF37, () => {
         this._fadeGo('ArcadeHubScene');
       });
     });
   }
 
   /* ── HELPERS ──────────────────────────────────────────────── */
-  _bigBtn(cx, cy, label, textColor, fillColor, borderColor, action){
-    const bw = 200, bh = 46;
+  _bigBtn(cx, cy, label, textColor, fillColor, borderColor, action, bwArg){
+    const bw = bwArg || 200, bh = 46;
     const bg = this.add.graphics();
     const draw = (hov) => {
       bg.clear();
@@ -382,7 +392,7 @@ class ArcadeScene extends Phaser.Scene {
     };
     draw(false);
     const txt = this.add.text(cx, cy, label, {
-      fontFamily:'Cinzel', fontSize:'15px', color:textColor, fontStyle:'600'
+      fontFamily:'Cinzel', fontSize: this._compacto ? '16px' : '15px', color:textColor, fontStyle:'600'
     }).setOrigin(0.5).setDepth(2);
     const hit = this.add.rectangle(cx, cy, bw, bh, 0, 0)
       .setInteractive({useHandCursor:true}).setDepth(3);
@@ -405,3 +415,5 @@ class ArcadeScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start(scene, data));
   }
 }
+
+ArcadeScene.DISENO_MOVIL = true;
