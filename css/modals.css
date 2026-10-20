@@ -204,8 +204,11 @@
 
 /* Dispositivos con poco alto (landscape phone) */
 @media (max-height: 500px) {
-  .tab-content { max-height: 45dvh; max-height: 45vh; }
+  /* Teléfono apaisado: cabecera compacta para que el contenido use casi todo el alto. */
+  .tab-content { max-height: calc(96vh - 108px); }
   .modal { max-height: 96dvh; max-height: 96vh; }
+  .modal-header { padding: 6px 14px; }
+  .modal-header h2 { font-size: 14px; letter-spacing: 2px; }
 }
 
 /* Safe area bottom para iPhone con home-indicator */

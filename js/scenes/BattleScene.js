@@ -9,6 +9,7 @@ class BattleScene extends Phaser.Scene {
   create(){
     const w=this.scale.width, h=this.scale.height;
     this.w=w; this.h=h;
+    const L = this.L = this._layout(w, h);
     this.cameras.main.fadeIn(400, 0, 0, 0);
 
     // Validar jefe
@@ -105,9 +106,9 @@ class BattleScene extends Phaser.Scene {
     }
 
     // --- ENCABEZADO: NOMBRE DEL MONSTRUO ---
-    this.add.text(w/2, 35, m.nombre, {fontFamily:'Cinzel', fontSize:'32px', color:'#D4AF37', fontStyle:'700', stroke:'#0A0A10', strokeThickness:4, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:16,fill:true}}).setOrigin(0.5);
+    this.add.text(w/2, L.nombreY, m.nombre, {fontFamily:'Cinzel', fontSize:L.nombreFs, color:'#D4AF37', fontStyle:'700', stroke:'#0A0A10', strokeThickness:L.compacto?3:4, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:L.compacto?8:16,fill:true}}).setOrigin(0.5);
 
-    const jefeNum = this.add.text(w/2, 70, `Guardián ${STATE.jefeActual+1} de 10`, {fontFamily:'Poppins', fontSize:'17px', color:'#9eb5c8'}).setOrigin(0.5);
+    const jefeNum = this.add.text(w/2, L.guardY, `Guardián ${STATE.jefeActual+1} de 10`, {fontFamily:'Poppins', fontSize:L.guardFs, color:'#9eb5c8'}).setOrigin(0.5);
 
     // --- IMAGEN DEL MONSTRUO (SVG+CSS) ---
     // Escala/posición por monstruo: con los nuevos fondos los monstruos lucen
@@ -132,9 +133,12 @@ class BattleScene extends Phaser.Scene {
       demiurgo:{ s:1.70, cy:327 },
     };
     const _mv = MON_VIEW[m.forma] || { s:1.80, cy:315 };
-    this._monScale = _mv.s;
-    this.monsterCX = w/2; this.monsterCY = _mv.cy;
-    const monSvg = createMonsterDOM(this, m.forma, m.color, this.monsterCX, this.monsterCY, _mv.s);
+    // En el teléfono el monstruo se achica (monK) y se sube para quedar entre la barra y el panel.
+    const _monS  = _mv.s * L.monK;
+    const _monCY = L.monBase + L.monK * (_mv.cy - 165);
+    this._monScale = _monS;
+    this.monsterCX = L.monX; this.monsterCY = _monCY;
+    const monSvg = createMonsterDOM(this, m.forma, m.color, this.monsterCX, this.monsterCY, _monS);
     this.monsterDom   = monSvg.domObj;
     this.monsterState = monSvg.setState;
     this.monsterDom.setDepth(0);   // lo más al fondo posible (detrás de dados/globo)
@@ -145,17 +149,17 @@ class BattleScene extends Phaser.Scene {
     // Frase épica removida — se muestra como globo de diálogo del monstruo
 
     // --- HP MONSTRUO (arriba, bajo el nombre — libera el centro para el monstruo) ---
-    this._enemyBarY = 98;
+    this._enemyBarY = L.barY;
     this.enemyBarBg = this.add.graphics();
     // Track visible (no se mezcla con el fondo oscuro) + borde
-    this.enemyBarBg.fillStyle(0x232c3e, 0.96); this.enemyBarBg.fillRoundedRect(w/2-180, this._enemyBarY, 360, 26, 4);
-    this.enemyBarBg.lineStyle(1, 0x4a5a72, 0.85); this.enemyBarBg.strokeRoundedRect(w/2-180, this._enemyBarY, 360, 26, 4);
+    this.enemyBarBg.fillStyle(0x232c3e, 0.96); this.enemyBarBg.fillRoundedRect(L.barX, L.barY, L.barW, L.barH, 4);
+    this.enemyBarBg.lineStyle(1, 0x4a5a72, 0.85); this.enemyBarBg.strokeRoundedRect(L.barX, L.barY, L.barW, L.barH, 4);
     this.enemyBar = this.add.graphics();
-    this.enemyHpTxt = this.add.text(w/2, this._enemyBarY+13, '', {fontFamily:'Courier New', fontSize:'17px', color:'#fff', fontStyle:'bold'}).setOrigin(0.5);
+    this.enemyHpTxt = this.add.text(w/2, L.barY+L.barH/2, '', {fontFamily:'Courier New', fontSize:L.barFs, color:'#fff', fontStyle:'bold'}).setOrigin(0.5);
     this.drawEnemyBar();
 
     // --- PROBABILIDAD DE IMPACTO ---
-    this.probText = this.add.text(w/2, this._enemyBarY+44, this._probTexto(), {fontFamily:'Poppins', fontSize:'15px', color:'#C0C8D0', backgroundColor:'#0A0A10', padding:{x:9,y:4}, fontStyle:'600'}).setOrigin(0.5).setDepth(5);
+    this.probText = this.add.text(w/2, L.probY, this._probTexto(), {fontFamily:'Poppins', fontSize:L.probFs, color:'#C0C8D0', backgroundColor:'#0A0A10', padding:{x:9,y:4}, fontStyle:'600'}).setOrigin(0.5).setDepth(5);
 
     // Anuncio del modificador de batalla (si aplica)
     if(this._modBatalla === 'niebla'){
@@ -165,33 +169,32 @@ class BattleScene extends Phaser.Scene {
     }
 
     // --- PANEL DEL JUGADOR (más angosto: empieza más abajo, deja más aire al monstruo) ---
-    const PY = 536;
+    const PY = L.PY;
     this.PY = PY;
-    this._hpBarY = PY + 28;
-    this._mpBarY = PY + 50;
+    this._hpBarY = L.hp.y;
+    this._mpBarY = L.mp.y;
 
     // Fondo panel jugador — diferenciado visualmente de la zona del monstruo
     const playerPanel = this.add.graphics();
-    playerPanel.fillStyle(0x050d18, 0.6);
-    playerPanel.fillRoundedRect(8, PY, w-16, h-PY-6, 10);
+    playerPanel.fillStyle(0x050d18, L.compacto ? 0.82 : 0.6);
+    playerPanel.fillRoundedRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 10);
     playerPanel.lineStyle(1.5, 0xD4AF37, 0.5);
-    playerPanel.strokeRoundedRect(8, PY, w-16, h-PY-6, 10);
+    playerPanel.strokeRoundedRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h, 10);
     playerPanel.lineStyle(1, 0xD4AF37, 0.12);
     playerPanel.lineBetween(20, PY+1, w-20, PY+1);
     // Esquinas decorativas
-    [[16, PY+7], [w-16, PY+7]].forEach(([ex, ey]) => {
+    if(!L.compacto) [[16, PY+7], [w-16, PY+7]].forEach(([ex, ey]) => {
       playerPanel.fillStyle(0xD4AF37, 0.5);
       playerPanel.fillCircle(ex, ey, 3.5);
     });
     // Separadores verticales: 3 columnas (stats | dados | botones)
     const colSep = this.add.graphics();
     colSep.lineStyle(1, 0xD4AF37, 0.15);
-    colSep.lineBetween(354, PY+8, 354, h-14);
-    colSep.lineBetween(670, PY+8, 670, h-14);
+    L.seps.forEach(sx => colSep.lineBetween(sx, PY+8, sx, h-14));
 
     // --- ÁREA DE DADOS (DOM, mismo sistema que dados del monstruo) ---
-    this.dice1Pos = {x: w/2-55, y: PY + 95};
-    this.dice2Pos = {x: w/2+55, y: PY + 95};
+    this.dice1Pos = L.dice1;
+    this.dice2Pos = L.dice2;
     this._injectPlayerDiceCSS();
     this.pDie1Dom = this._makePlayerDie(this.dice1Pos.x, this.dice1Pos.y);
     this.pDie2Dom = this._makePlayerDie(this.dice2Pos.x, this.dice2Pos.y);
@@ -211,15 +214,15 @@ class BattleScene extends Phaser.Scene {
     this._mDiceTheme = this._buildDiceTheme(m.forma);
     this._injectDiceCSS();
 
-    this.mDie1Dom = this._makeMonsterDie(w/2-55, 280);
-    this.mDie2Dom = this._makeMonsterDie(w/2+55, 280);
+    this.mDie1Dom = this._makeMonsterDie(w/2-L.mDiceDX, L.mDiceY);
+    this.mDie2Dom = this._makeMonsterDie(w/2+L.mDiceDX, L.mDiceY);
     // depth > monsterDom (1) para que el wrapper Phaser tenga z-index mayor
     this.mDie1Dom.setDepth(2);
     this.mDie2Dom.setDepth(2);
 
     // Label "ataca" encima (también DOM para quedar delante del monstruo)
-    this.mDiceLabel = this.add.dom(w/2, 238).createFromHTML(
-      `<div style="font-family:Cinzel,serif;font-weight:700;font-size:13px;letter-spacing:2px;` +
+    this.mDiceLabel = this.add.dom(w/2, L.mLabelY).createFromHTML(
+      `<div style="font-family:Cinzel,serif;font-weight:700;font-size:${L.mLabelFs};letter-spacing:2px;` +
       `color:${mDiceColor};white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.9)">⚔ ATAQUE DEL GUARDIÁN</div>`
     ).setOrigin(0.5).setDepth(2);
     this.mDiceLabel.node.style.zIndex = '50';
@@ -230,7 +233,7 @@ class BattleScene extends Phaser.Scene {
     this._mDiceObjects = [this.mDie1Dom, this.mDie2Dom, this.mDiceLabel];
 
     // Dado clickeables — tocar cualquier dado lanza los dados
-    const diceHitArea = this.add.rectangle(w/2, PY + 95, 210, 85, 0, 0).setInteractive({useHandCursor:true});
+    const diceHitArea = this.add.rectangle(L.hit.x, L.hit.y, L.hit.w, L.hit.h, 0, 0).setInteractive({useHandCursor:true});
     diceHitArea.on('pointerover', ()=>{
       this.tweens.add({targets:[this.pDie1Dom, this.pDie2Dom], alpha:0.78, duration:120});
     });
@@ -243,25 +246,41 @@ class BattleScene extends Phaser.Scene {
     diceHitArea.on('pointerup', ()=>this.tirarDados());
     this._diceHitArea = diceHitArea;
 
-    this.diceResultTxt = this.add.text(w/2, PY + 144, '', {fontFamily:'Cinzel', fontSize:'20px', color:'#D4AF37', fontStyle:'700'}).setOrigin(0.5);
+    if(L.compacto){
+      // El monstruo es DOM y tapa al texto del canvas: el resultado también va en DOM, con fondo.
+      const dom = this.add.dom(L.resultX, L.resultY).createFromHTML(
+        `<div style="font-family:Cinzel,serif;font-weight:700;font-size:${L.resultFs};color:#D4AF37;white-space:nowrap;` +
+        `background:rgba(10,10,16,.78);padding:2px 12px;border-radius:6px;text-shadow:0 1px 3px #000"></div>`
+      ).setOrigin(0.5).setDepth(6);
+      dom.node.style.zIndex = '48';
+      dom.node.style.pointerEvents = 'none';
+      dom.setText = (t)=>{ dom.node.firstChild.textContent = t; return dom; };
+      this.diceResultTxt = dom;
+    } else {
+      this.diceResultTxt = this.add.text(L.resultX, L.resultY, '', {fontFamily:'Cinzel', fontSize:L.resultFs, color:'#D4AF37', fontStyle:'700'}).setOrigin(0.5);
+    }
 
     // ── Predicción pre-tirada (opcional): mini-ejercicio de estimación ──
     // P(≥13) = 78/144 ≈ 54.2% · P(≤12) = 66/144 ≈ 45.8%
     this._prediccionJugador = null;
     this._predRacha = 0;
-    const predY = PY + 170;
-    this.add.text(w/2, predY, '🔮 ¿Cómo saldrá tu tirada?', {
-      fontFamily:'Poppins', fontSize:'10px', color:'#5a7090'
+    const predY = L.compacto ? 0 : L.predTitulo.y;
+    if(!L.compacto) this.add.text(w/2, predY, '🔮 ¿Cómo saldrá tu tirada?', {
+      fontFamily:'Poppins', fontSize:L.predTitulo.fs, color:'#5a7090'
     }).setOrigin(0.5);
+    const PRED_OFF = L.compacto ? '#8aa0bd' : '#5a7090';
+    this._predOff = PRED_OFF;
     const mkPredBtn = (x, label, key) => {
-      const t = this.add.text(x, predY + 18, label, {
-        fontFamily:'Cinzel', fontSize:'12px', color:'#5a7090', fontStyle:'700',
-        backgroundColor:'#141a26', padding:{x:9, y:4}
-      }).setOrigin(0.5).setInteractive({useHandCursor:true});
+      const t = this.add.text(x, L.chips.y, label, {
+        fontFamily:'Cinzel', fontSize:L.chips.fs, color:PRED_OFF, fontStyle:'700', align:'center',
+        backgroundColor:'#141a26', padding:{x:L.chips.padX, y:L.chips.padY}
+      }).setOrigin(0.5);
+      if(L.chips.w) t.setFixedSize(L.chips.w, L.chips.h);
+      t.setInteractive({useHandCursor:true});
       t.on('pointerup', ()=>{
         if(this.dadoEnCurso) return;
         this._prediccionJugador = (this._prediccionJugador === key) ? null : key;
-        this._predBtns.forEach(b => b.setColor(b._predKey === this._prediccionJugador ? '#D4AF37' : '#5a7090')
+        this._predBtns.forEach(b => b.setColor(b._predKey === this._prediccionJugador ? '#D4AF37' : PRED_OFF)
                                       .setBackgroundColor(b._predKey === this._prediccionJugador ? '#2A2010' : '#141a26'));
         snd_item && snd_item();
       });
@@ -269,32 +288,33 @@ class BattleScene extends Phaser.Scene {
       return t;
     };
     this._predBtns = [
-      mkPredBtn(w/2 - 52, '≥ 13  (54%)', 'alto'),
-      mkPredBtn(w/2 + 52, '≤ 12  (46%)', 'bajo'),
+      mkPredBtn(L.dice1.x/2 + L.dice2.x/2 - L.chips.dx, L.chips.a, 'alto'),
+      mkPredBtn(L.dice1.x/2 + L.dice2.x/2 + L.chips.dx, L.chips.b, 'bajo'),
     ];
 
     // --- ESTADO DEL JUGADOR (HUD — columna izquierda) ---
-    this.add.text(176, PY + 12, `⚔ ${STATE.nombre}`, {fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', letterSpacing:1}).setOrigin(0.5);
+    if(L.showName) this.add.text(L.nameX, L.nameY, `⚔ ${STATE.nombre}`, {fontFamily:'Cinzel', fontSize:L.nameFs, color:'#D4AF37', letterSpacing:1}).setOrigin(0.5);
 
     // HP del jugador
     this.playerBarBg = this.add.graphics();
-    this.playerBarBg.fillStyle(0x1a2535, 0.9); this.playerBarBg.fillRoundedRect(18, PY+28, 310, 15, 4);
-    this.playerBarBg.lineStyle(1, 0x3a4d66, 0.8); this.playerBarBg.strokeRoundedRect(18, PY+28, 310, 15, 4);
+    this.playerBarBg.fillStyle(0x1a2535, 0.9); this.playerBarBg.fillRoundedRect(L.hp.x, L.hp.y, L.hp.w, L.hp.h, 4);
+    this.playerBarBg.lineStyle(1, 0x3a4d66, 0.8); this.playerBarBg.strokeRoundedRect(L.hp.x, L.hp.y, L.hp.w, L.hp.h, 4);
     this.playerBar = this.add.graphics();
-    this.playerHpTxt = this.add.text(173, PY+36, '', {fontFamily:'Courier New', fontSize:'12px', color:'#fff', fontStyle:'bold'}).setOrigin(0.5);
+    this.playerHpTxt = this.add.text(L.hpCx, L.hp.y + L.hp.h/2, '', {fontFamily:'Courier New', fontSize:L.hpFs, color:'#fff', fontStyle:'bold'}).setOrigin(0.5);
     this.drawPlayerBar();
     this.drawMpBar();
 
     // Stats del jugador (columna izquierda, debajo de MP)
-    this.statsText = this.add.text(176, PY + 68, '', {fontFamily:'Poppins', fontSize:'11px', color:'#C0C8D0'}).setOrigin(0.5);
+    this.statsText = this.add.text(L.statsX, L.statsY, '', {fontFamily:'Poppins', fontSize:L.statsFs, color:'#C0C8D0', align:'center',
+      wordWrap: L.statsW ? {width:L.statsW} : undefined}).setOrigin(0.5, L.statsOrigin);
     this.updateStatsText();
     // Etiqueta columna central
-    this.add.text(w/2, PY + 14, 'TIRAR DADOS', {fontFamily:'Cinzel', fontSize:'10px', color:'#D4AF37', letterSpacing:3}).setOrigin(0.5).setAlpha(0.4);
+    if(L.tituloDados) this.add.text(w/2, L.tituloDados.y, 'TIRAR DADOS', {fontFamily:'Cinzel', fontSize:'10px', color:'#D4AF37', letterSpacing:3}).setOrigin(0.5).setAlpha(0.4);
 
     // --- BOTÓN INVENTARIO (discreto, en el panel del jugador) ---
     // "Tirar dados" no necesita botón: se tira tocando los propios dados.
     // "Opciones" pasa a un engranaje DOM arriba-izq (ver _initGearButton).
-    this.btnInv = this.makeButton(844, PY+113, 200, 32, '📦 Inventario', 0x8E44AD, 0xE8D0F0, ()=>this.abrirInventario());
+    this.btnInv = this.makeButton(L.btnX, L.btnInvY, L.btnW, L.btnH, '📦 Inventario', 0x8E44AD, 0xE8D0F0, ()=>this.abrirInventario(), L.btnFs);
 
     // Engranaje de opciones: botón DOM fijo arriba-izq, junto al control de sonido.
     this._initGearButton();
@@ -304,20 +324,22 @@ class BattleScene extends Phaser.Scene {
     const _diffColors = {facil:0x27ae60, normal:0x2980b9, heroe:0xc0392b, legendario:0x6c0000};
     const _diffCol = _diffColors[STATE.dificultad] || 0x2980b9;
     {
+      const B = L.badge;
       const dbg = this.add.graphics();
-      dbg.fillStyle(_diffCol, 0.18); dbg.fillRoundedRect(15, 15, 170, 36, 6);
-      dbg.lineStyle(2, _diffCol, 0.8); dbg.strokeRoundedRect(15, 15, 170, 36, 6);
-      this.add.text(25, 22, _diffBadge.label, {fontFamily:'Poppins', fontSize:'17px', color:'#'+_diffCol.toString(16).padStart(6,'0'), fontStyle:'700'});
+      dbg.fillStyle(_diffCol, 0.18); dbg.fillRoundedRect(B.x, B.y, B.w, B.h, 6);
+      dbg.lineStyle(2, _diffCol, 0.8); dbg.strokeRoundedRect(B.x, B.y, B.w, B.h, 6);
+      this.add.text(B.tx, B.ty, _diffBadge.label, {fontFamily:'Poppins', fontSize:B.fs, color:L.compacto ? '#e8eef5' : '#'+_diffCol.toString(16).padStart(6,'0'), fontStyle:'700'});
     }
 
     // Panel Resiliencia (izquierda)
     if(STATE.resiliencia > 0){
+      const B = L.badge;
       const resBg = this.add.graphics();
-      resBg.fillStyle(0xD4AF37, 0.12); resBg.fillRoundedRect(15, 15, 170, 36, 6);
-      resBg.lineStyle(2, 0xD4AF37, 0.55); resBg.strokeRoundedRect(15, 15, 170, 36, 6);
-      this.add.text(25, 22, `✨ Resiliencia +${STATE.resiliencia}`, {fontFamily:'Poppins', fontSize:'17px', color:'#D4AF37', fontStyle:'600'});
+      resBg.fillStyle(0xD4AF37, 0.12); resBg.fillRoundedRect(B.x, B.resY, B.w, B.h, 6);
+      resBg.lineStyle(2, 0xD4AF37, 0.55); resBg.strokeRoundedRect(B.x, B.resY, B.w, B.h, 6);
+      this.add.text(B.tx, B.resY + (B.ty - B.y), L.compacto ? `✨ Resil. +${STATE.resiliencia}` : `✨ Resiliencia +${STATE.resiliencia}`, {fontFamily:'Poppins', fontSize:B.fs, color:'#D4AF37', fontStyle:'600'});
       // Aura dorada alrededor del jugador (texto)
-      this.auraPlayer = this.add.text(176, PY+2, '✨ ✨ ✨', {fontSize:'13px', color:'#D4AF37', alpha:0.6}).setOrigin(0.5);
+      this.auraPlayer = this.add.text(L.auraX, L.auraY, '✨ ✨ ✨', {fontSize:L.compacto ? '14px' : '13px', color:'#D4AF37', alpha:0.6}).setOrigin(0.5);
       this.tweens.add({targets:this.auraPlayer, alpha:{from:0.3, to:1}, duration:1000, yoyo:true, repeat:-1});
     }
 
@@ -325,7 +347,7 @@ class BattleScene extends Phaser.Scene {
     if(!document.getElementById('__combatMsgCSS')){
       const st = document.createElement('style'); st.id = '__combatMsgCSS';
       st.textContent = `
-        .combat-msg{display:block;width:600px;box-sizing:border-box;margin:0 auto;
+        .combat-msg{display:block;width:600px;max-width:calc(100vw - 24px);box-sizing:border-box;margin:0 auto;
           padding:8px 18px;background:rgba(10,10,16,.88);border-radius:8px;
           font-family:Poppins,sans-serif;font-weight:700;font-size:19px;color:#2ecc71;
           text-align:center;line-height:1.3;text-shadow:0 2px 4px #000,0 0 2px #000;
@@ -333,10 +355,13 @@ class BattleScene extends Phaser.Scene {
       `;
       document.head.appendChild(st);
     }
-    this.combatMsg = this.add.dom(w/2, PY - 34).createFromHTML('<div class="combat-msg"></div>')
+    this.combatMsg = this.add.dom(w/2, L.msgY).createFromHTML('<div class="combat-msg"></div>')
       .setDepth(7).setVisible(false);
     this.combatMsg.node.style.zIndex = '45';
     this._combatMsgEl = this.combatMsg.node.querySelector('.combat-msg');
+    // El ancho y la letra dependen de la pantalla (teléfono: 16 px y sin pasarse del lienzo).
+    this._combatMsgEl.style.width = L.msgW + 'px';
+    this._combatMsgEl.style.fontSize = L.msgFs;
 
     // Tutorial al iniciar
     if(STATE.jefeActual === 0){
@@ -369,18 +394,20 @@ class BattleScene extends Phaser.Scene {
       `;
       document.head.appendChild(st);
     }
-    this.dialogueBalloon = this.add.dom(this.monsterCX, 176)
+    this.dialogueBalloon = this.add.dom(L.balloonX, L.balloonY)
       .createFromHTML('<div class="mon-balloon"></div>')
       .setDepth(6).setVisible(false);
     this.dialogueBalloon.node.style.zIndex = '40';
     this.dialogueTxt = this.dialogueBalloon.node.querySelector('.mon-balloon');
+    this.dialogueTxt.style.width = L.balloonW + 'px';
+    this.dialogueTxt.style.fontSize = L.balloonFs;
 
     // Dado Sagrado HUD (esquina inferior izquierda, encima de los botones)
     this._dadoSagradoCooldown = 0;
     this._dadoSagradoG  = this.add.graphics();
     this._dadoSagradoT  = this.add.text(0, 0, '', { fontFamily:'Cinzel', fontSize:'22px', color:'#fff', fontStyle:'800', stroke:'#1a5c2a', strokeThickness:2 }).setOrigin(0.5);
-    this._dadoSagradoLbl = this.add.text(0, 0, '', { fontFamily:'Poppins', fontSize:'10px', color:'#a0ffc0', fontStyle:'600' }).setOrigin(0.5);
-    this._dadoSagradoHit = this.add.zone(42, PY+128, 56, 56).setOrigin(0.5);
+    this._dadoSagradoLbl = this.add.text(0, 0, '', { fontFamily:'Poppins', fontSize:L.compacto ? '14px' : '10px', color:'#a0ffc0', fontStyle:'600' }).setOrigin(0.5);
+    this._dadoSagradoHit = this.add.zone(L.dsX, L.dsY, 56, L.compacto ? 60 : 56).setOrigin(0.5);
     this._drawDadoSagrado();
 
     this._segAlientoUsado = false;
@@ -414,6 +441,66 @@ class BattleScene extends Phaser.Scene {
 
     // Lore se muestra en el dossier del mapa — ir directo al turno
     this.time.delayedCall(1200, ()=>{ if(this.scene.isActive()) this._mostrarGloboDial(); });
+  }
+
+  /* Medidas de la pantalla de batalla.
+     Escritorio/tablet (lienzo 1024×700): las de siempre.
+     Teléfono apaisado (lienzo = pantalla real, alto < 500): letras ≥ 14 px y botones ≥ 44 px. */
+  _layout(w, h){
+    if(h >= 500){
+      const PY = 536;
+      return {
+        compacto:false, PY,
+        nombreY:35, nombreFs:'32px', guardY:70, guardFs:'17px',
+        barX:w/2-180, barY:98, barW:360, barH:26, barFs:'17px', probY:142, probFs:'15px',
+        monK:1, monBase:165, monX:w/2,
+        mDieSize:64, mDieFs:'30px', mDiceDX:55, mDiceY:280, mLabelY:238, mLabelFs:'13px', mResY:332, mResFs:'15px',
+        balloonX:w/2, balloonY:176, balloonW:300, balloonFs:'13px',
+        msgY:PY-34, msgW:600, msgFs:'19px',
+        panel:{x:8, y:PY, w:w-16, h:h-PY-6}, seps:[354, 670],
+        hp:{x:18, y:PY+28, w:310, h:15}, hpFs:'12px', hpCx:173,
+        mp:{x:18, y:PY+50, w:200, h:8}, mpFs:'11px', mpInside:false,
+        nameY:PY+12, nameFs:'13px', nameX:176, showName:true,
+        statsX:176, statsY:PY+68, statsFs:'11px', statsW:0, statsOrigin:0.5,
+        pDieSize:72, pDieFs:'32px', dice1:{x:w/2-55, y:PY+62}, dice2:{x:w/2+55, y:PY+62},
+        hit:{x:w/2, y:PY+62, w:210, h:80},
+        resultX:w/2, resultY:PY+111, resultFs:'20px', resultStroke:false,
+        tituloDados:{y:PY+14}, predTitulo:{y:PY+131, fs:'10px'},
+        chips:{y:PY+146, dx:52, fs:'12px', w:0, h:0, padY:4, padX:9, a:'≥ 13  (54%)', b:'≤ 12  (46%)'},
+        btnX:844, btnW:200, btnH:32, btnFs:'14px', btnInvY:PY+113, btnPoderY:PY+57,
+        dsX:42, dsY:PY+128, auraX:176, auraY:PY+2,
+        badge:{x:15, y:15, w:170, h:36, tx:25, ty:22, fs:'17px', resY:15},
+        floatY:28, dmgFloatY:24, dmgFloatDX:100,
+      };
+    }
+    const PY = h - 100;
+    const colA = Math.min(240, Math.round(w*0.29)), colC = Math.min(256, Math.round(w*0.31));
+    const xC0 = w - colC - 4, colB = xC0 - colA - 8, cxB = Math.round((colA + xC0)/2);
+    const btnW = colC - 62;
+    const chipW = Math.floor((colB - 20)/2);
+    return {
+      compacto:true, PY,
+      nombreY:17, nombreFs:'20px', guardY:38, guardFs:'14px',
+      barX:w/2-150, barY:52, barW:300, barH:22, barFs:'14px', probY:90, probFs:'14px',
+      monK:0.45, monBase:112, monX:w/2,
+      mDieSize:48, mDieFs:'22px', mDiceDX:40, mDiceY:166, mLabelY:126, mLabelFs:'14px', mResY:206, mResFs:'16px',
+      balloonX:Math.round(w/2 + 150 + Math.min(240, w*0.3)/2), balloonY:150, balloonW:Math.min(240, Math.round(w*0.3)), balloonFs:'14px',
+      msgY:PY-44, msgW:Math.min(560, w-40), msgFs:'16px',
+      panel:{x:4, y:PY, w:w-8, h:h-PY-4}, seps:[colA+2, xC0-2],
+      hp:{x:8, y:PY+6, w:colA-16, h:18}, hpFs:'14px', hpCx:8+(colA-16)/2,
+      mp:{x:8, y:PY+28, w:colA-16, h:16}, mpFs:'14px', mpInside:true,
+      nameY:PY+4, nameFs:'14px', nameX:colA/2, showName:false,
+      statsX:colA/2, statsY:PY+50, statsFs:'14px', statsW:colA-12, statsOrigin:0,
+      pDieSize:44, pDieFs:'22px', dice1:{x:cxB-28, y:PY+27}, dice2:{x:cxB+28, y:PY+27},
+      hit:{x:cxB, y:PY+27, w:colB-16, h:52},
+      resultX:cxB, resultY:PY-14, resultFs:'16px', resultStroke:true,
+      tituloDados:null, predTitulo:null,
+      chips:{y:PY+74, dx:chipW/2+4, fs:'14px', w:chipW, h:44, padY:13, padX:0, a:'🔮 ≥ 13 · 54%', b:'🔮 ≤ 12 · 46%'},
+      btnX:xC0 + 56 + btnW/2, btnW, btnH:44, btnFs:'15px', btnInvY:PY+27, btnPoderY:PY+72,
+      dsX:xC0+26, dsY:PY+48, auraX:colA/2, auraY:PY+1,
+      badge:{x:6, y:108, w:128, h:26, tx:14, ty:110, fs:'14px', resY:138},
+      floatY:28, dmgFloatY:24, dmgFloatDX:100,
+    };
   }
 
   _mostrarLore(m){
@@ -626,21 +713,23 @@ class BattleScene extends Phaser.Scene {
     const adquiridos = SKILL_TREE.filter(p =>
       skillRank(STATE.skills, p.id) > 0 && p.tipo !== 'pasivo');
 
-    const btnX = 844, btnY = (this.PY || 500) + 57;
+    const L = this.L;
+    const btnX = L.btnX, btnY = L.btnPoderY;
 
     if(adquiridos.length === 0){
       // Sin poderes: mostrar bloqueado (siempre visible)
-      this._toggleBtn = this.makeButton(btnX, btnY, 200, 32, '📖 Grimorio', 0x2a2a2a, 0x666666, ()=>{});
+      this._toggleBtn = this.makeButton(btnX, btnY, L.btnW, L.btnH, '📖 Grimorio', 0x2a2a2a, L.compacto ? 0x9aa3ad : 0x666666, ()=>{}, L.btnFs);
       if(this._toggleBtn && this._toggleBtn.hit) this._toggleBtn.hit.disableInteractive();
       return;
     }
 
     // Botón toggle columna derecha
     this._toggleBtn = this.makeButton(
-      btnX, btnY, 200, 32,
+      btnX, btnY, L.btnW, L.btnH,
       `📖 Grimorio (${adquiridos.length}) ▲`,
       0x1a5fa0, 0x7ec8ff,
-      () => this._togglePoderes()
+      () => this._togglePoderes(),
+      L.btnFs
     );
     this._poderesAdquiridos = adquiridos;
     this.refreshPowerButtons();
@@ -670,14 +759,18 @@ class BattleScene extends Phaser.Scene {
     if(this._toggleBtn && this._toggleBtn.t)
       this._toggleBtn.t.setText(`📖 Grimorio (${this._poderesAdquiridos.length}) ▼`);
 
-    const by = (this.PY || 500) + 57;
-    const panelH = Math.min(this._poderesAdquiridos.length * 72 + 16, 320);
-    const panelY = by - panelH - 10;
+    const L = this.L;
+    const by = L.btnPoderY;
+    const panelH = L.compacto ? Math.min(this._poderesAdquiridos.length * 84 + 16, by - L.btnH/2 - 12)
+                              : Math.min(this._poderesAdquiridos.length * 72 + 16, 320);
+    const panelY = L.compacto ? Math.max(4, by - L.btnH/2 - 6 - panelH) : by - panelH - 10;
+    const fzBtn = L.compacto ? 13 : 11, fzCost = L.compacto ? 12 : 9, fzDesc = L.compacto ? 13 : 9.5, fzTit = L.compacto ? 12 : 11;
+    const anchoPanel = L.compacto ? Math.min(380, this.w - 16) : 310;
 
     const html = `
       <div id="poderes-panel" style="
         position:fixed; right:8px; top:${panelY}px;
-        width:310px; max-height:${panelH}px; overflow-y:auto;
+        width:${anchoPanel}px; max-height:${panelH}px; overflow-y:auto;
         background:rgba(5,13,24,0.97);
         border:1.5px solid #D4AF37;
         border-radius:10px;
@@ -686,7 +779,7 @@ class BattleScene extends Phaser.Scene {
         z-index:9000;
         font-family:'Cinzel',serif;
       ">
-        <div style="color:#D4AF37;font-size:11px;text-align:center;letter-spacing:2px;margin-bottom:6px;opacity:0.7">— PODERES ACTIVOS —</div>
+        <div style="color:#D4AF37;font-size:${fzTit}px;text-align:center;letter-spacing:2px;margin-bottom:6px;opacity:0.85">— PODERES ACTIVOS —</div>
         ${this._poderesAdquiridos.map(p => {
           const rank = skillRank(STATE.skills, p.id);
           const cost = this._costoPoder(p.id);
@@ -702,12 +795,12 @@ class BattleScene extends Phaser.Scene {
                   background:linear-gradient(135deg,#1a5fa0,#0d3a6e);
                   border:1px solid #7ec8ff;
                   color:#ddeeff; font-family:'Cinzel',serif;
-                  font-size:11px; font-weight:700;
-                  padding:5px 10px; border-radius:6px;
+                  font-size:${fzBtn}px; font-weight:700;
+                  padding:${L.compacto ? '10px 12px' : '5px 10px'}; border-radius:6px; min-height:${L.compacto ? 44 : 0}px;
                   cursor:${ok ? 'pointer' : 'default'};
                   white-space:nowrap; flex-shrink:0;
-                ">${p.nombre}<br><span style="color:#aad4ff;font-size:9px">${cost} MP</span></button>
-                <span style="color:#8a9ab0;font-size:9.5px;font-family:'Poppins',sans-serif;line-height:1.4">${p.desc}</span>
+                ">${p.nombre}<br><span style="color:#aad4ff;font-size:${fzCost}px">${cost} MP</span></button>
+                <span style="color:${L.compacto ? '#b5c2d3' : '#8a9ab0'};font-size:${fzDesc}px;font-family:'Poppins',sans-serif;line-height:1.4">${p.desc}</span>
               </div>
             </div>`;
         }).join('')}
@@ -864,7 +957,7 @@ class BattleScene extends Phaser.Scene {
     return `🎯 Probabilidad de Impacto: Necesitas ${umbralEf}+${conBonos} | ${casosFav} casos / ${CFG.DICE_COMBOS} (${pct}%)`;
   }
 
-  makeButton(x, y, w, h, label, accentColor, txtColor, action){
+  makeButton(x, y, w, h, label, accentColor, txtColor, action, fs='14px'){
     const container = this.add.container(x, y);
 
     // Fondo dark panel
@@ -896,7 +989,7 @@ class BattleScene extends Phaser.Scene {
     // Texto
     const txtHex = `#${txtColor.toString(16).padStart(6,'0')}`;
     const t = this.add.text(0, 0, label, {
-      fontFamily:'Cinzel, serif', fontSize:'14px', letterSpacing:1,
+      fontFamily:'Cinzel, serif', fontSize:fs, letterSpacing:1,
       color: txtHex, fontStyle:'600'
     }).setOrigin(0.5);
 
@@ -928,20 +1021,22 @@ class BattleScene extends Phaser.Scene {
   drawEnemyBar(){
     this.enemyBar.clear();
     const pct = Math.max(0, STATE.jefeHp / STATE.jefeHpMax);
-    const w = 356 * pct;
+    const L = this.L;
+    const w = (L.barW - 4) * pct;
     const col = pct > 0.5 ? 0xe74c3c : pct > 0.25 ? 0xe67e22 : 0x8b0000;
     this.enemyBar.fillStyle(col, 1);
-    this.enemyBar.fillRoundedRect(this.w/2-178, (this._enemyBarY||448)+2, Math.max(2,w), 22, 3);
+    this.enemyBar.fillRoundedRect(L.barX+2, L.barY+2, Math.max(2,w), L.barH-4, 3);
     this.enemyHpTxt.text = `HP: ${Math.max(0,STATE.jefeHp)} / ${STATE.jefeHpMax}`;
   }
 
   drawPlayerBar(){
     this.playerBar.clear();
     const pct = Math.max(0, STATE.hp / STATE.hpMax);
-    const fw = 306 * pct;
+    const L = this.L;
+    const fw = (L.hp.w - 4) * pct;
     const col = pct > 0.5 ? 0x2ecc71 : pct > 0.25 ? 0xf1c40f : 0xe74c3c;
     this.playerBar.fillStyle(col, 1);
-    this.playerBar.fillRoundedRect(20, (this._hpBarY||528)+2, Math.max(2,fw), 11, 3);
+    this.playerBar.fillRoundedRect(L.hp.x+2, L.hp.y+2, Math.max(2,fw), L.hp.h-4, 3);
     this.playerHpTxt.text = `HP: ${Math.max(0,STATE.hp)} / ${STATE.hpMax}`;
   }
 
@@ -951,15 +1046,16 @@ class BattleScene extends Phaser.Scene {
     // Recrear si falta o quedó destruido, si no la barra de MP no reaparece.
     if (!this._mpBarG || !this._mpBarG.scene) { this._mpBarG = this.add.graphics().setDepth(40); }
     const g = this._mpBarG; g.clear(); g.setVisible(true);
-    const x = 18, y = this._mpBarY || 550, bw = 200, bh = 8;
+    const L = this.L;
+    const x = L.mp.x, y = L.mp.y, bw = L.mp.w, bh = L.mp.h;
     const frac = STATE.mpMax ? (STATE.mp || 0) / STATE.mpMax : 0;
     g.fillStyle(0x0c1020, 0.85); g.fillRoundedRect(x, y, bw, bh, 4);
     g.fillStyle(0x3a7bd5, 1);    g.fillRoundedRect(x, y, bw * frac, bh, 4);
     g.lineStyle(1, 0x6fa8ff, 0.6); g.strokeRoundedRect(x, y, bw, bh, 4);
     if (!this._mpTxt || !this._mpTxt.scene) {
-      this._mpTxt = this.add.text(x + bw + 8, y - 1, '', {
-        fontFamily:'Cinzel', fontSize:'11px', color:'#9fc2ff'
-      }).setDepth(40);
+      this._mpTxt = this.add.text(L.mpInside ? x + bw/2 : x + bw + 8, L.mpInside ? y + bh/2 : y - 1, '', {
+        fontFamily:'Cinzel', fontSize:L.mpFs, color:L.mpInside ? '#ffffff' : '#9fc2ff', fontStyle:L.mpInside ? '700' : 'normal'
+      }).setOrigin(L.mpInside ? 0.5 : 0, L.mpInside ? 0.5 : 0).setDepth(41);
     }
     this._mpTxt.setVisible(true);
     this._mpTxt.setText(`MP ${STATE.mp||0}/${STATE.mpMax||0}`);
@@ -972,7 +1068,9 @@ class BattleScene extends Phaser.Scene {
       buffStr = '  · Buffs: ' + STATE.buffs.map(b=>b.emoji).join(' ');
     }
     const rachaStr = bonusRacha(STATE.clase, this._racha) > 0 ? `  🔥 Racha +${bonusRacha(STATE.clase, this._racha)}` : '';
-    this.statsText.text = `⚔ Atk: ${STATE.ataque}  🛡 Def: ${STATE.defensa}  ✨ Res: +${STATE.resiliencia}  Oro: ${STATE.oro||0}${rachaStr}${buffStr}`;
+    this.statsText.text = this.L.compacto
+      ? `Atk ${STATE.ataque} · Def ${STATE.defensa} · Res +${STATE.resiliencia} · Oro ${STATE.oro||0}${rachaStr}${buffStr}`
+      : `⚔ Atk: ${STATE.ataque}  🛡 Def: ${STATE.defensa}  ✨ Res: +${STATE.resiliencia}  Oro: ${STATE.oro||0}${rachaStr}${buffStr}`;
   }
 
   drawDice(v1, v2){
@@ -1062,12 +1160,12 @@ class BattleScene extends Phaser.Scene {
 
   _makePlayerDie(x, y){
     const html =
-      `<div style="width:72px;height:72px;border-radius:12px;` +
+      `<div style="width:${this.L.pDieSize}px;height:${this.L.pDieSize}px;border-radius:12px;` +
       `background:linear-gradient(145deg,#fae77d 0%,#e8b832 52%,#bf7e10 100%);` +
       `border:2.5px solid #966800;` +
       `box-shadow:0 5px 0 #7a5500,0 7px 18px rgba(0,0,0,.55),inset 0 2px 5px rgba(255,248,180,.4);` +
       `display:flex;align-items:center;justify-content:center;` +
-      `font-family:Cinzel,serif;font-size:32px;font-weight:800;color:#2a1200;` +
+      `font-family:Cinzel,serif;font-size:${this.L.pDieFs};font-weight:800;color:#2a1200;` +
       `text-shadow:0 1px 0 rgba(255,220,100,.7),0 -1px 1px rgba(80,40,0,.3);` +
       `position:relative;overflow:hidden">` +
       `<div class="pdie-shine"></div>` +
@@ -1085,12 +1183,12 @@ class BattleScene extends Phaser.Scene {
     const clipSt = th.clip ? `clip-path:${th.clip};` : '';
     const animSt = th.anim ? `animation:${th.anim};`  : '';
     const html =
-      `<div class="mdie-face" style="width:64px;height:64px;` +
+      `<div class="mdie-face" style="width:${this.L.mDieSize}px;height:${this.L.mDieSize}px;` +
       `border-radius:${th.radius};${clipSt}` +
       `background:${th.bg};` +
       `border:${th.border};box-shadow:${th.shadow};${animSt}` +
       `display:flex;align-items:center;justify-content:center;` +
-      `font-family:Cinzel,serif;font-weight:800;font-size:30px;color:${this._mDiceTxtHex};` +
+      `font-family:Cinzel,serif;font-weight:800;font-size:${this.L.mDieFs};color:${this._mDiceTxtHex};` +
       `text-shadow:0 1px 2px rgba(0,0,0,.4)">?</div>`;
     const dom = this.add.dom(x, y).createFromHTML(html);
     dom.setOrigin(0.5);
@@ -1380,7 +1478,7 @@ class BattleScene extends Phaser.Scene {
         this.mostrarMensaje(`🔮 Predicción fallida — la probabilidad era ${pReal}`, '#8a9ab0', 2600, 'A');
       }
       this._prediccionJugador = null;
-      this._predBtns.forEach(b => b.setColor('#5a7090').setBackgroundColor('#141a26'));
+      this._predBtns.forEach(b => b.setColor(this._predOff || '#5a7090').setBackgroundColor('#141a26'));
     }
     if(suma===2 || suma===24) STATE.stats.turnosEpicos.push({turno:STATE.turnoActual, jefe:this.monster.nombre, valor:suma});
 
@@ -1419,17 +1517,17 @@ class BattleScene extends Phaser.Scene {
     this.dialogueBalloon.setVisible(true);
     this.dialogueBalloon.setAlpha(0);
     // Posición fija en el hueco bajo la barra de HP (sobre la cabeza del monstruo)
-    this.dialogueBalloon.setPosition(this.monsterCX, 176);
+    this.dialogueBalloon.setPosition(this.L.balloonX, this.L.balloonY);
     this.tweens.add({targets:this.dialogueBalloon, alpha:1, duration:400, ease:'Back.easeOut'});
     // Globo permanece hasta que el jugador tira dados (oculto en tirarDados)
   }
 
   _drawDadoSagrado(){
     const rank = skillRank(STATE.skills, 'dadoSagrado');
-    const cx = 14+28, cy = (this.PY || 500)+128;
+    const cx = this.L.dsX, cy = this.L.dsY;
     this._dadoSagradoG.clear();
-    this._dadoSagradoT.setPosition(cx, cy-4);
-    this._dadoSagradoLbl.setPosition(cx, cy+20);
+    this._dadoSagradoT.setPosition(cx, this.L.compacto ? cy-9 : cy-4);
+    this._dadoSagradoLbl.setPosition(cx, this.L.compacto ? cy+14 : cy+20);
 
     if(rank === 0){
       // Sin skill: invisible
@@ -1807,8 +1905,8 @@ class BattleScene extends Phaser.Scene {
     const mRollHex = `#${(this._mDiceColor >> 16 & 0xff).toString(16).padStart(2,'0')}${(this._mDiceColor >> 8 & 0xff).toString(16).padStart(2,'0')}${(this._mDiceColor & 0xff).toString(16).padStart(2,'0')}`;
     const mResultTxt = (md2 === 0) ? `🎲 ${md1} = ${mSuma}  →  -${dañoMonstruo} HP`
                                    : `🎲 ${md1} + ${md2} = ${mSuma}  →  -${dañoMonstruo} HP`;
-    const mResultLabel = this.add.dom(this.w/2, 332).createFromHTML(
-      `<div style="font-family:Cinzel,serif;font-weight:700;font-size:15px;white-space:nowrap;` +
+    const mResultLabel = this.add.dom(this.w/2, this.L.mResY).createFromHTML(
+      `<div style="font-family:Cinzel,serif;font-weight:700;font-size:${this.L.mResFs};white-space:nowrap;` +
       `color:${mRollHex};text-shadow:0 0 4px #0A0A10, 0 1px 3px rgba(0,0,0,.9)">${mResultTxt}</div>`
     ).setOrigin(0.5).setAlpha(0);
     mResultLabel.node.style.zIndex = '50';
@@ -2503,3 +2601,5 @@ class BattleScene extends Phaser.Scene {
       </div>`);
   }
 }
+
+BattleScene.DISENO_MOVIL = true;
