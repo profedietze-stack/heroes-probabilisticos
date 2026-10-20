@@ -32,6 +32,15 @@ const config = {
 
 /* Guard anti-doble-instancia: si ya existe un game (main.js cargado dos veces),
    no crear otro — dos Phaser.Game = dos canvas renderizando = pantallas mezcladas. */
+/* Movimiento reducido (preferencia del sistema): sin sacudidas ni destellos de cámara. */
+try {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const Cam = Phaser.Cameras.Scene2D.Camera.prototype;
+    Cam.shake = function () { return this; };
+    Cam.flash = function () { return this; };
+  }
+} catch (e) { /* sin matchMedia: se deja todo como está */ }
+
 if (!window.game) {
   window.game = new Phaser.Game(config);
 }

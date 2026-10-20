@@ -46,8 +46,8 @@
 /* ── Close button ── */
 .modal-close{
   background:transparent;
-  color:#4a5a6e;
-  border:1px solid #2a3848;
+  color:#8a9ab0;
+  border:1px solid #3a4a5e;
   width:30px;height:30px;
   border-radius:2px;
   font-size:var(--fs-md);cursor:pointer;
@@ -61,7 +61,7 @@
 .tab{
   flex:1;padding:13px 16px;
   background:transparent;
-  color:#3a4a5e;
+  color:#8396ad;
   border:none;border-bottom:2px solid transparent;
   cursor:pointer;
   font-family:'Cinzel',serif;font-weight:600;font-size:var(--fs-xs);
@@ -211,4 +211,20 @@
 /* Safe area bottom para iPhone con home-indicator */
 .modal-overlay {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Accesibilidad (auditoría D8) ── */
+/* Dedo en vez de mouse: objetivos de 44 px como mínimo. */
+@media (pointer: coarse) {
+  .modal-close { width: 44px; height: 44px; }
+  .tab { min-height: 44px; }
+}
+
+/* Quien pidió menos movimiento en su sistema no recibe animaciones decorativas. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
