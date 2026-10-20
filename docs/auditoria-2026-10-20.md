@@ -418,7 +418,27 @@ Medido en Chromium móvil con `?movil=1` (812×375, factor 1) y recorriendo cada
 - **Resultado y ayuda:** el resultado y el veredicto ocupan casi toda la pantalla, con letra de 14 px y "Continuar" de 44 px; la ayuda "?" abre un modal con scroll.
 - **Mercader/Oráculo:** NPC chico a la izquierda, diálogo y botones a la derecha y "Volver al mapa" de 44 px sobre el mostrador. La tienda es una lista de filas con el botón de compra de 44 px.
 - **Guardas:** `tests/enigmas-movil.test.js` (9 casos: zonas, zoom, botones, reparto por `scrollFactor`, escritorio sin cambios).
-- **Pendiente de migrar:** intro (nombre, dificultad y clase), victoria, final, arcade y modo libre; siguen en 1024×700 (factor 0,54).
+- **Pendiente de migrar:** ver el Addendum 7.
 - **Bug hallado midiendo, corregido (también en PC):** al tocar "Continuar" en el aviso "Antes de continuar" del Mercader con el mouse, el aviso no avanzaba. Phaser también recibe el "soltar" de un clic hecho *sobre* un modal DOM; si cae encima del botón de un enigma, lo dispara, el aviso se vuelve a armar entre el "soltar" y el "click" del botón del modal, y el "click" se pierde. Ahora `PuzzleScene` ignora los botones de la escena mientras haya un modal abierto (`_modalAbierto()`). Test con rojo comprobado en `tests/enigmas-movil.test.js`.
 - **Aviso "Antes de continuar" y tienda:** compactos en el teléfono (ícono al costado, botones de 44 px; la tienda en filas) para que entren sin scroll.
 - **Recorrido completo verificado en el teléfono emulado, con clics reales:** mapa → puerta → Mercader → "Probar mi suerte" → enigma → respuesta → resultado → mapa, sin errores de consola.
+
+## Addendum 7 — Teléfono, etapa 2 terminada: todas las escenas (versión 15 / `heroesprob-v17`)
+
+Quedaron migradas las últimas seis escenas. Medido en Chromium móvil (`?movil=1`, 812×375, factor 1):
+
+| Escena | Botones bajo 44 px | Texto mínimo |
+|---|---|---|
+| Intro: historia y nombre (campo de 46 px) | 0 | 14 px |
+| Intro: dificultad (2×2) | 0 | 15 px |
+| Intro: clase (2×2, con ventajas y costos de cada una) | 0 | 13 px |
+| Victoria (bolsa y estado a la izquierda, próximo guardián y botones a la derecha) | 0 | 14 px |
+| Final (logros en 2 columnas, 5 botones de 46 px en fila) | 0 | 12 px (descripción de un logro) |
+| Hub del Modo Minijuegos | 0 | 12 px |
+| Arcade: selector de dificultad, transición de ronda y resultado | 0 | 13 px |
+| Modo Libre (dificultad + 7 tarjetas que son el botón entero) | 0 | 13 px |
+
+- **Con esto, las 17 escenas del juego usan el lienzo de la pantalla en el teléfono.** Un test (`tests/escenas-movil.test.js`) lee la lista de `main.js` y falla si alguna escena registrada no está migrada o no tiene su rama compacta, así una escena nueva no se olvida.
+- **PC y tablet:** sin cambios; comprobado en pantalla a 1100×760 con las seis escenas.
+- **Recorrido verificado en el teléfono con clics reales:** menú → intro (nombre, dificultad, clase) → mapa → batalla → mapa → Mercader → enigma → mapa; victoria y arcade/libre por separado. Sin errores de consola.
+- **Sin verificar:** teléfono real (barras del navegador, notch, rotación en vivo), iOS/Safari y rendimiento en gama baja.

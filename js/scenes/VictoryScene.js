@@ -21,6 +21,9 @@ class VictoryScene extends Phaser.Scene {
       this.tweens.add({targets:p, y:p.y-100, alpha:0, duration:2000+Math.random()*2000, repeat:-1, onRepeat:()=>{p.y=h+20; p.alpha=0.8;}});
     }
 
+    // Teléfono apaisado (lienzo = pantalla real): dos columnas, letras de 14 px o más y botones de 44 px o más.
+    if (h < 500) { this._crearMovil(w, h); return; }
+
     this.add.text(w/2, 80, '⚔ ¡VICTORIA! ⚔', {fontFamily:'Cinzel', fontSize:'54px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:5, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:20,fill:true}}).setOrigin(0.5);
 
     const jefeAnt = MONSTERS[STATE.jefeActual - 1] || MONSTERS[STATE.jefeActual] || {nombre:'el Guardián'};
@@ -67,6 +70,49 @@ class VictoryScene extends Phaser.Scene {
     this.makeBtn(w/2,      statsY+185, '⚔ Continuar',  0xD4AF37, 0x0A0A10, ()=>{ snd_buff(); this.cameras.main.fadeOut(350,0,0,0); this.cameras.main.once('camerafadeoutcomplete',()=>this.scene.start('MapScene')); });
     this.makeBtn(w/2-105,  statsY+248, '📦 Inventario', 0x8E44AD, 0xE8D0F0, ()=>{ snd_item(); this.abrirInventario(); });
     this.makeBtn(w/2+105,  statsY+248, '🏠 Menú',       0x2a3848, 0xC0C8D0, ()=>{ snd_item(); saveGame(); this.cameras.main.fadeOut(350,0,0,0); this.cameras.main.once('camerafadeoutcomplete',()=>this.scene.start('MenuScene')); });
+  }
+
+  _crearMovil(w, h){
+    this.add.text(w/2, 28, '⚔ ¡VICTORIA! ⚔', {fontFamily:'Cinzel', fontSize:'32px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:4, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:14,fill:true}}).setOrigin(0.5);
+    const jefeAnt = MONSTERS[STATE.jefeActual - 1] || MONSTERS[STATE.jefeActual] || {nombre:'el Guardián'};
+    this.add.text(w/2, 62, `Has derrotado a ${jefeAnt.nombre}`, {fontFamily:'Cinzel', fontSize:'17px', color:'#fff', fontStyle:'italic'}).setOrigin(0.5);
+
+    /* ── Columna izquierda: bolsa, estado y una idea de probabilidad ── */
+    const LX = 16, LW = Math.floor(w/2) - 28;
+    const bag = this.add.graphics();
+    bag.fillStyle(0x111520, 0.9); bag.fillRoundedRect(LX, 86, LW, 92, 10);
+    bag.lineStyle(2, 0xD4AF37, 0.55); bag.strokeRoundedRect(LX, 86, LW, 92, 10);
+    this.add.text(LX + 12, 92, '📦 Tu Bolsa', {fontFamily:'Cinzel', fontSize:'15px', color:'#D4AF37', letterSpacing:1});
+    if (STATE.inventario.length === 0) {
+      this.add.text(LX + LW/2, 138, 'Bolsa vacía', {fontFamily:'Poppins', fontSize:'15px', color:'#b0b8c4'}).setOrigin(0.5);
+    } else {
+      const sp = Math.min(62, Math.floor((LW - 16) / Math.max(1, STATE.inventario.length)));
+      STATE.inventario.forEach((slot, i) => {
+        const it = ITEMS[slot.id-1];
+        const cx = LX + 12 + sp/2 + i*sp;
+        this.add.text(cx, 128, it.emoji, {fontSize:'28px'}).setOrigin(0.5);
+        this.add.text(cx, 158, `x${slot.cantidad}`, {fontFamily:'Poppins', fontSize:'14px', color:'#D4AF37', fontStyle:'700'}).setOrigin(0.5);
+      });
+    }
+    this.add.text(LX + LW/2, 198, `⚔ Atk ${STATE.ataque}  ·  🛡 Def ${STATE.defensa}  ·  ❤ ${STATE.hp}/${STATE.hpMax}\n✨ Resil +${STATE.resiliencia}  ·  💰 Oro ${STATE.oro||0}`, {
+      fontFamily:'Poppins', fontSize:'14px', color:'#C0C8D0', align:'center', lineSpacing:4
+    }).setOrigin(0.5, 0);
+    this.add.text(LX + LW/2, 252, `💡 ${MSG_CONCEPTO[Math.floor(Math.random()*MSG_CONCEPTO.length)]}`, {
+      fontFamily:'Poppins', fontStyle:'italic', fontSize:'14px', color:'#a4b3c4', wordWrap:{width:LW - 8}, align:'center'
+    }).setOrigin(0.5, 0);
+
+    /* ── Columna derecha: próximo guardián y botones de 44 px o más ── */
+    const RX = Math.floor(w/2) + 12, RW = w - RX - 16, rcx = RX + RW/2;
+    const next = MONSTERS[STATE.jefeActual];
+    if (next) {
+      this.add.text(rcx, 100, `⚔ El próximo Guardián`, {fontFamily:'Cinzel', fontSize:'15px', color:'#ff8a8a'}).setOrigin(0.5);
+      this.add.text(rcx, 126, next.nombre, {fontFamily:'Cinzel', fontSize:'19px', color:'#ff6666', fontStyle:'700', wordWrap:{width:RW}, align:'center'}).setOrigin(0.5, 0);
+      this.add.text(rcx, 170, `"${next.frase}"`, {fontFamily:'Poppins', fontStyle:'italic', fontSize:'14px', color:'#c4c8d0', wordWrap:{width:RW - 8}, align:'center'}).setOrigin(0.5, 0);
+    }
+    this.makeBtn(rcx, 286, '⚔ Continuar', 0xD4AF37, 0x0A0A10, ()=>{ snd_buff(); this.cameras.main.fadeOut(350,0,0,0); this.cameras.main.once('camerafadeoutcomplete',()=>this.scene.start('MapScene')); }, RW, 46, '18px');
+    const bw2 = Math.floor((RW - 12) / 2);
+    this.makeBtn(RX + bw2/2, 338, '📦 Inventario', 0x8E44AD, 0xE8D0F0, ()=>{ snd_item(); this.abrirInventario(); }, bw2, 44, '15px');
+    this.makeBtn(RX + bw2 + 12 + bw2/2, 338, '🏠 Menú', 0x2a3848, 0xC0C8D0, ()=>{ snd_item(); saveGame(); this.cameras.main.fadeOut(350,0,0,0); this.cameras.main.once('camerafadeoutcomplete',()=>this.scene.start('MenuScene')); }, bw2, 44, '15px');
   }
 
   abrirInventario(){
@@ -191,8 +237,8 @@ class VictoryScene extends Phaser.Scene {
     showToast(`${it.emoji} ${it.nombre}: ${efectoMsg}`);
     setTimeout(()=>{ window.__renderInvVictory && window.__renderInvVictory(); }, 800);
   }
-  makeBtn(x,y,label,color,txtColor,action){
-    const bw = 180, bh = 52;
+  makeBtn(x,y,label,color,txtColor,action,bwArg,bhArg,fsArg){
+    const bw = bwArg || 180, bh = bhArg || 52;
     const container = this.add.container(x, y);
     const r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
     const darkCol = Phaser.Display.Color.GetColor(Math.max(0,r-80), Math.max(0,g-80), Math.max(0,b-80));
@@ -213,7 +259,7 @@ class VictoryScene extends Phaser.Scene {
     border.lineStyle(2, 0xfff5d0, 0.9);
     border.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 10);
     const t = this.add.text(0, 0, label, {
-      fontFamily:'Poppins', fontSize:'19px',
+      fontFamily:'Poppins', fontSize: fsArg || '19px',
       color:`#${txtColor.toString(16).padStart(6,'0')}`,
       fontStyle:'800', stroke:'#000', strokeThickness:txtColor === 0xffffff ? 1 : 0
     }).setOrigin(0.5);
@@ -237,3 +283,5 @@ class VictoryScene extends Phaser.Scene {
     hit.on('pointerup', action);
   }
 }
+
+VictoryScene.DISENO_MOVIL = true;

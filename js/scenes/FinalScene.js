@@ -18,6 +18,9 @@ class FinalScene extends Phaser.Scene {
 
     snd_victory();
 
+    // Teléfono apaisado (lienzo = pantalla real): logros en 2 columnas, letras de 13-14 px y botones de 44 px.
+    if (h < 500) { this._crearMovil(w, h); return; }
+
     // Título épico
     const t1 = this.add.text(w/2, 60, '🏆 ¡HAS RESTAURADO ARITHMOS! 🏆', {fontFamily:'Cinzel', fontSize:'38px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:4, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:22,fill:true}}).setOrigin(0.5);
     this.tweens.add({targets:t1, scale:{from:1, to:1.04}, duration:1500, yoyo:true, repeat:-1});
@@ -60,6 +63,41 @@ class FinalScene extends Phaser.Scene {
     this.makeBtn(w/2, btnY, '🎓 Certificado', 0x1E8449, 0xD5F5E3, ()=>this.mostrarCertificado());
     this.makeBtn(w/2+160, btnY, '📖 Informe Pedagógico', 0x8E44AD, 0xE8D0F0, ()=>this.mostrarInformePed());
     this.makeBtn(w/2+320, btnY, '🔄 Nueva Aventura', 0xC0392B, 0xF5C6C2, ()=>this.nuevaAventura());
+  }
+
+  _crearMovil(w, h){
+    const t1 = this.add.text(w/2, 26, '🏆 ¡HAS RESTAURADO ARITHMOS! 🏆', {fontFamily:'Cinzel', fontSize:'24px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:3, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:14,fill:true}}).setOrigin(0.5);
+    this.tweens.add({targets:t1, scale:{from:1, to:1.03}, duration:1500, yoyo:true, repeat:-1});
+    this.add.text(w/2, 54, `${STATE.nombre} el Probabilista — Leyenda del Reino`, {fontFamily:'Cinzel', fontSize:'15px', color:'#f5e9c9', fontStyle:'italic'}).setOrigin(0.5);
+
+    const logros = this.calcularLogros();
+    const panel = this.add.graphics();
+    panel.fillStyle(0x111520, 0.92); panel.fillRoundedRect(8, 72, w-16, h-72-92, 12);
+    panel.lineStyle(2, 0xD4AF37, 0.6); panel.strokeRoundedRect(8, 72, w-16, h-72-92, 12);
+    this.add.text(w/2, 86, '🏅 Logros Desbloqueados', {fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'700', letterSpacing:2}).setOrigin(0.5);
+
+    const cw = Math.floor((w - 16 - 36) / 2), ch = 46;
+    logros.forEach((l, i) => {
+      const cx = 20 + (i % 2) * (cw + 8), cy = 102 + Math.floor(i / 2) * (ch + 4);
+      const bg = this.add.graphics();
+      bg.fillStyle(0xD4AF37, 0.08); bg.fillRoundedRect(cx, cy, cw, ch, 6);
+      bg.lineStyle(1, 0xD4AF37, 0.4); bg.strokeRoundedRect(cx, cy, cw, ch, 6);
+      this.add.text(cx + 8, cy + ch/2, l.icon, {fontSize:'22px'}).setOrigin(0, 0.5);
+      this.add.text(cx + 40, cy + 5, l.titulo, {fontFamily:'Cinzel', fontSize:'13px', color:'#D4AF37', fontStyle:'700'});
+      this.add.text(cx + 40, cy + 22, l.desc, {fontFamily:'Poppins', fontSize:'12px', color:'#cfd4da', wordWrap:{width: cw - 48}, lineSpacing:0});
+    });
+
+    const lucky = this.calcNumeroSuerte();
+    this.add.text(w/2, h - 78, `🎲 Tu Número de la Suerte: ${lucky.num} (apareció ${lucky.count} veces)`, {fontFamily:'Cinzel', fontSize:'15px', color:'#c08be0', fontStyle:'700'}).setOrigin(0.5);
+
+    // Cinco botones de 44 px de alto en una fila
+    const n = 5, gap = 6, bw = Math.floor((w - 16 - gap*(n-1)) / n), by = h - 28;
+    const bx = (i) => 8 + bw/2 + i*(bw + gap);
+    this.makeBtn(bx(0), by, '📊 Análisis', 0xD4AF37, 0x0A0A10, ()=>this.mostrarAnalisis(), bw, 46, '14px');
+    this.makeBtn(bx(1), by, '💾 Exportar', 0x2a3848, 0xC0C8D0, ()=>this.descargarStats(), bw, 46, '14px');
+    this.makeBtn(bx(2), by, '🎓 Certificado', 0x1E8449, 0xD5F5E3, ()=>this.mostrarCertificado(), bw, 46, '14px');
+    this.makeBtn(bx(3), by, '📖 Informe', 0x8E44AD, 0xE8D0F0, ()=>this.mostrarInformePed(), bw, 46, '14px');
+    this.makeBtn(bx(4), by, '🔄 Nueva', 0xC0392B, 0xF5C6C2, ()=>this.nuevaAventura(), bw, 46, '14px');
   }
 
   calcularLogros(){
@@ -364,8 +402,8 @@ class FinalScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', ()=>this.scene.start('MenuScene'));
   }
 
-  makeBtn(x,y,label,color,txtColor,action){
-    const bw = 170, bh = 48;
+  makeBtn(x,y,label,color,txtColor,action,bwArg,bhArg,fsArg){
+    const bw = bwArg || 170, bh = bhArg || 48;
     const container = this.add.container(x, y);
     const r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
     const darkCol = Phaser.Display.Color.GetColor(Math.max(0,r-80), Math.max(0,g-80), Math.max(0,b-80));
@@ -386,7 +424,7 @@ class FinalScene extends Phaser.Scene {
     border.lineStyle(2, 0xfff5d0, 0.9);
     border.strokeRoundedRect(-bw/2, -bh/2, bw, bh, 9);
     const t = this.add.text(0, 0, label, {
-      fontFamily:'Poppins', fontSize:'15px',
+      fontFamily:'Poppins', fontSize: fsArg || '15px',
       color:`#${txtColor.toString(16).padStart(6,'0')}`,
       fontStyle:'800', align:'center', stroke:'#000', strokeThickness:txtColor === 0xffffff ? 1 : 0
     }).setOrigin(0.5);
@@ -410,3 +448,5 @@ class FinalScene extends Phaser.Scene {
     hit.on('pointerup', action);
   }
 }
+
+FinalScene.DISENO_MOVIL = true;
