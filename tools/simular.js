@@ -50,7 +50,7 @@ function crearHeroe(claveClase, dif) {
            up: 0, skills: {}, inv: {}, claseKey: claveClase, dif, muertes: 0 };
 }
 
-const PRECIOS = { pot1: 12, pot2: 30, atk3: 25, def4: 25, suerte: 14, regen: 35, sword: 40, cheb: 45, gem: 45, star: 50, crown: 60, pa: 80, pd: 80 };
+const PRECIOS = { pot1: 12, pot2: 30, atk3: 25, def4: 25, suerte: 14, regen: 35, sword: 40, cheb: 45, gem: 45, star: 30, crown: 60, pa: 80, pd: 80 };
 const MINJEFE = { pot1: 0, pot2: 2, atk3: 1, def4: 1, suerte: 0, regen: 3, sword: 3, cheb: 4, gem: 4, star: 5, crown: 5, pa: 6, pd: 7 };
 
 function bonusPoder(h, id) { return S.skillRank(h.skills, id); }
@@ -108,7 +108,7 @@ function batalla(h, j, build, o) {
   if (j >= 1 && usa('def4')) { const v = pot(2); def += v; buffs.push({ k: 'd', v, t: 3 }); }
   if (j >= 3 && usa('sword')) { const v = pot(3); atk += v; buffs.push({ k: 'a', v, t: 2 }); }
   if (j >= 4 && usa('cheb')) chebT = 3;
-  if (j >= 5 && usa('star')) starActiva = true;                   // el motor actual la deja toda la batalla
+  if (j >= 5 && usa('star')) starActiva = true;                   // vale una sola tirada
   const costo = (id) => { const r = bonusPoder(h, id); if (!r) return null; return C.costoPoder(h.claseKey, S.getPower(id).mp[r - 1], primero); };
   const lanzar = (id) => { const c = costo(id); if (c === null || mp < c) return false; mp -= c; primero = false; return true; };
 
@@ -136,6 +136,7 @@ function batalla(h, j, build, o) {
     const sf = s + C.bonoPermanente(h.claseKey, h.res);
     const u = Math.max(2, m.umbral - (starActiva ? 2 : 0));
     const hit = sf >= u;
+    starActiva = false;                                            // la Estrella vale una sola tirada
     if (hit) {
       let dmg = atk + Math.floor((sf - u) * 1.5) + C.bonusRacha(h.claseKey, racha);
       dmg = Math.max(3, dmg - Math.floor(st.de * 0.4));
