@@ -21,6 +21,9 @@ html{
   width:100%;height:100%;
   height:-webkit-fill-available;
   overflow:hidden;
+  /* iOS Safari ignora user-scalable=no: sin esto, tocar dos veces seguidas un
+     botón de los modales (HTML, no el canvas) hace zoom a la página. */
+  touch-action:manipulation;
 }
 body{
   width:100%;height:100%;

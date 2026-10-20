@@ -699,7 +699,6 @@ Mapa del Tesoro |              |            |</div>
     {src:'js/ui/grimorio.js',        pct:71, msg:'Grimorio...'},
     {src:'js/ui/map-events.js',      pct:71, msg:'Eventos del mapa...'},
     {src:'js/ui/tutorial.js',        pct:71, msg:'Tutorial...'},
-    {src:'js/render/monsters.js',    pct:72, msg:'Graficos de monstruos...'},
     {src:'js/render/monster-svg.js', pct:74, msg:'Monstruos SVG...'},
     {src:'js/render/npc-render.js',  pct:76, msg:'Personajes NPC...'},
     {src:'js/render/bg-effects.js',  pct:77, msg:'Fondos y efectos...'},
@@ -742,25 +741,64 @@ Mapa del Tesoro |              |            |</div>
   /* Version de release: SUBIR este numero al publicar cambios.
      Fuerza a los navegadores (y al service worker) a traer los scripts nuevos
      en vez de servir versiones viejas del cache HTTP heuristico. */
-  var GAME_VERSION = '4';
+  var GAME_VERSION = '5';
   window.GAME_VERSION = GAME_VERSION;
 
-  /* load scripts sequentially, updating bar */
-  function loadNext(i){
-    if(i >= steps.length){ allScriptsLoaded(); return; }
-    var s = steps[i];
-    setProgress(s.pct * 0.8, s.msg); /* show 80% of pct while loading */
-    var el = document.createElement('script');
+  /* Los scripts se piden TODOS A LA VEZ y se ejecutan EN ORDEN: un <script>
+     insertado por JS con async=false baja en paralelo pero corre en el orden de
+     inserción. Antes se pedía uno por vez (47 archivos = 47 viajes de ida y
+     vuelta en fila): medido con gzip, el botón "Continuar" tardaba 6,5 s con
+     wifi buena y 12,6 s con 3G rápido; en paralelo, 4,6 s y 6,0 s. */
+  var _fallidos = [];
+  var _btnOriginal = btn.innerHTML;
+  function loadNext(){
+    var hechos = 0;
+    /* Vigía: si a los 30 s todavía faltan archivos (wifi muy lenta o un pedido
+       trabado), el splash lo dice y ofrece recargar en vez de quedarse mudo.
+       La descarga sigue: si termina, allScriptsLoaded() devuelve el botón. */
+    var vigia = setTimeout(function(){
+      if(hechos < steps.length){
+        status.textContent = 'La descarga tarda más de lo normal (wifi lenta).';
+        status.style.opacity = '1';
+        btn.innerHTML = '↻  Reintentar';
+        btn.onclick = function(){ location.reload(); };
+        btn.style.display = 'inline-block';
+      }
+    }, 30000);
     /* En modo ?dev, cache-bust total; en produccion, version fija por release */
     var _devBust = new URLSearchParams(location.search).has('dev');
-    if(s.src.indexOf('http') === 0) el.src = s.src;
-    else el.src = s.src + '?v=' + (_devBust ? Date.now() : GAME_VERSION);
-    el.onload  = function(){ setProgress(s.pct, s.msg); loadNext(i+1); };
-    el.onerror = function(){ setProgress(s.pct, s.msg + ' (error)'); loadNext(i+1); };
-    document.body.appendChild(el);
+    function terminado(s, ok){
+      hechos++;
+      if(!ok){ _fallidos.push(s.src); console.error('[carga] no se pudo descargar ' + s.src); }
+      setProgress(s.pct, s.msg);
+      if(hechos === steps.length){ clearTimeout(vigia); allScriptsLoaded(); }
+    }
+    steps.forEach(function(s){
+      var el = document.createElement('script');
+      el.async = false;
+      if(s.src.indexOf('http') === 0) el.src = s.src;
+      else el.src = s.src + '?v=' + (_devBust ? Date.now() : GAME_VERSION);
+      el.onload  = function(){ terminado(s, true); };
+      el.onerror = function(){ terminado(s, false); };
+      document.body.appendChild(el);
+    });
   }
 
   function allScriptsLoaded(){
+    /* Si falló la descarga de algún archivo (wifi inestable) el juego quedaría a
+       medias y fallaría más tarde con errores que nadie entiende: se avisa acá
+       y el botón pasa a recargar. */
+    if(_fallidos.length){
+      status.textContent = 'La conexión falló y faltan archivos del juego.';
+      status.style.opacity = '1';
+      btn.innerHTML = '↻  Reintentar';
+      btn.onclick = function(){ location.reload(); };
+      btn.style.display = 'inline-block';
+      return;
+    }
+    /* Si el vigía había cambiado el botón y la descarga terminó igual, se lo devuelve. */
+    btn.innerHTML = _btnOriginal;
+    btn.onclick = function(){ splashLaunch(); };
     setProgress(99, 'Listo para jugar');
     ready = true;
     /* Auto-launch en modo dev con ?go */
