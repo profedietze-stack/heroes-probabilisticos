@@ -26,9 +26,12 @@ class BattleScene extends Phaser.Scene {
     STATE.turnoActual = 0;
     this._proximoDialogo = 1 + Math.floor(Math.random()*2);
     STATE.buffs = [];
-    STATE.ataque = STATE.ataqueBase;
+    STATE.ataque = STATE.ataqueBase + bonusAtaqueCampaña(STATE.jefeActual, STATE.dificultad);
     STATE.defensa = STATE.defensaBase;
     STATE.reduccionDaño = 0;
+    this._bonoBatalla = bonoPermanente(STATE.clase, STATE.resiliencia);   // para el análisis tras una derrota
+    this._racha = 0;                 // Guerrero: impactos seguidos
+    this._primerPoderUsado = false;  // Hechicero: el primer poder de la batalla cuesta menos
     // La escena se reutiliza entre batallas: una maldición pendiente de la
     // anterior (derrota con el Doble 1 sin revertir) no puede heredarse, porque
     // el primer impacto de ESTA batalla la "revertiría" sumando ataque y
@@ -56,7 +59,7 @@ class BattleScene extends Phaser.Scene {
     // Dar objetos iniciales según dificultad (primera batalla, inventario vacío)
     if(STATE.jefeActual === 0 && STATE.inventario.length === 0){
       const _diffItems = DIFICULTADES[STATE.dificultad] || DIFICULTADES.normal;
-      const n = _diffItems.itemsIniciales;
+      const n = itemsIniciales(STATE.clase, _diffItems.itemsIniciales);
       if(n > 0){
         const items = darItemsAleatorios(n);
         const nombres = items.map(r=>ITEMS[r.id-1].emoji+' '+ITEMS[r.id-1].nombre).join(', ');
@@ -650,7 +653,7 @@ class BattleScene extends Phaser.Scene {
       const id   = row.dataset.id;
       const p    = getPower(id);
       const rank = skillRank(STATE.skills, id);
-      const ok   = (STATE.mp || 0) >= p.mp[rank - 1] && this.turnoJugador;
+      const ok   = (STATE.mp || 0) >= this._costoPoder(id) && this.turnoJugador;
       row.style.opacity = ok ? '1' : '0.35';
       row.querySelector('.poder-btn').style.cursor = ok ? 'pointer' : 'default';
     });
@@ -686,7 +689,7 @@ class BattleScene extends Phaser.Scene {
         <div style="color:#D4AF37;font-size:11px;text-align:center;letter-spacing:2px;margin-bottom:6px;opacity:0.7">— PODERES ACTIVOS —</div>
         ${this._poderesAdquiridos.map(p => {
           const rank = skillRank(STATE.skills, p.id);
-          const cost = p.mp[rank - 1];
+          const cost = this._costoPoder(p.id);
           const ok   = (STATE.mp || 0) >= cost && this.turnoJugador;
           return `
             <div class="poder-row" data-id="${p.id}" style="
@@ -721,7 +724,7 @@ class BattleScene extends Phaser.Scene {
         const id = btn.dataset.id;
         const p    = getPower(id);
         const rank = skillRank(STATE.skills, id);
-        if((STATE.mp || 0) < p.mp[rank-1] || !this.turnoJugador) return;
+        if((STATE.mp || 0) < this._costoPoder(id) || !this.turnoJugador) return;
         this._closePoderes();
         this.usarPoder(id);
       });
@@ -747,12 +750,19 @@ class BattleScene extends Phaser.Scene {
     if(this._poderOutside) document.removeEventListener('pointerdown', this._poderOutside);
   }
 
+  /* Costo de MP de un poder con el descuento de clase del primero de la batalla. */
+  _costoPoder(id){
+    const p = getPower(id);
+    return costoPoder(STATE.clase, p.mp[skillRank(STATE.skills, id) - 1], !this._primerPoderUsado);
+  }
+
   usarPoder(id){
     const p    = getPower(id);
     const rank = skillRank(STATE.skills, id);
-    const cost = p.mp[rank - 1];
+    const cost = this._costoPoder(id);
     if ((STATE.mp || 0) < cost || !this.turnoJugador) return;
     STATE.mp -= cost;
+    this._primerPoderUsado = true;
     snd_power();
     const rk = p.ranks[rank - 1];
     switch (id) {
@@ -840,9 +850,16 @@ class BattleScene extends Phaser.Scene {
       return '🌫️ Niebla mística: umbral oculto hasta tu 2da tirada';
     }
     const umbralEf = this.getUmbralEfectivo();
-    const casosFav = casosFavorables(umbralEf);
+    /* Los bonos permanentes (Resiliencia, bonus del Arquero) se SUMAN a la tirada, así
+       que bajan el número que tienen que mostrar los dados. La barra decía el 54 % de
+       siempre aunque el héroe tuviera +3 de Resiliencia: la probabilidad "exacta" que
+       mostraba no era la real. */
+    const bono = bonoPermanente(STATE.clase, STATE.resiliencia);
+    const umbralDados = Math.max(2, umbralEf - bono);
+    const casosFav = casosFavorables(umbralDados);
     const pct = (casosFav/CFG.DICE_COMBOS*100).toFixed(2);
-    return `🎯 Probabilidad de Impacto: Necesitas ${umbralEf}+ | ${casosFav} casos / ${CFG.DICE_COMBOS} (${pct}%)`;
+    const conBonos = bono > 0 ? ` (−${bono} por tus bonos: ${umbralDados}+ en los dados)` : '';
+    return `🎯 Probabilidad de Impacto: Necesitas ${umbralEf}+${conBonos} | ${casosFav} casos / ${CFG.DICE_COMBOS} (${pct}%)`;
   }
 
   makeButton(x, y, w, h, label, accentColor, txtColor, action){
@@ -952,7 +969,8 @@ class BattleScene extends Phaser.Scene {
     if(STATE.buffs.length>0){
       buffStr = '  · Buffs: ' + STATE.buffs.map(b=>b.emoji).join(' ');
     }
-    this.statsText.text = `⚔ Atk: ${STATE.ataque}  🛡 Def: ${STATE.defensa}  ✨ Res: +${STATE.resiliencia}  Oro: ${STATE.oro||0}${buffStr}`;
+    const rachaStr = bonusRacha(STATE.clase, this._racha) > 0 ? `  🔥 Racha +${bonusRacha(STATE.clase, this._racha)}` : '';
+    this.statsText.text = `⚔ Atk: ${STATE.ataque}  🛡 Def: ${STATE.defensa}  ✨ Res: +${STATE.resiliencia}  Oro: ${STATE.oro||0}${rachaStr}${buffStr}`;
   }
 
   drawDice(v1, v2){
@@ -1329,7 +1347,7 @@ class BattleScene extends Phaser.Scene {
     const esDoble12 = (d1===12 && d2===12);
 
     // Bonificaciones de resiliencia
-    const bonResil = STATE.resiliencia;
+    const bonResil = STATE.resiliencia + bonusTirada(STATE.clase);   // resiliencia + bonus de clase (Arquero)
     let bonificacion = 0;
     const buffRoll = STATE.buffs.find(b=>b.tipo==='buff_roll');
     if(buffRoll){ bonificacion += buffRoll.valor; buffRoll.turnosRestantes--; }
@@ -1583,7 +1601,9 @@ class BattleScene extends Phaser.Scene {
 
     if(impacto){
       // Calcular daño
-      let dmg = STATE.ataque + Math.floor((sumaFinal - umbralEf) * 1.5);
+      let dmg = STATE.ataque + Math.floor((sumaFinal - umbralEf) * 1.5) + bonusRacha(STATE.clase, this._racha);
+      this._racha = (this._racha || 0) + 1;
+      this.updateStatsText();
       let _hasCrit = false;
       // Gema de Desviación Estándar
       if(STATE.flagGem && sumaOriginal >= 11 && sumaOriginal <= 15){
@@ -1647,6 +1667,7 @@ class BattleScene extends Phaser.Scene {
     } else {
       snd_fail();
       this.mostrarMensaje(`Fallaste. Umbral: ${umbralEf}+`, '#e74c3c', 2800, 'B');
+      if(this._racha){ this._racha = 0; this.updateStatsText(); }
     }
 
     // Tras una pausa, el monstruo contraataca
@@ -2035,24 +2056,25 @@ class BattleScene extends Phaser.Scene {
 
     // Ejecutar efecto
     let efectoMsg = '';
+    const vp = potenciaItem(STATE.clase, it.valor);   // Alquimista: pociones y buffs ×1,5
     switch(it.tipo){
       case 'heal':
-        const curado = Math.min(it.valor, STATE.hpMax - STATE.hp);
-        STATE.hp = Math.min(STATE.hpMax, STATE.hp + it.valor);
+        const curado = Math.min(vp, STATE.hpMax - STATE.hp);
+        STATE.hp = Math.min(STATE.hpMax, STATE.hp + vp);
         efectoMsg = `+${curado} HP restaurados.`;
         this.drawPlayerBar();
         this.showFloat('+'+curado, this.w/2, (this._hpBarY||468)+28, '#2ecc71');
         break;
       case 'buff_atk':
-        STATE.ataque += it.valor;
-        STATE.buffs.push({tipo:'buff_atk', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Ataque durante ${it.turnos} turnos.`;
+        STATE.ataque += vp;
+        STATE.buffs.push({tipo:'buff_atk', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Ataque durante ${it.turnos} turnos.`;
         snd_buff();
         break;
       case 'buff_def':
-        STATE.defensa += it.valor;
-        STATE.buffs.push({tipo:'buff_def', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Defensa durante ${it.turnos} turnos.`;
+        STATE.defensa += vp;
+        STATE.buffs.push({tipo:'buff_def', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Defensa durante ${it.turnos} turnos.`;
         snd_buff();
         break;
       case 'buff_roll':
@@ -2096,24 +2118,22 @@ class BattleScene extends Phaser.Scene {
         snd_buff();
         break;
       case 'regen':
-        STATE.buffs.push({tipo:'regen', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} HP cada turno durante ${it.turnos} turnos.`;
+        STATE.buffs.push({tipo:'regen', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} HP cada turno durante ${it.turnos} turnos.`;
         snd_buff();
         break;
       case 'star':
         STATE.flagStar = true;
         STATE.buffs.push({tipo:'star', valor:2, turnosRestantes:1, emoji:it.emoji});
         // Actualizar probabilidad
-        const uEf = this.getUmbralEfectivo();
-        const cF = casosFavorables(uEf);
-        this.probText.setText(`🎯 Probabilidad de Impacto: Necesitas ${uEf}+ | ${cF} casos / ${CFG.DICE_COMBOS} (${(cF/CFG.DICE_COMBOS*100).toFixed(2)}%)`);
+        this.probText.setText(this._probTexto());
         efectoMsg = '🌟 Umbral reducido en 2 para la próxima tirada.';
         snd_buff();
         break;
       case 'sword':
-        STATE.ataque += it.valor;
-        STATE.buffs.push({tipo:'sword', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Ataque durante ${it.turnos} turnos.`;
+        STATE.ataque += vp;
+        STATE.buffs.push({tipo:'sword', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Ataque durante ${it.turnos} turnos.`;
         snd_buff();
         break;
       case 'cheb':
@@ -2404,9 +2424,9 @@ class BattleScene extends Phaser.Scene {
     STATE._resilNotify = true; // flag para toast al reiniciar
 
     // Revivir con HP parcial (30%) — fuerza a comprar/usar curación, no rellena gratis
-    STATE.hp = Math.max(1, Math.round(STATE.hpMax * 0.3));
+    STATE.hp = Math.max(1, Math.round(STATE.hpMax * REVIVIR_FRAC));
     STATE.buffs = [];
-    STATE.ataque = STATE.ataqueBase;
+    STATE.ataque = STATE.ataqueBase + bonusAtaqueCampaña(STATE.jefeActual, STATE.dificultad);
     STATE.defensa = STATE.defensaBase;
     this._dadoSagradoCooldown = 0;
 
@@ -2429,9 +2449,11 @@ class BattleScene extends Phaser.Scene {
 
     const media = rolls.reduce((s,t)=>s+t.valor,0) / rolls.length;
     const umbral = this.getUmbralEfectivo ? this.getUmbralEfectivo() : this.monster.umbral;
-    const casosFav = casosFavorables(umbral);
+    // Los bonos permanentes se suman a la tirada: el análisis tiene que contarlos
+    const bono = this._bonoBatalla || 0;
+    const casosFav = casosFavorables(Math.max(2, umbral - bono));
     const pImpacto = (casosFav/144*100).toFixed(1);
-    const aciertos = rolls.filter(t => t.valor >= umbral).length;
+    const aciertos = rolls.filter(t => t.valor + bono >= umbral).length;
     const pctReal  = (aciertos/rolls.length*100).toFixed(0);
 
     let veredicto, color;
@@ -2467,7 +2489,7 @@ class BattleScene extends Phaser.Scene {
         </div>
         <p style="color:${color};font-family:'Lora',serif;font-size:13px;line-height:1.55;margin-bottom:14px">${veredicto}</p>
         <p style="color:#5a7080;font-family:'Poppins',sans-serif;font-size:10px;margin-bottom:12px">
-          Revivís con 30% de HP y +1 de Resiliencia (bonus permanente a tus tiradas).
+          Revivís con ${Math.round(REVIVIR_FRAC*100)}% de HP y +1 de Resiliencia (bonus permanente a tus tiradas).
         </p>
         <button class="btn-action" onclick="window.__pmRetry()">⚔ Reintentar</button>
       </div>`);

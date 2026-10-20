@@ -105,21 +105,22 @@ class VictoryScene extends Phaser.Scene {
     snd_item();
 
     let efectoMsg = '';
+    const vp = potenciaItem(STATE.clase, it.valor);   // Alquimista: pociones y buffs ×1,5
     switch(it.tipo){
       case 'heal':
-        const curado = Math.min(it.valor, STATE.hpMax - STATE.hp);
-        STATE.hp = Math.min(STATE.hpMax, STATE.hp + it.valor);
+        const curado = Math.min(vp, STATE.hpMax - STATE.hp);
+        STATE.hp = Math.min(STATE.hpMax, STATE.hp + vp);
         efectoMsg = `+${curado} HP restaurados. HP: ${STATE.hp}/${STATE.hpMax}`;
         break;
       case 'buff_atk':
-        STATE.ataque += it.valor;
-        STATE.buffs.push({tipo:'buff_atk', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Ataque durante ${it.turnos} turnos.`;
+        STATE.ataque += vp;
+        STATE.buffs.push({tipo:'buff_atk', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Ataque durante ${it.turnos} turnos.`;
         snd_buff(); break;
       case 'buff_def':
-        STATE.defensa += it.valor;
-        STATE.buffs.push({tipo:'buff_def', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Defensa durante ${it.turnos} turnos.`;
+        STATE.defensa += vp;
+        STATE.buffs.push({tipo:'buff_def', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Defensa durante ${it.turnos} turnos.`;
         snd_buff(); break;
       case 'buff_roll':
         STATE.buffs.push({tipo:'buff_roll', valor:it.valor, turnosRestantes:1, emoji:it.emoji});
@@ -153,8 +154,8 @@ class VictoryScene extends Phaser.Scene {
         efectoMsg = 'Critico x1.5 si tirada entre 11-15.';
         snd_buff(); break;
       case 'regen':
-        STATE.buffs.push({tipo:'regen', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} HP/turno durante ${it.turnos} turnos.`;
+        STATE.buffs.push({tipo:'regen', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} HP/turno durante ${it.turnos} turnos.`;
         snd_buff(); break;
       case 'star':
         STATE.flagStar = true;
@@ -162,9 +163,9 @@ class VictoryScene extends Phaser.Scene {
         efectoMsg = 'Umbral reducido en 2 para la proxima tirada.';
         snd_buff(); break;
       case 'sword':
-        STATE.ataque += it.valor;
-        STATE.buffs.push({tipo:'sword', valor:it.valor, turnosRestantes:it.turnos, emoji:it.emoji});
-        efectoMsg = `+${it.valor} Ataque durante ${it.turnos} turnos.`;
+        STATE.ataque += vp;
+        STATE.buffs.push({tipo:'sword', valor:vp, turnosRestantes:it.turnos, emoji:it.emoji});
+        efectoMsg = `+${vp} Ataque durante ${it.turnos} turnos.`;
         snd_buff(); break;
       case 'cheb':
         STATE.reduccionDaño = it.valor;
