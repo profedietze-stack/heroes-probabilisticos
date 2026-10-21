@@ -3,6 +3,13 @@
    Concepto: P(A) = casos favorables / casos totales
 ══════════════════════════════════════ */
 
+/* Una bola dibujada por cada bola del enunciado: el alumno puede contarlas y tiene que dar lo mismo que dice el texto. */
+function bolasDeUrna(cfg) {
+  const bolas = [];
+  Object.entries(cfg).forEach(([k, v]) => { for (let i = 0; i < v; i++) bolas.push(k); });
+  return bolas;
+}
+
 class PuzzleUrna extends Phaser.Scene {
   constructor() { super('PuzzleUrna'); }
 
@@ -195,12 +202,9 @@ class PuzzleUrna extends Phaser.Scene {
     pzFloatY(this, urn, 6, 3000);
 
     // Bolas: se apilan desde el fondo de la urna, fila centrada
-    const balls = [];
-    Object.entries(cfg).forEach(([k,v])=>{
-      for (let i=0; i<Math.min(v,4); i++) balls.push({key:k, col:BALL_COLORS[k]});
-    });
+    const balls = bolasDeUrna(cfg).map((k)=>({key:k, col:BALL_COLORS[k]}));
     _shuffle(balls);
-    const COLS = 5, SPX = 24, SPY = 21;
+    const COLS = 7, SPX = 18, SPY = 19;   // entran las 20 bolas del nivel más alto en el frasco de 140 px
     const nRows = Math.ceil(balls.length / COLS);
     const bottomRowY = 0; // fondo interior, apenas sobre la base
     balls.forEach((b, i) => {
@@ -215,14 +219,14 @@ class PuzzleUrna extends Phaser.Scene {
         ball.clear();
         if (isTarget && glow > 0) {
           ball.fillStyle(0xffffff, 0.4*glow);
-          ball.fillCircle(0, 0, 13);
+          ball.fillCircle(0, 0, 11);
         }
         ball.fillStyle(b.col, 0.95);
-        ball.fillCircle(0, 0, 9);
+        ball.fillCircle(0, 0, 8);
         ball.fillStyle(0xffffff, 0.35);
-        ball.fillCircle(-3, -3, 3);
+        ball.fillCircle(-3, -3, 2.5);
         ball.lineStyle(1, 0xffffff, 0.2);
-        ball.strokeCircle(0, 0, 9);
+        ball.strokeCircle(0, 0, 8);
       };
       drawBall(0);
       ball.setPosition(bx, byF - 160).setAlpha(0);

@@ -167,7 +167,9 @@ class PuzzleMoneda extends Phaser.Scene {
       });
 
       /* Hover glow */
-      coin.setSize(56, 56).setInteractive({ useHandCursor: true });
+      // Teléfono: la cámara de la ilustración achica (zoom < 1); la zona táctil se agranda para seguir midiendo 44 px en pantalla.
+      const hitSz = this._pz ? Math.min(spacing - 2, Math.max(56, Math.ceil(46 / Math.min(1, this._pz.zoom || 1)))) : 56;
+      coin.setSize(hitSz, hitSz).setInteractive({ useHandCursor: true });
       coin.on('pointerover', () => {
         this.tweens.add({ targets: coin, scaleX: 1.12, scaleY: 1.12, duration: 120, ease: 'Back.easeOut' });
       });

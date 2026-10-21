@@ -108,7 +108,8 @@ class PuzzleScene extends Phaser.Scene {
     /* ── Panel de contenido (mitad derecha) ──
        Alto dinámico según contenido real: con los fondos de imagen, dejar el
        panel a pantalla completa deja un bloque vacío debajo de los botones. */
-    const PX = C ? 296 : 455, PY = C ? 8 : 55, PW = w - PX - (C ? 8 : 18);
+    // Teléfono: se deja libre la esquina superior derecha (botón de pantalla completa, 48 px).
+    const PX = C ? 296 : 455, PY = C ? 8 : 55, PW = w - PX - (C ? 58 : 18);
     const DIALOG_H = C ? 90 : 148;
     const contentH = this._npcKey === 'mercader'
       ? (C ? 150 : 160)   // 2 botones de elección (34..90 y 104..160, relativo al inicio del panel)

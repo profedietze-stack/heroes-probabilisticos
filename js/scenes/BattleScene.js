@@ -485,7 +485,7 @@ class BattleScene extends Phaser.Scene {
       monK:0.45, monBase:112, monX:w/2,
       mDieSize:48, mDieFs:'22px', mDiceDX:40, mDiceY:166, mLabelY:126, mLabelFs:'14px', mResY:206, mResFs:'16px',
       balloonX:Math.round(w/2 + 150 + Math.min(240, w*0.3)/2), balloonY:150, balloonW:Math.min(240, Math.round(w*0.3)), balloonFs:'14px',
-      msgY:PY-44, msgW:Math.min(560, w-40), msgFs:'16px',
+      msgY:PY-50, msgW:Math.min(600, w-24), msgFs:'14px',   // el aviso de 2 líneas no pasa detrás del panel del jugador
       panel:{x:4, y:PY, w:w-8, h:h-PY-4}, seps:[colA+2, xC0-2],
       hp:{x:8, y:PY+6, w:colA-16, h:18}, hpFs:'14px', hpCx:8+(colA-16)/2,
       mp:{x:8, y:PY+28, w:colA-16, h:16}, mpFs:'14px', mpInside:true,

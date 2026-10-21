@@ -177,7 +177,7 @@ class LibreScene extends Phaser.Scene {
       this.add.text(cx, by + 15, `${isOraculo ? '🔮' : '📜'} ${isOraculo ? 'Oráculo' : 'Mercader'}`, {
         fontFamily:'Poppins', fontSize:'13px', color:'#8aa0b8'
       }).setOrigin(0.5);
-      this.add.text(cx, by + 52, puz.name, {
+      this.add.text(cx, by + 47, puz.name, {
         fontFamily:'Cinzel', fontSize:'14px', color: accentHex, fontStyle:'700',
         wordWrap:{width: bw - 16}, align:'center'
       }).setOrigin(0.5);

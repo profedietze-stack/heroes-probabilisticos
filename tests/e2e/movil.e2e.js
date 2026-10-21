@@ -70,7 +70,10 @@ const mapaListo = (p) => p.waitForFunction(() => window.game.scene.getScene('Map
       const U = await p.evaluate(() => { const s = window.game.scene.getScenes(true)[0]; return s._pz ? s._pz.Z.ui : null; });
       if (U) {
         await p.mouse.click(U.x + U.w / 4, U.y + U.h - 30); await p.waitForTimeout(2800);   // primera respuesta
-        await p.mouse.click(ANCHO / 2, ALTO - 65); await p.waitForTimeout(4000);            // "Continuar" del resultado
+        // "Continuar" del resultado: su posición depende del tamaño de pantalla, se busca el botón (el tapiz que cubre todo no cuenta).
+        const cont = await p.evaluate(() => { const o = window.game.scene.getScenes(true)[0].input._list.filter((q) => q.input && q.input.enabled && q.visible !== false && q.depth >= 60 && q.input.hitArea.width < 400).pop(); return o ? { x: o.x, y: o.y } : null; });
+        if (cont) await p.mouse.click(cont.x, cont.y); else fallas.push('recorrido: no apareció el botón "Continuar" del resultado');
+        await p.waitForTimeout(4000);
       } else fallas.push('recorrido: el enigma no tiene zona de respuestas');
     }
     const final = await p.evaluate(() => window.game.scene.getScenes(true).map((s) => s.scene.key).join());

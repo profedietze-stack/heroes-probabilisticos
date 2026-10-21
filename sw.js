@@ -19,8 +19,8 @@
    Los tests fallan si no se hizo (tests/cache-version.test.js).
 ══════════════════════════════════════ */
 
-const GAME_VERSION  = '15';
-const CACHE_VERSION = 'heroesprob-v17';
+const GAME_VERSION  = '16';
+const CACHE_VERSION = 'heroesprob-v18';
 
 /* index.html pide los scripts con ?v=<GAME_VERSION>: se precachean con el MISMO
    URL (la caché compara el pedido completo, con su query). */

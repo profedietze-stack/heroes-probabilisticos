@@ -442,3 +442,16 @@ Quedaron migradas las últimas seis escenas. Medido en Chromium móvil (`?movil=
 - **PC y tablet:** sin cambios; comprobado en pantalla a 1100×760 con las seis escenas.
 - **Recorrido verificado en el teléfono con clics reales:** menú → intro (nombre, dificultad, clase) → mapa → batalla → mapa → Mercader → enigma → mapa; victoria y arcade/libre por separado. Sin errores de consola.
 - **Sin verificar:** teléfono real (barras del navegador, notch, rotación en vivo), iOS/Safari y rendimiento en gama baja.
+
+## Addendum 8 — revisión con Opus de la migración a teléfono (2026-10-20)
+
+Una pasada de revisión (capturas de las 18 pantallas a 667×375 + lectura del código de cámaras y modales) encontró lo que las pruebas de medidas no ven. Corregido, con test rojo→verde donde hay lógica:
+
+- **La urna dibujaba como máximo 4 bolas por color** (`Math.min(v,4)`) mientras el enunciado decía 14 o 18: quien contaba el dibujo calculaba otra probabilidad. Ahora se dibuja cada bola (`bolasDeUrna`) y entran las 20 del nivel más alto. Test en `puzzle-urna.test.js`.
+- **`vigilarGiro` reiniciaba la escena con cualquier cambio de alto** (barra del navegador, teclado, pantalla completa): el enigma cambiaba de pregunta a mitad. Ahora sólo reinicia al girar o con un cambio grande de ancho (`cambioJustificaReinicio`) y cierra el modal abierto antes de reiniciar.
+- **Un toque sobre un modal DOM le llegaba al enigma** (Phaser recibe el "soltar" en `window`): cerrar la ayuda «?» justo encima de una respuesta la contestaba. `openItemModal` ahora apaga el input de Phaser (con un vigía por si el modal se cierra por otro camino) y `closeItemModal` lo reactiva en el siguiente tick, igual que `showConfirm`. La ayuda también se cierra al salir de la escena.
+- **Cortes visuales a 667×375:** contrato de Apuesta más ancho que su columna, «Cámara 1 de 29» bajo el botón Bolsa y rótulos de zona ilegibles en el mapa, aviso de Laplace detrás del panel del jugador, tarjetas de logros y botones del final, título de tarjeta pegado a «Sin jugar» en Modo Libre, panel del Mercader/Oráculo bajo el botón de pantalla completa, y la zona táctil de las monedas (39 px → 44 px).
+- **Descartado:** «E(X) = 0» en Apuesta no filtra la respuesta: es el marcador que parte de 0 y se actualiza al tirar el dado.
+- El e2e de `tests/e2e/movil.e2e.js` pasa ahora en 812×375, 667×375 y 932×430 (en 932×430 fallaba porque el botón «Continuar» del resultado se buscaba en una posición fija; ahora se localiza).
+- Versión 16 / caché `heroesprob-v18`.
+
