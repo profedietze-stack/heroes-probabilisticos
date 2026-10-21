@@ -455,3 +455,15 @@ Una pasada de revisión (capturas de las 18 pantallas a 667×375 + lectura del c
 - El e2e de `tests/e2e/movil.e2e.js` pasa ahora en 812×375, 667×375 y 932×430 (en 932×430 fallaba porque el botón «Continuar» del resultado se buscaba en una posición fija; ahora se localiza).
 - Versión 16 / caché `heroesprob-v18`.
 
+## Addendum 9 — contenido de los minijuegos (2026-10-21)
+
+Segunda revisión visual (36 capturas a 812×375 y 932×430). No había textos encimados que duren; sí contenido:
+
+- **Apuesta regalaba la respuesta.** A los 1,2 s el medidor de E(X) se animaba solo hasta el valor real (`E(X) = -2`, rombo sobre «DESFAVORABLE») antes de que el alumno contestara «¿favorable, desfavorable o neutra?». Ahora queda en `E(X) = ?` y se anima al contestar (`_revelarEV`, llamado desde `_signDecision`; la bandera se reinicia en `init()`). *Corrección:* en la primera revisión lo había descartado como «marcador que parte de 0»; era la primera imagen de la animación, no lo que hace el código.
+- **Moneda mostraba «C(n,k) = …»,** el numerador de la respuesta, antes de contestar. Se sacó; sigue en la explicación del resultado.
+- **Textos:** tildes y concordancia en Dados («descubrí cuáles están», «para que salgan…»), «Lanzás» en Moneda, «Has derrotado al Golem / a la Hidra» (`aNombre`), «Practicá», «puntuación».
+- **Un minijuego, un nombre:** el Modo Arcade, el Modo Libre, los logros y las guías decían «La Urna Mágica / La Moneda del Destino / La Gran Apuesta / La Ruleta del Azar»; las pantallas y el catálogo, «La Urna Misteriosa / Cara o Ceca / Apuesta del Mercader / Ruleta del Reino». Quedó el del catálogo en todos lados. El Modo Arcade ya no se titula «Modo Práctica».
+- Tests: `tests/contenido-minijuegos.test.js` (7, todos rojos contra el código anterior) y un chequeo en `tests/e2e/movil.e2e.js` que mide el medidor de Apuesta en el navegador.
+- Pendiente de esta revisión (visual, no de contenido): aviso del tutorial tapando el monstruo en 812, contraste en el hub del arcade, etiquetas de la ruleta que giran con la rueda, respiro de los botones del final y de la 2ª fila de respuestas. Voseo/tuteo mezclado («Elige…») en varias pantallas.
+- Versión 17 / caché `heroesprob-v19`.
+

@@ -8,6 +8,7 @@ class PuzzleApuesta extends Phaser.Scene {
 
   init(d) {
     this._data = d;
+    this._evRevelado = false;   // Phaser reutiliza la instancia: la bandera se reinicia acá, no en create()
     this._prob = this._gen(d.dificultad || 'normal');
   }
 
@@ -558,7 +559,12 @@ class PuzzleApuesta extends Phaser.Scene {
 
     this.tweens.add({ targets: cont, alpha: 1, duration: 420, delay: 750 });
 
-    this.time.delayedCall(1200, () => {
+    /* El medidor NO se mueve solo: marcarlo antes de que el alumno conteste «¿favorable, desfavorable o neutra?»
+       le regalaba la respuesta. Queda en «E(X) = ?» y recién se anima cuando ya decidió (_signDecision). */
+    this._evTxt = evTxt;
+    this._revelarEV = () => {
+      if (this._evRevelado) return;
+      this._evRevelado = true;
       const clamped = Math.max(-1, Math.min(1, p.ev / p.gan));
       const targetX = clamped * (barW/2 - 10);
       const fCol = p.ev > 0 ? '#40d870' : p.ev < 0 ? '#d05050' : '#D4AF37';
@@ -583,7 +589,7 @@ class PuzzleApuesta extends Phaser.Scene {
           if (p.ev !== 0) pzBurst(this, cx+targetX, cy, [fHex, 0xffffff], 20, 6, 5, !!pzm);
         }
       });
-    });
+    };
   }
 
   /* ══ Pregunta + botones (zona inferior) ══ */
@@ -607,6 +613,7 @@ class PuzzleApuesta extends Phaser.Scene {
 
   /* ══ Decisión: firmar o rechazar el contrato (Opción A) ══ */
   _signDecision(p, classOk) {
+    if (this._revelarEV) this._revelarEV();   // ya contestó: ahora sí el medidor muestra el valor esperado
     // Teléfono: el contrato firmado es interfaz (cubre toda la pantalla, sin la ilustración).
     if (this._pz && !this._pzEnFijo) {
       this._pzEnFijo = true;

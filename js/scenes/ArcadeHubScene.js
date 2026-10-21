@@ -44,7 +44,7 @@ class ArcadeHubScene extends Phaser.Scene {
       color:'#D4AF37', stroke:'#050408', strokeThickness:3,
       shadow:{offsetX:0, offsetY:0, color:'#D4AF37', blur: C ? 12 : 20, fill:true}
     }).setOrigin(0.5);
-    if (!C) this.add.text(w/2, 105, 'Practica probabilidad sin restricciones', {
+    if (!C) this.add.text(w/2, 105, 'Practicá probabilidad sin restricciones', {
       fontFamily:'Poppins', fontSize:'13px', color:'#3a4a58', letterSpacing:2
     }).setOrigin(0.5);
 
@@ -195,7 +195,7 @@ class ArcadeHubScene extends Phaser.Scene {
           fontFamily:'Poppins', fontSize: C ? '12px' : '9px', color: C ? '#7890a8' : '#2a3848'
         });
       });
-      this.add.text(cx, C ? by + 190 : by + 197 + NPC_OFFSET, 'Mejor puntuacion por dificultad', {
+      this.add.text(cx, C ? by + 190 : by + 197 + NPC_OFFSET, 'Mejor puntuación por dificultad', {
         fontFamily:'Poppins', fontSize: C ? '12px' : '10px', color: C ? '#7890a8' : '#2a3848'
       }).setOrigin(0.5);
     }

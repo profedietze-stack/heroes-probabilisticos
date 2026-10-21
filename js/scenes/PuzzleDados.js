@@ -164,22 +164,23 @@ class PuzzleDados extends Phaser.Scene {
     const facesStr = faces.length === 1
       ? `el número ${faces[0]}`
       : `los números ${faces.slice(0,-1).join(', ')} o ${faces[faces.length-1]}`;
+    const verboSalir = faces.length === 1 ? 'salga' : 'salgan';   // concuerda con «el número 3» / «los números 2 o 5»
     if (pz) {
-      const t1 = this.add.text(w/2, 50, `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que salga casi siempre ${facesStr}.`, {
+      const t1 = this.add.text(w/2, 50, `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que ${verboSalir} casi siempre ${facesStr}.`, {
         fontFamily:'Poppins', fontSize:'14px', color:'#a9b8c8', align:'center', wordWrap:{ width:w - 40 }
       }).setOrigin(0.5, 0);
-      const t2 = this.add.text(w/2, t1.y + t1.height + 4, `Lanzalos varias veces y descubri ${pl ? 'cuales estan' : 'cual esta'} trucado${pl?'s':''}.`, {
+      const t2 = this.add.text(w/2, t1.y + t1.height + 4, `Lanzalos varias veces y descubrí ${pl ? 'cuáles están' : 'cuál está'} trucado${pl?'s':''}.`, {
         fontFamily:'Cinzel', fontSize:'14px', color:'#70c8e0', fontStyle:'600', align:'center'
       }).setOrigin(0.5, 0);
       pzPopIn(this, t1, 80); pzPopIn(this, t2, 160);
     } else {
     pzPopIn(this, this.add.text(w/2, 96,
-      `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que salga casi siempre ${facesStr}.`, {
+      `El Falsificador ha adulterado ${p.nLoaded} de estos 6 dados para que ${verboSalir} casi siempre ${facesStr}.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center',
       wordWrap:{ width:w*0.8 }
     }).setOrigin(0.5), 80);
     pzPopIn(this, this.add.text(w/2, 118,
-      `Lanzalos varias veces y descubri ${pl ? 'cuales estan' : 'cual esta'} trucado${pl?'s':''}.`, {
+      `Lanzalos varias veces y descubrí ${pl ? 'cuáles están' : 'cuál está'} trucado${pl?'s':''}.`, {
       fontFamily:'Cinzel', fontSize:'13px', color:'#70c8e0', fontStyle:'600', align:'center'
     }).setOrigin(0.5), 160);
     }

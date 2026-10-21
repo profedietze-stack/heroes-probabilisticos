@@ -27,7 +27,7 @@ class VictoryScene extends Phaser.Scene {
     this.add.text(w/2, 80, '⚔ ¡VICTORIA! ⚔', {fontFamily:'Cinzel', fontSize:'54px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:5, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:20,fill:true}}).setOrigin(0.5);
 
     const jefeAnt = MONSTERS[STATE.jefeActual - 1] || MONSTERS[STATE.jefeActual] || {nombre:'el Guardián'};
-    this.add.text(w/2, 140, `Has derrotado a ${jefeAnt.nombre}`, {fontFamily:'Cinzel', fontSize:'24px', color:'#fff', fontStyle:'italic'}).setOrigin(0.5);
+    this.add.text(w/2, 140, `Has derrotado ${aNombre(jefeAnt.nombre)}`, {fontFamily:'Cinzel', fontSize:'24px', color:'#fff', fontStyle:'italic'}).setOrigin(0.5);
 
     // Mostrar inventario
     this.add.text(w/2, 195, '🎁 Recompensas y Estado', {fontFamily:'Cinzel', fontSize:'22px', color:'#D4AF37', letterSpacing:2}).setOrigin(0.5);
@@ -75,7 +75,7 @@ class VictoryScene extends Phaser.Scene {
   _crearMovil(w, h){
     this.add.text(w/2, 28, '⚔ ¡VICTORIA! ⚔', {fontFamily:'Cinzel', fontSize:'32px', color:'#D4AF37', fontStyle:'800', stroke:'#0A0A10', strokeThickness:4, shadow:{offsetX:0,offsetY:0,color:'#D4AF37',blur:14,fill:true}}).setOrigin(0.5);
     const jefeAnt = MONSTERS[STATE.jefeActual - 1] || MONSTERS[STATE.jefeActual] || {nombre:'el Guardián'};
-    this.add.text(w/2, 62, `Has derrotado a ${jefeAnt.nombre}`, {fontFamily:'Cinzel', fontSize:'17px', color:'#fff', fontStyle:'italic'}).setOrigin(0.5);
+    this.add.text(w/2, 62, `Has derrotado ${aNombre(jefeAnt.nombre)}`, {fontFamily:'Cinzel', fontSize:'17px', color:'#fff', fontStyle:'italic'}).setOrigin(0.5);
 
     /* ── Columna izquierda: bolsa, estado y una idea de probabilidad ── */
     const LX = 16, LW = Math.floor(w/2) - 28;

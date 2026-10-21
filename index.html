@@ -389,10 +389,10 @@ Si suma ≥ umbral → el héroe inflige daño al guardián</div>
         <h4>Modo Minijuegos — Los 7 Puzzles</h4>
         <p>Cada puzzle presenta un escenario narrativo con una pregunta probabilística. Según el puzzle, el jugador interactúa de distinta forma: elige entre opciones, explora el escenario (revelar cofres, lanzar y leer histogramas, abrir puertas) o construye él mismo la respuesta (armar la fracción con +/−).</p>
         <div class="card">
-          <p><strong>🏺 La Urna Mágica</strong> — Probabilidad clásica con extracción sin reposición (Mercader).</p>
-          <p><strong>🪙 La Moneda del Destino</strong> — Probabilidad con monedas, sucesos independientes (Mercader).</p>
-          <p><strong>🎯 La Gran Apuesta</strong> — Valor esperado y comparación de juegos aleatorios (Mercader).</p>
-          <p><strong>🎡 La Ruleta del Azar</strong> — Probabilidad geométrica y sectores circulares (Mercader).</p>
+          <p><strong>🏺 La Urna Misteriosa</strong> — Probabilidad clásica con extracción sin reposición (Mercader).</p>
+          <p><strong>🪙 Cara o Ceca</strong> — Probabilidad con monedas, sucesos independientes (Mercader).</p>
+          <p><strong>🎯 Apuesta del Mercader</strong> — Valor esperado y comparación de juegos aleatorios (Mercader).</p>
+          <p><strong>🎡 Ruleta del Reino</strong> — Probabilidad geométrica y sectores circulares (Mercader).</p>
           <p><strong>🎲 El Falsificador de Dados</strong> — Dados trucados y probabilidad no uniforme. Se lanzan los dados, se leen sus histogramas (frecuencia observada vs. dado justo 1/6) para detectar el trucado y se calcula P(cara) = peso / peso total (Oráculo).</p>
           <p><strong>🚪 Las Puertas del Oráculo</strong> — Probabilidad condicional (problema de Monty Hall): por qué conviene cambiar de puerta (Oráculo).</p>
           <p><strong>🗺️ Mapa del Tesoro</strong> — Combinatoria y conteo de casos favorables (Oráculo).</p>
@@ -441,12 +441,12 @@ Moda    = 13      (resultado más frecuente)
         <p>Al abrir el Oráculo las puertas vacías, la información nueva recalcula las probabilidades: cambiar gana (N−1)/N de las veces.</p>
 
         <h4>Sucesos Independientes</h4>
-        <p>Trabajados en <em>La Moneda del Destino</em>. Dos sucesos son independientes si:</p>
+        <p>Trabajados en <em>Cara o Ceca</em>. Dos sucesos son independientes si:</p>
         <div class="formula">P(A ∩ B) = P(A) × P(B)</div>
         <p>Cada tirada de dado / lanzamiento de moneda es un experimento independiente del anterior.</p>
 
         <h4>Valor Esperado</h4>
-        <p>Trabajado en <em>La Gran Apuesta</em>. Para una variable aleatoria discreta:</p>
+        <p>Trabajado en <em>Apuesta del Mercader</em>. Para una variable aleatoria discreta:</p>
         <div class="formula">E[X] = Σ xᵢ · P(xᵢ)</div>
         <p>Permite comparar la "ganancia esperada" de distintas opciones de juego y fundamentar decisiones racionales bajo incertidumbre.</p>
 
@@ -569,7 +569,7 @@ P(ruta con tesoro) = rutas con tesoro / rutas totales</div>
         <h4>Actividad 4 — "El Jugador Racional" (Valor Esperado)</h4>
         <div class="card">
           <p><strong>Objetivo:</strong> Calcular y comparar valores esperados para tomar decisiones.</p>
-          <p><strong>Consigna:</strong> Jugá "La Gran Apuesta" al menos 3 veces en dificultad Normal.<br>
+          <p><strong>Consigna:</strong> Jugá "Apuesta del Mercader" al menos 3 veces en dificultad Normal.<br>
           a) Para cada opción presentada, calculá el valor esperado antes de responder.<br>
           b) ¿Siempre elegiste la opción con mayor valor esperado? ¿Por qué sí o no?<br>
           c) ¿Es posible perder eligiendo la opción matemáticamente óptima? ¿Qué dice eso sobre el azar?</p>
@@ -588,9 +588,9 @@ P(ruta con tesoro) = rutas con tesoro / rutas totales</div>
         <h4>Tabla de Registro — Decisiones en Modo Libre</h4>
         <div class="formula">Puzzle          | Mi respuesta | ¿Correcta? | Razonamiento usado
 ─────────────────────────────────────────────────────────
-La Urna Mágica  |              |            |
+La Urna Misteriosa  |              |            |
 La Moneda       |              |            |
-La Gran Apuesta |              |            |
+Apuesta del Mercader |              |            |
 La Ruleta       |              |            |
 Falsificador    |              |            |
 Puertas Oráculo |              |            |
@@ -743,7 +743,7 @@ Mapa del Tesoro |              |            |</div>
   /* Version de release: SUBIR este numero al publicar cambios.
      Fuerza a los navegadores (y al service worker) a traer los scripts nuevos
      en vez de servir versiones viejas del cache HTTP heuristico. */
-  var GAME_VERSION = '16';
+  var GAME_VERSION = '17';
   window.GAME_VERSION = GAME_VERSION;
 
   /* Los scripts se piden TODOS A LA VEZ y se ejecutan EN ORDEN: un <script>
