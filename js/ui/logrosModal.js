@@ -107,10 +107,10 @@ function _renderTabInforme(){
   try { arcadeData = _arcadeStatsLoad(); } catch(e){ arcadeData={arcade:{},libre:{}}; }
 
   const _PUZZLE_NAMES = {
-    PuzzleUrna:    '🏺 La Urna Mágica',
-    PuzzleMoneda:  '🪙 La Moneda del Destino',
-    PuzzleApuesta: '🎯 La Gran Apuesta',
-    PuzzleRuleta:  '🎡 La Ruleta del Azar',
+    PuzzleUrna:    '🏺 La Urna Misteriosa',
+    PuzzleMoneda:  '🪙 Cara o Ceca',
+    PuzzleApuesta: '🎯 Apuesta del Mercader',
+    PuzzleRuleta:  '🎡 Ruleta del Reino',
     PuzzleDados:   '🎲 El Falsificador de Dados',
     PuzzlePuertas: '🚪 Las Puertas del Oráculo',
     PuzzleTesoro:  '🗺️ Mapa del Tesoro',

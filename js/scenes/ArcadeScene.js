@@ -1,13 +1,13 @@
 /* ══════════════════════════════════════════════════════════════
-   ArcadeScene.js — Modo Práctica: 7 rondas de minijuegos sin combate
+   ArcadeScene.js — Modo Arcade: 7 rondas de minijuegos sin combate
    Flujo: selector dificultad → 7 rondas → pantalla resultado
 ══════════════════════════════════════════════════════════════ */
 
 const ARCADE_PUZZLES = [
-  { key:'PuzzleUrna',     name:'La Urna Mágica',      npc:'mercader', pid:0 },
-  { key:'PuzzleMoneda',   name:'La Moneda del Destino',npc:'mercader', pid:1 },
-  { key:'PuzzleApuesta',  name:'La Gran Apuesta',      npc:'mercader', pid:2 },
-  { key:'PuzzleRuleta',   name:'La Ruleta del Azar',   npc:'mercader', pid:3 },
+  { key:'PuzzleUrna',     name:'La Urna Misteriosa',      npc:'mercader', pid:0 },
+  { key:'PuzzleMoneda',   name:'Cara o Ceca',npc:'mercader', pid:1 },
+  { key:'PuzzleApuesta',  name:'Apuesta del Mercader',      npc:'mercader', pid:2 },
+  { key:'PuzzleRuleta',   name:'Ruleta del Reino',   npc:'mercader', pid:3 },
   { key:'PuzzleDados',    name:'El Falsificador de Dados',   npc:'oraculo',  pid:4 },
   { key:'PuzzlePuertas',  name:'Las Puertas del Oráculo', npc:'oraculo',  pid:5 },
   { key:'PuzzleTesoro',   name:'Mapa del Tesoro',      npc:'oraculo',  pid:6 },
@@ -66,7 +66,7 @@ class ArcadeScene extends Phaser.Scene {
     ARCADE.activo = true;
 
     const C = this._compacto;
-    this.add.text(w/2, C ? 24 : 60, 'MODO PRÁCTICA', {
+    this.add.text(w/2, C ? 24 : 60, 'MODO ARCADE', {
       fontFamily:'Cinzel', fontSize: C ? '24px' : '34px', fontStyle:'700',
       color:'#D4AF37', stroke:'#050408', strokeThickness:3,
       shadow:{offsetX:0, offsetY:0, color:'#D4AF37', blur: C ? 12 : 20, fill:true}
@@ -96,7 +96,7 @@ class ArcadeScene extends Phaser.Scene {
     });
 
     /* Botón Iniciar */
-    this._bigBtn(C ? w/2 - 110 : w/2, C ? h - 36 : h - 90, '▶  Iniciar Práctica', '#D4AF37', 0x2A2010, 0xD4AF37, () => {
+    this._bigBtn(C ? w/2 - 110 : w/2, C ? h - 36 : h - 90, '▶  Iniciar Arcade', '#D4AF37', 0x2A2010, 0xD4AF37, () => {
       ARCADE.ronda = 0;
       ARCADE.aciertos = 0;
       this._fadeGo('ArcadeScene', { mode:'playing' });

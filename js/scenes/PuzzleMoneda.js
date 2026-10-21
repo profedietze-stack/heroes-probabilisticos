@@ -77,12 +77,12 @@ class PuzzleMoneda extends Phaser.Scene {
 
     if (pz) {
       pzPreguntaMovil(this, [
-        { txt:`Lanzas una moneda justa ${p.n} veces.`, color:'#a9b8c8' },
+        { txt:`Lanzás una moneda justa ${p.n} veces.`, color:'#a9b8c8' },
         { txt:`¿Cuál es la probabilidad de obtener exactamente ${p.k} cara${p.k!==1?'s':''} (C)?`, fam:'Cinzel', color:'#D4AF37', estilo:'600', size:'15px' },
       ]);
     } else {
     pzPopIn(this, this.add.text(w/2, 96,
-      `Lanzas una moneda justa ${p.n} veces.`, {
+      `Lanzás una moneda justa ${p.n} veces.`, {
       fontFamily:'Poppins', fontSize:'13px', color:'#8a9ab0', align:'center'
     }).setOrigin(0.5), 80);
     pzPopIn(this, this.add.text(w/2, 120,
@@ -191,10 +191,7 @@ class PuzzleMoneda extends Phaser.Scene {
       });
     }
 
-    /* Leyenda */
-    pzPopIn(this, this.add.text(cx, cy + 74, `C(${n},${k}) = ${_binomial(n,k)} combinaciones con ${k} cara${k!==1?'s':''}`, {
-      fontFamily:'Poppins', fontSize: this._pz ? '13px' : '11px', color: this._pz ? '#8a9eb0' : '#5a7080', align:'center'
-    }).setOrigin(0.5), 1200);
+    /* Sin leyenda «C(n,k) = …»: era el numerador de la respuesta a la vista antes de contestar. Queda en la explicación del resultado. */
 
     return resultTxt;
   }

@@ -24,6 +24,13 @@ function showToast(text, duration=4000){
 /* Escapa texto antes de meterlo en un innerHTML. El nombre del héroe lo escribe
    el alumno (o viene de un guardado editado) y se imprime en el certificado y en
    el resumen final: sin escapar, un nombre con "<" se interpreta como HTML. */
+/* «Has derrotado a El Golem» → «al Golem»: el artículo de los nombres de monstruo («El …», «La …») se contrae. */
+function aNombre(nombre){
+  const n = String(nombre);
+  if (/^El /.test(n)) return 'al ' + n.slice(3);
+  if (/^La /.test(n)) return 'a la ' + n.slice(3);
+  return 'a ' + n;
+}
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }

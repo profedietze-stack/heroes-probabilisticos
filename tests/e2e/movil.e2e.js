@@ -79,6 +79,16 @@ const mapaListo = (p) => p.waitForFunction(() => window.game.scene.getScene('Map
     const final = await p.evaluate(() => window.game.scene.getScenes(true).map((s) => s.scene.key).join());
     if (final !== 'MapScene') fallas.push(`recorrido: se esperaba volver al mapa y está ${final}`);
 
+    // ── 3. Apuesta: el medidor de E(X) no marca la respuesta antes de contestar ──
+    await irA(p, 'PuzzleApuesta', { dificultad: 'normal', modo: 'libre' });
+    await p.waitForTimeout(3000);
+    const antes = await p.evaluate(() => window.game.scene.getScenes(true)[0]._evTxt.text);
+    if (antes !== 'E(X) = ?') fallas.push('apuesta: el medidor mostró «' + antes + '» antes de contestar (regala la respuesta)');
+    const UA = await p.evaluate(() => window.game.scene.getScenes(true)[0]._pz.Z.ui);
+    await p.mouse.click(UA.x + UA.w / 4, UA.y + UA.h - 30); await p.waitForTimeout(3500);
+    const despues = await p.evaluate(() => { const s = window.game.scene.getScenes(true)[0]; return s._evTxt ? s._evTxt.text : null; });
+    if (despues === 'E(X) = ?') fallas.push('apuesta: el medidor no se reveló después de contestar');
+
     for (const l of log) fallas.push('consola: ' + l);
 
     function verificar(nombre, r) {
