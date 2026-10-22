@@ -365,7 +365,7 @@ class BattleScene extends Phaser.Scene {
 
     // Tutorial al iniciar
     if(STATE.jefeActual === 0){
-      this.mostrarMensaje(TUTORIALES[1 + Math.floor(Math.random()*9)], '#9b59b6', 6000);
+      this.mostrarMensaje(TUTORIALES[1 + Math.floor(Math.random()*9)], '#cfa6e6', 6000);   // el violeta #9b59b6 sobre el panel violeta no se leía
     } else if(Math.random() < 0.4) {
       this.mostrarMensaje(MSG_CONCEPTO[Math.floor(Math.random()*MSG_CONCEPTO.length)], '#3498db', 5500);
     }
@@ -1994,7 +1994,7 @@ class BattleScene extends Phaser.Scene {
       if(STATE.hp <= 0){ this.derrota(); return; }
 
       if(STATE.hp < STATE.hpMax*0.2) this.mostrarMensaje(MSG_COMBATE[6], '#ff4444', 5000);
-      else if(Math.random()<0.25) this.mostrarMensaje(MSG_COMBATE[3 + Math.floor(Math.random()*12)], '#9b59b6', 4500);
+      else if(Math.random()<0.25) this.mostrarMensaje(MSG_COMBATE[3 + Math.floor(Math.random()*12)], '#cfa6e6', 4500);
 
       this.probText.setText(this._probTexto());
 

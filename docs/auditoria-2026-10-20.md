@@ -467,3 +467,15 @@ Segunda revisión visual (36 capturas a 812×375 y 932×430). No había textos e
 - Pendiente de esta revisión (visual, no de contenido): aviso del tutorial tapando el monstruo en 812, contraste en el hub del arcade, etiquetas de la ruleta que giran con la rueda, respiro de los botones del final y de la 2ª fila de respuestas. Voseo/tuteo mezclado («Elige…») en varias pantallas.
 - Versión 17 / caché `heroesprob-v19`.
 
+## Addendum 10 — tanda visual (2026-10-21)
+
+Con las 36 capturas a 812×375 y 932×430 revisadas por Opus y mis capturas posteriores a cada arreglo:
+
+- **El aviso «Partida guardada correctamente» (`#toast`) tapaba y tragaba toques.** Salía abajo al centro durante 4 s —justo sobre las respuestas— y, siendo un elemento DOM sin `pointer-events:none`, se tragaba el toque de la respuesta de abajo. Ahora no recibe toques y, en teléfono apaisado (`max-height:500px`), sube arriba y más chico. Costo conocido: en la batalla tapa un momento la barra de HP del monstruo.
+- **Aire abajo de las respuestas:** la interfaz de los enigmas (`pzZonas`) deja 14 px en vez de 8 (esquinas redondeadas, barra de gestos). La ilustración conserva su alto: sus botones («Lanzar dado») están dibujados contra ese borde y se recortaban.
+- **Contraste:** colores de dificultad y texto de «Elegir Minijuego» del hub del arcade más claros; avisos de concepto/tutorial de la batalla en `#cfa6e6` (el `#9b59b6` sobre el panel violeta no se leía).
+- **Botón de acción del enigma** (`pzActionBtn`): el ancho crece con la etiqueta; «¡Lanzar las monedas!» ya no toca los bordes. **Final:** tarjetas de logros de 56 px y botones con 10 px de margen inferior.
+- **Descartado:** el menú «muy oscuro» era el fade-in (a los 4 s se ve normal). **No se tocó:** las etiquetas de la ruleta giran con la rueda a propósito (texto radial); la fila inferior de puertas del mapa sale cortada porque el mapa se desplaza.
+- **Prueba e2e más robusta:** el chequeo del medidor de Apuesta fallaba al azar porque, al volver al mapa, puede salir un evento («Pergamino Antiguo», «Cofre del Azar») con un modal que el salto de escena no cierra; ahora se cierra antes y se espera a condiciones, no a tiempos fijos.
+- Tests: `tests/visual-movil.test.js` (7, rojos con el código anterior). Versión 20 / caché `heroesprob-v22`.
+

@@ -97,12 +97,12 @@ function pzCompacto(scene){ return scene.scale.height < 500; }
    Con `ancho` la ilustración usa todo el ancho (enigmas sin cuadrícula de respuestas). */
 function pzZonas(scene, ancho){
   const w = scene.scale.width, h = scene.scale.height;
-  const top = 44, pad = 8;
+  const top = 44, pad = 8, bot = 14;   // la interfaz (respuestas) deja más aire abajo: esquinas redondeadas y barra de gestos
   const rightW = ancho ? 0 : Math.min(400, Math.round(w * 0.5));
   const illW = ancho ? w - 2*pad : w - rightW - 3*pad;
   return { w, h, top, pad,
-    ill: { x: pad, y: top, w: illW, h: h - top - pad },
-    ui:  { x: pad + illW + pad, y: top, w: rightW, h: h - top - pad } };
+    ill: { x: pad, y: top, w: illW, h: h - top - pad },   // la ilustración conserva su alto: sus botones de acción están dibujados contra ese borde
+    ui:  { x: pad + illW + pad, y: top, w: rightW, h: h - top - bot } };
 }
 
 /* Se llama al empezar create(), antes de dibujar nada.
@@ -283,7 +283,8 @@ function pzActionBtn(scene, cx, cy, label, accentNum, onClick) {
   var BW = 176, BH = 34, FS = '12px';
   if (scene._pz) {   // teléfono: 46 px de alto reales (el zoom de la ilustración los achica)
     var K = 1 / scene._pz.zoom;
-    BW = Math.ceil(190 * K); BH = Math.ceil(46 * K); FS = Math.ceil(14 * K) + 'px';
+    // El ancho crece con la etiqueta (Cinzel en mayúsculas: ~0,68 em por letra) para que el texto no toque los bordes.
+    BW = Math.max(Math.ceil(190 * K), Math.ceil((String(label).length * 14 * 0.68 + 36) * K)); BH = Math.ceil(46 * K); FS = Math.ceil(14 * K) + 'px';
   }
   var cont = scene.add.container(cx, cy).setDepth(4);
   var g    = scene.add.graphics();
