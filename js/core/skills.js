@@ -15,7 +15,7 @@ const SKILL_TREE = [
     desc:'Mitiga el daño enemigo durante varios turnos.',
     ranks:[{red:0.20,turnos:2},{red:0.30,turnos:2},{red:0.35,turnos:3}] },
   { id:'segundoAliento',rama:'vitalidad',nombre:'Segundo aliento',  tipo:'pasivo',  mp:[0,0,0], xpCost:_XP,
-    desc:'Una vez por batalla, al bajar de 20% HP, te curas.', ranks:[15,25,40] },
+    desc:'Una vez por batalla, al bajar de 20% HP, te curás.', ranks:[15,25,40] },
   { id:'dadoSagrado',  rama:'vitalidad', nombre:'Dado Sagrado',    tipo:'activo',  mp:[0,0,0], xpCost:_XP,
     desc:'Lanzás un dado verde que te cura HP. Se recarga con cada tirada de batalla.',
     ranks:[{dados:1,bonus:0,cooldown:8},{dados:2,bonus:0,cooldown:5},{dados:2,bonus:2,cooldown:3}] },

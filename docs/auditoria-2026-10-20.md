@@ -479,3 +479,13 @@ Con las 36 capturas a 812×375 y 932×430 revisadas por Opus y mis capturas post
 - **Prueba e2e más robusta:** el chequeo del medidor de Apuesta fallaba al azar porque, al volver al mapa, puede salir un evento («Pergamino Antiguo», «Cofre del Azar») con un modal que el salto de escena no cierra; ahora se cierra antes y se espera a condiciones, no a tiempos fijos.
 - Tests: `tests/visual-movil.test.js` (7, rojos con el código anterior). Versión 20 / caché `heroesprob-v22`.
 
+## Addendum 11 — voseo unificado (2026-10-21)
+
+El juego mezclaba voseo («Tenés», «Elegí») con tuteo («Elige tu dificultad», «Tú eres un outlier», «¿Puedes calcular…?»). Quedó todo en voseo rioplatense:
+
+- **Textos tocados (unas 80 cadenas):** frases de los monstruos («Vos sos el ruido», «¿Podés calcular…?», «¡Temblá!», que era vosotros), diálogos del Mercader y del Oráculo, consejos y mensajes de combate, descripciones de los minijuegos, títulos de pantallas («Elegí tu dificultad», «Elegí tu clase de héroe», «— Elegí tu enigma —»), el final («Sos un maestro», pasos sugeridos), la historia de la intro, Dados (también tildes y «¡Correcto!»), la leyenda del hub, el lema del menú y la guía didáctica.
+- **El que se me había escapado dos veces:** «Probabilidad de Impacto: Necesitas 9+», en la pantalla de batalla (se ve en cada turno). Lo encontró el test con búsqueda sin distinguir mayúsculas.
+- **Test:** `tests/voseo.test.js` recorre todos los literales de `js/` y `main.js` y el HTML visible de `index.html`, y falla ante formas de tuteo (indicativo, pronombres, imperativos). Un archivo o texto nuevo entra solo. Rojo contra el código anterior. Se excluye la rúbrica del docente (tercera persona).
+- **No se tocó:** el futuro «podrás»/«serás» (igual en voseo), y las descripciones en tercera persona («Domina todas las formas…»).
+- Versión 21 / caché `heroesprob-v23`.
+

@@ -17,26 +17,26 @@ const ITEMS = [
 ];
 
 const TUTORIALES = [
-  "En el Reino de Arithmos, el azar no es el enemigo. Apréndelo, úsalo, domínalo.",
+  "En el Reino de Arithmos, el azar no es el enemigo. Aprendelo, usalo, dominalo.",
   "La Probabilidad de Laplace dice: P(evento) = Casos Favorables / Casos Totales. Aquí: Casos Totales = 144.",
   "Cada tirada de 2d12 tiene 144 combinaciones posibles. Calcular probabilidades es tu arma más poderosa.",
   "Cuanto menor es la probabilidad, mayor es el riesgo. ¿Aceptarás el desafío?",
-  "Los bonificadores aumentan tus probabilidades. ¡Usa tus objetos sabiamente!",
+  "Los bonificadores aumentan tus probabilidades. ¡Usá tus objetos sabiamente!",
   "La Resiliencia es tu aliada. Cada derrota te acerca a la victoria final.",
-  "El Doble 1 es la maldición del destino. Probabilidad: 1/144. ¡Espera lo inesperado!",
+  "El Doble 1 es la maldición del destino. Probabilidad: 1/144. ¡Esperá lo inesperado!",
   "Tu inventario tiene 15 artefactos. Cada uno guarda el poder de una distribución matemática.",
   "Al final, analizaremos tus datos. ¿Coincidieron con las probabilidades teóricas?",
-  "Recuerda: en matemáticas, como en la vida, la incertidumbre es la única certeza."
+  "Recordá: en matemáticas, como en la vida, la incertidumbre es la única certeza."
 ];
 
 const MSG_COMBATE = [
   "¡IMPACTO! Tu tirada fue perfecta. El monstruo retrocede, herido.",
   "¡FALLO! El destino no estuvo de tu lado esta vez.",
   "¡DOBLE 1! ¡La maldición del Determinismo te golpea! Tu poder se reduce a la mitad.",
-  "El monstruo contraataca con ferocidad. ¡Prepárate para el siguiente turno!",
-  "La Resiliencia te fortalece. Sientes el azar fluir a tu favor.",
+  "El monstruo contraataca con ferocidad. ¡Preparate para el siguiente turno!",
+  "La Resiliencia te fortalece. Sentís el azar fluir a tu favor.",
   "El monstruo está débil. ¡Este podría ser el turno decisivo!",
-  "Tu HP es crítico. ¡Usa una poción o serás derrotado!",
+  "Tu HP es crítico. ¡Usá una poción o serás derrotado!",
   "La batalla se vuelve épica. Ambos luchan en el filo de la victoria.",
   "¡CRÍTICO! Tu ataque fue devastador. Daño × 1.5.",
   "La probabilidad te abandonó. Reducción de defensa durante este turno.",

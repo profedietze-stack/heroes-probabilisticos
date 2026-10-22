@@ -15,7 +15,7 @@
 const CLASES = {
   guerrero: {
     key: 'guerrero', emoji: '⚔', nombre: 'Guerrero', color: 0xc0392b, titulo: 'Escudo de la Frecuencia',
-    idea: 'Cada golpe es un ensayo de Bernoulli: confía en la frecuencia, no en un solo tiro.',
+    idea: 'Cada golpe es un ensayo de Bernoulli: confiá en la frecuencia, no en un solo tiro.',
     ventajas: ['+25 HP máximos', 'Racha: cada impacto seguido suma +1 de daño (hasta +4); un fallo la corta'],
     costos:   ['No tiene bonus a la tirada, al MP ni a los ítems'],
     hp: 25, atk: 0, def: 0, mp: 0, tirada: 0, racha: 4, primerPoder: 0, potenciaItems: 1, itemsExtra: 0, descuento: 0,

@@ -53,7 +53,7 @@ class LibreScene extends Phaser.Scene {
     if (this._lastResult !== null) {
       const msg = this._lastResult
         ? `✓ ¡Correcto! ${this._lastPuz||''}`
-        : `✗ Incorrecto. ${this._lastPuz||''}  ¡Inténtalo de nuevo!`;
+        : `✗ Incorrecto. ${this._lastPuz||''}  ¡Intentalo de nuevo!`;
       this.time.delayedCall(200, () => showToast(msg, 2800));
     }
 

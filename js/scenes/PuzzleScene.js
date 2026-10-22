@@ -198,7 +198,7 @@ class PuzzleScene extends Phaser.Scene {
     this._btnData   = [];
 
     const C = this._compacto;
-    const hdr = this.add.text(PX + PW/2, startY + (C ? 9 : 8), '— Elige tu enigma —', {
+    const hdr = this.add.text(PX + PW/2, startY + (C ? 9 : 8), '— Elegí tu enigma —', {
       fontFamily:'Cinzel', fontSize: C ? '13px' : '11px', color: C ? '#8fa6bd' : '#4a6070', letterSpacing:2
     }).setOrigin(0.5).setAlpha(0).setDepth(2);
     this._panelObjs.push(hdr);
@@ -332,7 +332,7 @@ class PuzzleScene extends Phaser.Scene {
 
     const C = this._compacto;
     const lbl = this.add.text(PX + PW/2, startY + (C ? 9 : 8),
-      '¿Qué deseas hacer, héroe?', {
+      '¿Qué querés hacer, héroe?', {
       fontFamily:'Cinzel', fontSize: C ? '13px' : '11px', color: C ? '#8fa6bd' : '#4a6070', letterSpacing:2
     }).setOrigin(0.5).setAlpha(0).setDepth(3);
     this._choiceObjs.push(lbl);
@@ -404,7 +404,7 @@ class PuzzleScene extends Phaser.Scene {
         '<div style="flex:1;min-width:0;font-family:Lora,serif;font-size:14px;line-height:1.5;color:#b0bcd0">' +
         'Si entrás al minijuego y lo resolvés, <b style="color:#F5D97A">avanzarás a la siguiente zona</b> del mapa y ' +
         '<b style="color:#E0A0A0">no podrás volver a esta tienda</b>.<br>' +
-        '<span style="color:#9aaabb">¿Seguro que no deseas comprar nada y avanzar?</span></div></div>' +
+        '<span style="color:#9aaabb">¿Seguro que no querés comprar nada y avanzar?</span></div></div>' +
         '<div class="btn-row" style="display:flex;gap:10px;justify-content:center;margin-top:12px">' +
         '<button class="btn-action btn-secondary" style="min-height:44px;margin:0" onclick="window.__cancelAdvance()">' + coinSpan(13) + ' Volver a la tienda</button>' +
         '<button class="btn-action" style="min-height:44px;margin:0" onclick="window.__confirmAdvance()">⚔ Continuar</button>' +
@@ -419,7 +419,7 @@ class PuzzleScene extends Phaser.Scene {
       '<p style="color:#b0bcd0;font-family:\'Lora\',serif;font-size:13px;line-height:1.5;margin-bottom:6px">' +
       'Si entrás al minijuego y lo resolvés, <b style="color:#F5D97A">avanzarás a la siguiente zona</b> del mapa y ' +
       '<b style="color:#E0A0A0">no podrás volver a esta tienda</b>.</p>' +
-      '<p style="color:#8a9ab0;font-family:\'Lora\',serif;font-size:12px;margin-bottom:14px">¿Seguro que no deseas comprar nada y avanzar?</p>' +
+      '<p style="color:#8a9ab0;font-family:\'Lora\',serif;font-size:12px;margin-bottom:14px">¿Seguro que no querés comprar nada y avanzar?</p>' +
       '<div class="btn-row" style="display:flex;gap:10px;justify-content:center">' +
       '<button class="btn-action btn-secondary" onclick="window.__cancelAdvance()">' + coinSpan(13) + ' Volver a la tienda</button>' +
       '<button class="btn-action" onclick="window.__confirmAdvance()">⚔ Continuar</button>' +

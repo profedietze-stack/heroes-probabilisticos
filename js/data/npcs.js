@@ -16,8 +16,8 @@ const NPC_DATA = {
     dialogos: {
       intro: [
         '¡Eh, viajero! Te he estado esperando.',
-        '¿Sabes que el azar siempre favorece a quien lo comprende?',
-        'Tengo un trato para ti... un juego de probabilidades.',
+        '¿Sabés que el azar siempre favorece a quien lo comprende?',
+        'Tengo un trato para vos... un juego de probabilidades.',
       ],
       correcto: [
         '¡Excelente cálculo! Las probabilidades te sonríen.',
@@ -27,7 +27,7 @@ const NPC_DATA = {
       incorrecto: [
         'Mmm... el azar es cruel con quienes no lo comprenden.',
         'No importa, la probabilidad siempre da otra oportunidad.',
-        'El espacio muestral no miente. Intenta de nuevo.',
+        'El espacio muestral no miente. Intentá de nuevo.',
       ],
       despedida: [
         'Hasta la próxima apuesta, viajero.',
@@ -205,7 +205,7 @@ const NPC_DATA = {
       intro: [
         'El universo no deja nada al azar... o quizás sí.',
         'He calculado todas las probabilidades de este momento.',
-        'Ven, el Oráculo tiene una prueba para tu mente.',
+        'Vení, el Oráculo tiene una prueba para tu mente.',
       ],
       correcto: [
         'Como estaba escrito en las distribuciones del destino.',
@@ -220,7 +220,7 @@ const NPC_DATA = {
       despedida: [
         'P(victoria) = P(conocimiento).',
         'El conocimiento probabilístico ilumina tu camino.',
-        'Vuelve cuando el azar te traiga de nuevo aquí.',
+        'Volvé cuando el azar te traiga de nuevo aquí.',
       ],
     },
     svgMarkup: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="90 -6 500 500" style="width:100%;height:100%;overflow:hidden" overflow="hidden">

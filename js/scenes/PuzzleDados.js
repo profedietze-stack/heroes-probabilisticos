@@ -333,7 +333,7 @@ class PuzzleDados extends Phaser.Scene {
 
     /* ── Status text ── */
     const statTxt = this.add.text(w/2, STAT_Y,
-      'Lanza las veces que quieras y toca el/los dado(s) que creas trucado(s).', {
+      'Lanzá las veces que quieras y tocá el/los dado(s) que creas trucado(s).', {
       fontFamily:'Poppins', fontSize: pz ? '14px' : '11px', color: pz ? '#9aaabb' : '#5a6878', align:'center',
       wordWrap: pz ? { width: w - 40 } : undefined
     }).setOrigin(0.5);
@@ -372,7 +372,7 @@ class PuzzleDados extends Phaser.Scene {
     const checkAnswer = () => {
       if (locked) return;
       if (sel.size !== p.nLoaded) {
-        statTxt.setText(`Selecciona ${p.nLoaded} dado${pl?'s':''} antes de certificar.`);
+        statTxt.setText(`Seleccioná ${p.nLoaded} dado${pl?'s':''} antes de certificar.`);
         statTxt.setColor('#D4AF37');
         return;
       }
@@ -383,13 +383,13 @@ class PuzzleDados extends Phaser.Scene {
         showConf(false);
         awardImmediate(discPts);
         pzBurst(this, w/2, CY, [0x70c8e0, 0xD4AF37, 0xffffff], 26, 10, 6);
-        statTxt.setText('Correcto! Dado trucado descubierto. Ahora responde la probabilidad.');
+        statTxt.setText('¡Correcto! Dado trucado descubierto. Ahora respondé la probabilidad.');
         statTxt.setColor('#50e890');
         this.time.delayedCall(600, showQuestion);
       } else {
         wrongPicks++;
         awardImmediate(-discPts);
-        statTxt.setText('Incorrecto. Pierdes puntos. Sigue lanzando: el patron se revelara.');
+        statTxt.setText('Incorrecto. Perdés puntos. Seguí lanzando: el patrón se revelará.');
         statTxt.setColor('#e06060');
         sel.clear();
         p.dice.forEach((_, i) => {
@@ -398,7 +398,7 @@ class PuzzleDados extends Phaser.Scene {
         });
         this.time.delayedCall(1800, () => {
           if (locked) return;
-          statTxt.setText('Lanza las veces que quieras y toca el/los dado(s) trucado(s).');
+          statTxt.setText('Lanzá las veces que quieras y tocá el/los dado(s) trucado(s).');
           statTxt.setColor('#5a6878');
         });
       }
@@ -464,7 +464,7 @@ class PuzzleDados extends Phaser.Scene {
         this.time.delayedCall(650, () => {
           if (locked || sel.size > 0) return;
           statTxt.setText(
-            `Ya notas algo? Toca ${pl ? `los ${p.nLoaded} dados` : 'el dado'} que crees trucado${pl?'s':''}.`
+            `¿Ya notás algo? Tocá ${pl ? `los ${p.nLoaded} dados` : 'el dado'} que creés trucado${pl?'s':''}.`
           );
           statTxt.setColor('#D4AF37');
         });

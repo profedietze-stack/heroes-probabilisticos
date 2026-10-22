@@ -104,10 +104,10 @@ class FinalScene extends Phaser.Scene {
     const logros = [];
     logros.push({icon:'🏅', titulo:'DOMADOR DEL DETERMINISMO', desc:'Derrotaste al Demiurgo. La probabilidad es libre.'});
     logros.push({icon:'🏆', titulo:'HÉROE ÉPICO', desc:'Completaste la aventura. Tu nombre vive en Arithmos.'});
-    if(STATE.stats.derrotas === 0) logros.push({icon:'🏅', titulo:'ESTRATEGA DE LAPLACE', desc:'Ganaste sin una sola derrota. Eres un maestro.'});
+    if(STATE.stats.derrotas === 0) logros.push({icon:'🏅', titulo:'ESTRATEGA DE LAPLACE', desc:'Ganaste sin una sola derrota. Sos un maestro.'});
     if(STATE.stats.derrotas >= 3) logros.push({icon:'🏅', titulo:'RESILIENTE DEL AZAR', desc:'A pesar de múltiples derrotas, conquistaste la victoria.'});
     const objUsados = Object.values(STATE.stats.objetosUsados).reduce((a,b)=>a+b,0);
-    if(objUsados >= 10) logros.push({icon:'🏅', titulo:'COLECCIONISTA DE ARTEFACTOS', desc:`Usaste ${objUsados} objetos. Dominas el poder de las distribuciones.`});
+    if(objUsados >= 10) logros.push({icon:'🏅', titulo:'COLECCIONISTA DE ARTEFACTOS', desc:`Usaste ${objUsados} objetos. Dominás el poder de las distribuciones.`});
     const lucky = this.calcNumeroSuerte();
     if(lucky.count >= 5) logros.push({icon:'🏅', titulo:'BENDECIDO POR LA SUERTE', desc:`Tu número ${lucky.num} salió ${lucky.count}+ veces.`});
     if(STATE.resiliencia === 3) logros.push({icon:'🏅', titulo:'PERFECCIONISTA', desc:'Triplicaste tu Resiliencia. Cada derrota fue una lección.'});
@@ -319,17 +319,17 @@ class FinalScene extends Phaser.Scene {
       </div>
 
       <h4>🧠 Reflexión metacognitiva</h4>
-      <p>Piensa: ¿en qué momento usaste una bonificación para modificar la probabilidad? ¿Te arriesgaste con umbrales altos o preferiste esperar con objetos defensivos? Cada decisión refleja tu comprensión del equilibrio entre <em>riesgo</em> y <em>valor esperado</em>.</p>
+      <p>Pensá: ¿en qué momento usaste una bonificación para modificar la probabilidad? ¿Te arriesgaste con umbrales altos o preferiste esperar con objetos defensivos? Cada decisión refleja tu comprensión del equilibrio entre <em>riesgo</em> y <em>valor esperado</em>.</p>
 
       <h4>🏅 Logros alcanzados</h4>`;
     logros.forEach(l=>{ html += `<div class="achievement"><div class="icon">${l.icon}</div><div class="text"><strong>${l.titulo}</strong><br>${l.desc}</div></div>`; });
 
     html += `<h4>📝 Próximos pasos sugeridos</h4>
       <ul>
-        <li>Lanza 50 tiradas reales con dos dados (físicos si tienes, o con d12) y compara con tus datos aquí.</li>
-        <li>Calcula a mano P(suma = 13), P(suma ≥ 18) y P(doble 1).</li>
-        <li>Investiga: ¿qué distribución sigue la suma de 2 dados regulares (d6)? Compara con 2d12.</li>
-        <li>Discute en clase: "¿Existe el azar puro o todo es determinismo?"</li>
+        <li>Lanzá 50 tiradas reales con dos dados (físicos si tenés, o con d12) y compará con tus datos acá.</li>
+        <li>Calculá a mano P(suma = 13), P(suma ≥ 18) y P(doble 1).</li>
+        <li>Investigá: ¿qué distribución sigue la suma de 2 dados regulares (d6)? Compará con 2d12.</li>
+        <li>Discutí en clase: "¿Existe el azar puro o todo es determinismo?"</li>
       </ul>
       <div class="btn-row"><button class="btn-action" onclick="closeReportModal()">Cerrar</button></div></div>`;
     openReportModal('📖 Informe Pedagógico', html);
