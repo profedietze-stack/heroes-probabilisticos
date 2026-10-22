@@ -558,7 +558,7 @@ class MapScene extends Phaser.Scene {
     g.fillStyle(0xffaa44, 0.1);
     g.fillRect(x, y+ph-2, _DW, 6);
 
-    const hint = this.add.text(pos.x, pos.y+_DH/2+14, '▼ Toca', {
+    const hint = this.add.text(pos.x, pos.y+_DH/2+14, '▼ Tocá', {
       fontFamily:'Cinzel', fontSize: this.L.compacto ? '14px' : '11px', color:'#D4AF37'
     }).setOrigin(0.5);
     this.tweens.add({targets:hint, alpha:{from:0.3,to:1}, duration:680, yoyo:true, repeat:-1});

@@ -26,9 +26,9 @@ test('la barra de probabilidad cuenta los bonos permanentes (Resiliencia y Arque
   // Con +3 de Resiliencia los dados solo tienen que sumar 10: la barra decía "13+ = 54 %"
   // igual, y la probabilidad "exacta" que mostraba no era la real.
   const { e } = montar({ clase: 'guerrero', resiliencia: 0, flagStar: false });
-  assert.match(e._probTexto(), /Necesitas 13\+ \| 78 casos \/ 144/);
+  assert.match(e._probTexto(), /Necesitás 13\+ \| 78 casos \/ 144/);
   const { e: e2 } = montar({ clase: 'guerrero', resiliencia: 3, flagStar: false });
-  assert.match(e2._probTexto(), /Necesitas 13\+ \(−3 por tus bonos: 10\+ en los dados\) \| 108 casos/);
+  assert.match(e2._probTexto(), /Necesitás 13\+ \(−3 por tus bonos: 10\+ en los dados\) \| 108 casos/);
   const { e: e3 } = montar({ clase: 'arquero', resiliencia: 0, flagStar: false });
   assert.match(e3._probTexto(), /\(−1 por tus bonos: 12\+ en los dados\) \| 89 casos/);
   const { e: e4 } = montar({ clase: 'arquero', resiliencia: 2, flagStar: false });

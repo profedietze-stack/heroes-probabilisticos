@@ -33,7 +33,7 @@ class IntroScene extends Phaser.Scene {
     // Línea interna highlight
     storyBox.lineStyle(1, 0xD4AF37, 0.15); storyBox.strokeRoundedRect(SBX+3, SBY+3, w-2*SBX-6, SBH-6, 10);
 
-    const story = 'En el Reino de Arithmos, el Demiurgo del Determinismo Absoluto ha corrompido el equilibrio de la Probabilidad de Laplace.\n\nTú, héroe elegido por el azar, debes restaurar la armonía enfrentando a 10 Monstruos Matemáticos.\n\n¿Estás preparado(a) para dominar el azar?';
+    const story = 'En el Reino de Arithmos, el Demiurgo del Determinismo Absoluto ha corrompido el equilibrio de la Probabilidad de Laplace.\n\nVos, héroe elegido por el azar, tenés que restaurar la armonía enfrentando a 10 Monstruos Matemáticos.\n\n¿Estás preparado(a) para dominar el azar?';
     const storyTxt = _track(this.add.text(w/2, C ? 60 : 130, '', {fontFamily:'Poppins', fontSize: C ? '15px' : '24px', color:'#f5e9c9', wordWrap:{width: C ? w-80 : w-180}, align:'center', lineSpacing: C ? 3 : 8}).setOrigin(0.5, 0));
     // Scroll de texto
     let idx = 0;
@@ -116,7 +116,7 @@ class IntroScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
     this.tweens.add({targets:titulo, alpha:1, duration:500});
 
-    this.add.text(w/2, C ? 54 : 95, 'Elige tu dificultad', {
+    this.add.text(w/2, C ? 54 : 95, 'Elegí tu dificultad', {
       fontFamily:'Poppins', fontSize: C ? '16px' : '20px', color:'#C0C8D0', fontStyle:'italic'
     }).setOrigin(0.5).setDepth(21);
 
@@ -192,7 +192,7 @@ class IntroScene extends Phaser.Scene {
     this.add.rectangle(0, 0, w, h, 0x0D0D14).setOrigin(0).setDepth(30);
 
     const C = this._compacto;
-    this.add.text(w/2, C ? 20 : 36, 'Elige tu clase de héroe', {
+    this.add.text(w/2, C ? 20 : 36, 'Elegí tu clase de héroe', {
       fontFamily:'Cinzel', fontSize: C ? '21px' : '28px', color:'#D4AF37', fontStyle:'700',
       stroke:'#0A0A10', strokeThickness:3
     }).setOrigin(0.5).setDepth(31);

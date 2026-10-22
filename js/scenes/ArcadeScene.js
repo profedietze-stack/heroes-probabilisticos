@@ -76,7 +76,7 @@ class ArcadeScene extends Phaser.Scene {
       fontFamily:'Poppins', fontSize: C ? '14px' : '13px', color: C ? '#8aa4c0' : '#4a6080', letterSpacing: C ? 1 : 2
     }).setOrigin(0.5);
 
-    this.add.text(w/2, C ? 80 : h*0.28, 'Elige tu dificultad:', {
+    this.add.text(w/2, C ? 80 : h*0.28, 'Elegí tu dificultad:', {
       fontFamily:'Cinzel', fontSize: C ? '16px' : '20px', color:'#9ab0c8'
     }).setOrigin(0.5);
 
@@ -354,8 +354,8 @@ class ArcadeScene extends Phaser.Scene {
     /* Mensaje + dificultad — fade in tardío */
     const msgs = {
       ORO:'¡Dominas la probabilidad!',
-      PLATA:'¡Muy bien! Sigue practicando.',
-      BRONCE:'Buen intento. ¡Inténtalo de nuevo!',
+      PLATA:'¡Muy bien! Seguí practicando.',
+      BRONCE:'Buen intento. ¡Intentalo de nuevo!',
       INTENTO:'La probabilidad te espera. ¡No te rindas!'
     };
     const msgDelay = 850 + total * 100 + 200;

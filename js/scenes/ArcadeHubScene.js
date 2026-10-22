@@ -81,7 +81,7 @@ class ArcadeHubScene extends Phaser.Scene {
       w/2 + CDX, CCY, CBW, CBH,
       '🎯  MODO LIBRE',
       'libre',
-      'Elige el minijuego y dificultad\nSin presión, con estadísticas',
+      'Elegí el minijuego y dificultad\nSin presión, con estadísticas',
       0x101828, 0x4080d0,
       () => this._fadeGo('LibreScene'),
       'oraculo'

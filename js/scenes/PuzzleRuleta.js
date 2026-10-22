@@ -254,7 +254,7 @@ class PuzzleRuleta extends Phaser.Scene {
     });
 
     /* Hint */
-    const hint = this.add.text(cx, cy + r + 52, '↻ Toca para girar', {
+    const hint = this.add.text(cx, cy + r + 52, '↻ Tocá para girar', {
       fontFamily:'Poppins', fontSize: this._pz ? '13px' : '10px', color: this._pz ? '#b89868' : '#8a6a40', fontStyle:'600'
     }).setOrigin(0.5).setAlpha(0);
     this.time.delayedCall(2900, () => this.tweens.add({ targets: hint, alpha: 1, duration: 400 }));

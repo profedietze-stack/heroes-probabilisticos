@@ -954,7 +954,7 @@ class BattleScene extends Phaser.Scene {
     const casosFav = casosFavorables(umbralDados);
     const pct = (casosFav/CFG.DICE_COMBOS*100).toFixed(2);
     const conBonos = bono > 0 ? ` (−${bono} por tus bonos: ${umbralDados}+ en los dados)` : '';
-    return `🎯 Probabilidad de Impacto: Necesitas ${umbralEf}+${conBonos} | ${casosFav} casos / ${CFG.DICE_COMBOS} (${pct}%)`;
+    return `🎯 Probabilidad de Impacto: Necesitás ${umbralEf}+${conBonos} | ${casosFav} casos / ${CFG.DICE_COMBOS} (${pct}%)`;
   }
 
   makeButton(x, y, w, h, label, accentColor, txtColor, action, fs='14px'){
@@ -2134,7 +2134,7 @@ class BattleScene extends Phaser.Scene {
     let html = '<div style="padding:8px;">';
     html += `<h3 style="color:#ffd700;text-align:center;margin-bottom:12px;font-family:Cinzel">Tu Bolsa — ${STATE.inventario.length}/6 slots</h3>`;
     if(STATE.inventario.length===0){
-      html += '<p style="text-align:center;color:#999;padding:20px">Tu bolsa está vacía. Derrota monstruos para obtener artefactos.</p>';
+      html += '<p style="text-align:center;color:#999;padding:20px">Tu bolsa está vacía. Derrotá monstruos para obtener artefactos.</p>';
     } else {
       html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">';
       STATE.inventario.forEach((slot,idx)=>{

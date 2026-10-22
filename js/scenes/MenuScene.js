@@ -145,7 +145,7 @@ class MenuScene extends Phaser.Scene {
 
     // Footer (en el diseño compacto no hay lugar: queda solo "Borrar")
     if(!compacto && !columna){
-      this.add.text(w/2, h-28, 'Domina el azar  ·  Restaura la Probabilidad  ·  Salva Arithmos', {
+      this.add.text(w/2, h-28, 'Dominá el azar  ·  Restaurá la Probabilidad  ·  Salvá Arithmos', {
         fontFamily:'Cinzel', fontSize:'13px', color:'#6f8099'
       }).setOrigin(0.5);
     }
