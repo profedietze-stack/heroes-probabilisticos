@@ -80,14 +80,24 @@ const mapaListo = (p) => p.waitForFunction(() => window.game.scene.getScene('Map
     if (final !== 'MapScene') fallas.push(`recorrido: se esperaba volver al mapa y está ${final}`);
 
     // ── 3. Apuesta: el medidor de E(X) no marca la respuesta antes de contestar ──
+    // Se espera a las condiciones (botones de respuesta ya interactivos, medidor revelado), no a tiempos fijos: con la máquina cargada
+    // las animaciones tardan más y un clic temprano se pierde.
+    // Al volver al mapa puede salir un evento al azar («Pergamino Antiguo», «Cofre del Azar») con su modal: se cierra, el salto de escena no lo hace.
+    await p.evaluate(() => closeItemModal());
+    await p.waitForTimeout(300);
     await irA(p, 'PuzzleApuesta', { dificultad: 'normal', modo: 'libre' });
-    await p.waitForTimeout(3000);
+    await p.waitForFunction(() => { const s = window.game.scene.getScenes(true)[0]; return s && s._evTxt && s.input._list.filter((o) => o.input && o.input.enabled && o.scrollFactorX === 0 && o.type === 'Container').length >= 4; }, { timeout: 30000 });
+    await p.waitForTimeout(3500);   // pasado el tiempo en que antes se animaba solo (1,2 s + 1,45 s)
     const antes = await p.evaluate(() => window.game.scene.getScenes(true)[0]._evTxt.text);
     if (antes !== 'E(X) = ?') fallas.push('apuesta: el medidor mostró «' + antes + '» antes de contestar (regala la respuesta)');
     const UA = await p.evaluate(() => window.game.scene.getScenes(true)[0]._pz.Z.ui);
-    await p.mouse.click(UA.x + UA.w / 4, UA.y + UA.h - 30); await p.waitForTimeout(3500);
-    const despues = await p.evaluate(() => { const s = window.game.scene.getScenes(true)[0]; return s._evTxt ? s._evTxt.text : null; });
-    if (despues === 'E(X) = ?') fallas.push('apuesta: el medidor no se reveló después de contestar');
+    await p.mouse.click(UA.x + UA.w / 4, UA.y + UA.h - 30);
+    const revelo = await p.waitForFunction(() => window.game.scene.getScenes(true)[0]._evRevelado === true, { timeout: 8000 }).then(() => true, () => false);
+    if (!revelo) {
+      const x = UA.x + UA.w / 4, y = UA.y + UA.h - 30;
+      const diag = await p.evaluate(([cx, cy]) => { const e = document.elementFromPoint(cx, cy); const s = window.game.scene.getScenes(true)[0]; return { elemento: e ? e.tagName + '#' + e.id + '.' + e.className : null, inputJuego: window.game.input.enabled, inputEscena: s.input.enabled, modal: document.getElementById('itemModal').className, contenido: document.getElementById('itemContent').innerText.slice(0, 120), titulo: (document.querySelector('#itemModal .modal-header h2') || {}).textContent, toast: document.getElementById('toast').className, locked: s._pzLocked }; }, [x, y]);
+      fallas.push('apuesta: el medidor no se reveló después de contestar ' + JSON.stringify(diag));
+    }
 
     for (const l of log) fallas.push('consola: ' + l);
 

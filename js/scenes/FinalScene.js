@@ -76,7 +76,7 @@ class FinalScene extends Phaser.Scene {
     panel.lineStyle(2, 0xD4AF37, 0.6); panel.strokeRoundedRect(8, 72, w-16, h-72-92, 12);
     this.add.text(w/2, 86, '🏅 Logros Desbloqueados', {fontFamily:'Cinzel', fontSize:'14px', color:'#D4AF37', fontStyle:'700', letterSpacing:2}).setOrigin(0.5);
 
-    const cw = Math.floor((w - 16 - 36) / 2), ch = 52;   // 52: la descripción de 2 líneas no toca el borde de la tarjeta
+    const cw = Math.floor((w - 16 - 36) / 2), ch = 56;   // 56: una descripción de 2 líneas (con la de 3 en 812) no toca el borde de la tarjeta
     logros.forEach((l, i) => {
       const cx = 20 + (i % 2) * (cw + 8), cy = 100 + Math.floor(i / 2) * (ch + 4);
       const bg = this.add.graphics();
@@ -88,10 +88,10 @@ class FinalScene extends Phaser.Scene {
     });
 
     const lucky = this.calcNumeroSuerte();
-    this.add.text(w/2, h - 78, `🎲 Tu Número de la Suerte: ${lucky.num} (apareció ${lucky.count} veces)`, {fontFamily:'Cinzel', fontSize:'15px', color:'#c08be0', fontStyle:'700'}).setOrigin(0.5);
+    this.add.text(w/2, h - 80, `🎲 Tu Número de la Suerte: ${lucky.num} (apareció ${lucky.count} veces)`, {fontFamily:'Cinzel', fontSize:'15px', color:'#c08be0', fontStyle:'700'}).setOrigin(0.5);
 
     // Cinco botones de 44 px de alto en una fila
-    const n = 5, gap = 6, bw = Math.floor((w - 16 - gap*(n-1)) / n), by = h - 28;
+    const n = 5, gap = 6, bw = Math.floor((w - 16 - gap*(n-1)) / n), by = h - 33;
     const bx = (i) => 8 + bw/2 + i*(bw + gap);
     this.makeBtn(bx(0), by, '📊 Análisis', 0xD4AF37, 0x0A0A10, ()=>this.mostrarAnalisis(), bw, 46, '14px');
     this.makeBtn(bx(1), by, '💾 Exportar', 0x2a3848, 0xC0C8D0, ()=>this.descargarStats(), bw, 46, '14px');

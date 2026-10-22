@@ -3,6 +3,12 @@
    Dos modos: Arcade (7 rondas) | Libre (elige minijuego)
 ══════════════════════════════════════════════════════════════ */
 
+/* Color numérico → «#rrggbb» mezclado con blanco (f = 0…1): para texto legible sobre fondos oscuros. */
+function _aclarar(num, f){
+  const c = [16, 8, 0].map(s => { const v = (num >> s) & 255; return Math.round(v + (255 - v) * f); });
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
 class ArcadeHubScene extends Phaser.Scene {
   constructor(){ super('ArcadeHubScene'); }
 
@@ -180,7 +186,9 @@ class ArcadeHubScene extends Phaser.Scene {
     /* Stats arcade */
     if (mode === 'arcade') {
       const difs = ['facil','normal','heroe','legendario'];
-      const dColors = { facil:'#40c060', normal:'#4080d0', heroe:'#c05030', legendario:'#9030a0' };
+      // Teléfono: tonos más claros (el violeta y el rojo oscuros se perdían sobre el fondo de piedra).
+      const dColors = C ? { facil:'#5fd47e', normal:'#6aa6f0', heroe:'#ee8466', legendario:'#cf94e8' }
+                        : { facil:'#40c060', normal:'#4080d0', heroe:'#c05030', legendario:'#9030a0' };
       difs.forEach((dif, i) => {
         const st = arcadeGetBest(dif);
         const sx = C ? bx + 24 + i * Math.floor((bw - 48) / 4) : bx + 30 + i * 82;
@@ -232,7 +240,7 @@ class ArcadeHubScene extends Phaser.Scene {
     };
     drawBtn(false);
     const btnTxt = this.add.text(cx, btnY, mode === 'arcade' ? 'Jugar Arcade →' : 'Elegir Minijuego →', {
-      fontFamily:'Cinzel', fontSize: C ? '15px' : '13px', color: accentHex, fontStyle:'600'
+      fontFamily:'Cinzel', fontSize: C ? '15px' : '13px', color: C ? _aclarar(accentColor, 0.4) : accentHex, fontStyle:'600'
     }).setOrigin(0.5).setDepth(2);
 
     const hit = this.add.rectangle(cx, cy, bw, bh, 0, 0)
